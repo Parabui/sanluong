@@ -54,6 +54,8 @@ export const zTaiKhoanToi = z.object({
   /** Hiển thị: "Toàn nhà máy" | "C05, C06" | "Xưởng May 1" */
   tenPhamVi: z.string(),
   phaiDoiMatKhau: z.boolean(),
+  /** Ngày làm việc hiện tại do SERVER tính — frontend không tự tính 'hôm nay' [D5] */
+  homNay: z.string(),
 });
 export type TaiKhoanToi = z.infer<typeof zTaiKhoanToi>;
 

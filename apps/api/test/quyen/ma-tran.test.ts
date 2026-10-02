@@ -87,9 +87,9 @@ describe('Ma trận', () => {
   });
 
   it('[F8] Superadmin tắt một chức năng của vai trò → có hiệu lực ngay ở request kế tiếp', async () => {
-    await goi('GET /api/xuong', cookie.IE).expect(403);
+    await goi('POST /api/xuong', cookie.IE).expect(403);
     await voiQuyen('IE', 'DANH_MUC_XUONG_CHUYEN', true, async () => {
-      await goi('GET /api/xuong', cookie.IE).expect(200);
+      await goi('POST /api/xuong', cookie.IE).expect(400); // qua guard, dừng ở validation
     });
     await voiQuyen('SUPERADMIN', 'DANH_MUC_XUONG_CHUYEN', false, async () => {
       await goi('POST /api/xuong', cookie.SUPERADMIN).expect(403);

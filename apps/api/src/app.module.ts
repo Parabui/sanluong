@@ -10,7 +10,9 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { DanhMucModule } from './modules/danh-muc/danh-muc.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { ImportModule } from './modules/import/import.module.js';
+import { MaHangModule } from './modules/ma-hang/ma-hang.module.js';
 import { NhanVienModule } from './modules/nhan-vien/nhan-vien.module.js';
+import { SoDoModule } from './modules/so-do/so-do.module.js';
 import { TaiKhoanModule } from './modules/tai-khoan/tai-khoan.module.js';
 
 @Module({
@@ -50,6 +52,8 @@ import { TaiKhoanModule } from './modules/tai-khoan/tai-khoan.module.js';
     NhanVienModule,
     ImportModule,
     TaiKhoanModule,
+    MaHangModule,
+    SoDoModule,
   ],
 })
 export class AppModule {}

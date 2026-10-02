@@ -13,3 +13,5 @@ export * from './cau-hinh.js';
 export * from './schema/nhan-vien.js';
 export * from './schema/import.js';
 export * from './schema/tai-khoan.js';
+export * from './schema/ma-hang.js';
+export * from './schema/so-do.js';

@@ -45,6 +45,11 @@ export const LOI = {
   /** Kích hoạt / thêm con khi xưởng hoặc chuyền chứa nó đang ngưng */
   CAP_TREN_DANG_NGUNG: { http: 422, message: 'Đơn vị cấp trên đang ngưng — kích hoạt lại trước.' },
   VONG_NGOAI_KHONG_NHAP_APP: { http: 422, message: 'Nhóm vòng ngoài không nhập sản lượng qua app.' },
+  CONG_DOAN_DANG_GAN: { http: 422, message: 'Công đoạn đang gán tại trạm — gỡ khỏi trạm trước khi ngưng.' },
+  CONG_DOAN_HOAN_THANH: { http: 422, message: 'Mỗi mã hàng phải có đúng 1 công đoạn hoàn thành — chọn công đoạn hoàn thành khác trước.' },
+  NGAY_SMV_DA_KHOA: { http: 422, message: 'Ngày áp dụng rơi vào tháng đã khóa sổ.' },
+  CONG_DOAN_KHONG_HOP_LE: { http: 422, message: 'Công đoạn không thuộc mã hàng hoặc đã ngưng.' },
+  TRAM_KHONG_HOP_LE: { http: 422, message: 'Trạm không thuộc chuyền hoặc không nhập qua app.' },
   SUPERADMIN_CUOI_CUNG: { http: 422, message: 'Phải luôn còn ít nhất 1 Superadmin đang hoạt động.' },
   CHI_SUPERADMIN: { http: 403, message: 'Chỉ Superadmin được thực hiện thao tác này.' },
   // Import Excel [TDD 19]

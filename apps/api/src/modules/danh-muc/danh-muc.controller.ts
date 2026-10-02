@@ -24,7 +24,7 @@ class SuaChuyenDto extends createZodDto(zSuaChuyen) {}
 class SuaTramDto extends createZodDto(zSuaTram) {}
 
 /** Màn khác cần đọc danh sách xưởng / chuyền để chọn */
-const DOC_DANH_MUC = ['DANH_MUC_XUONG_CHUYEN', 'NHAN_VIEN_QUAN_LY', 'TAI_KHOAN_QUAN_LY'] as const;
+const DOC_DANH_MUC = ['DANH_MUC_XUONG_CHUYEN', 'NHAN_VIEN_QUAN_LY', 'TAI_KHOAN_QUAN_LY', 'SO_DO_GAN'] as const;
 
 const Id = () => Param('id', new ZodValidationPipe(zUuid));
 
@@ -41,7 +41,7 @@ export class DanhMucController {
     return this.cls.get('phamVi')!;
   }
 
-  /** Danh sách để chọn (dropdown) ở F2 Nhân viên, F8 Tài khoản — đọc theo phạm vi */
+  /** Danh sách để chọn (dropdown) ở F2 Nhân viên, F8 Tài khoản, F4 Sơ đồ chuyền — đọc theo phạm vi */
   @Get('xuong')
   @Quyen(...DOC_DANH_MUC)
   dsXuong(): Promise<Xuong[]> {

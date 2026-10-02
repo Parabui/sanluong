@@ -136,6 +136,7 @@ export class AuthService {
       phamVi,
       tenPhamVi: await this.phamVi.tenHienThi(phamVi),
       phaiDoiMatKhau: tk.phaiDoiMatKhau,
+      homNay: this.clock.homNay(),
     };
   }
 }

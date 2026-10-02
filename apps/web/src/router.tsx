@@ -3,6 +3,8 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { YeuCauDangNhap } from './lib/xac-thuc';
 import { MAN_HINH_TV, MAN_HINH_WEB, type ManHinh } from './man-hinh';
 import { ChuyenTramPage } from './routes/danh-muc/chuyen-tram';
+import { MaHangPage } from './routes/danh-muc/ma-hang';
+import { SoDoChuyenPage } from './routes/san-xuat/so-do-chuyen';
 import { NhanVienPage } from './routes/danh-muc/nhan-vien';
 import { TaiKhoanPage } from './routes/he-thong/tai-khoan';
 import { TrangTam } from './routes/trang-tam';
@@ -14,6 +16,8 @@ import { AppShell } from './shell/app-shell';
 const DA_LAM: Record<string, ReactElement> = {
   'danh-muc/chuyen-tram': <ChuyenTramPage />,
   'danh-muc/nhan-vien': <NhanVienPage />,
+  'danh-muc/ma-hang': <MaHangPage />,
+  'san-xuat/so-do-chuyen': <SoDoChuyenPage />,
   'he-thong/tai-khoan': <TaiKhoanPage />,
 };
 
