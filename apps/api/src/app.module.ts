@@ -8,6 +8,7 @@ import { docMoiTruong } from './core/moi-truong.js';
 import { layTraceId } from './core/trace-id.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CongNhanModule } from './modules/cong-nhan/cong-nhan.module.js';
+import { GioLamModule } from './modules/gio-lam/gio-lam.module.js';
 import { DanhMucModule } from './modules/danh-muc/danh-muc.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { ImportModule } from './modules/import/import.module.js';
@@ -58,6 +59,7 @@ import { TaiKhoanModule } from './modules/tai-khoan/tai-khoan.module.js';
     SoDoModule,
     SanLuongModule,
     CongNhanModule,
+    GioLamModule,
   ],
 })
 export class AppModule {}

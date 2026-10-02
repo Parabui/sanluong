@@ -2,11 +2,13 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Req, 
 import {
   type CayTram,
   type FormNhap,
+  type GioLamCuaToi,
   type KetQuaGhi,
   type KhoiDong,
   type TramQr,
   zDangNhapTram,
   zGhiSanLuong,
+  zGuiYeuCauGio,
   zNgayLamViec,
   zUuid,
 } from '@vsn/shared';
@@ -16,13 +18,17 @@ import { createZodDto, ZodValidationPipe } from 'nestjs-zod';
 import { z } from 'zod';
 import { AuditService } from '../../core/audit/audit.service.js';
 import type { VsnClsStore } from '../../core/ngu-canh.js';
+import { tuNgayDb } from '../../core/prisma/ngay-db.js';
+import { PrismaService } from '../../core/prisma/prisma.service.js';
 import { CongKhai, CongNhan } from '../../core/quyen/quyen.decorator.js';
+import { GioLamService } from '../gio-lam/gio-lam.service.js';
 import { GhiSanLuongService } from '../san-luong/ghi-san-luong.service.js';
 import { FormService } from './form.service.js';
 import { PhienTramService } from './phien-tram.service.js';
 
 class DangNhapTramDto extends createZodDto(zDangNhapTram) {}
 class GhiSanLuongDto extends createZodDto(zGhiSanLuong) {}
+class GuiYeuCauGioDto extends createZodDto(zGuiYeuCauGio) {}
 class LocFormDto extends createZodDto(z.object({ tramId: zUuid, ngay: zNgayLamViec })) {}
 
 const Id = () => Param('id', new ZodValidationPipe(zUuid));
@@ -37,8 +43,10 @@ export class CongNhanController {
     private readonly phien: PhienTramService,
     private readonly formService: FormService,
     private readonly ghi: GhiSanLuongService,
+    private readonly gioLam: GioLamService,
     private readonly audit: AuditService,
     private readonly cls: ClsService<VsnClsStore>,
+    private readonly prisma: PrismaService,
   ) {}
 
   private get thietBiId(): string {
@@ -89,5 +97,29 @@ export class CongNhanController {
   @CongNhan()
   ghiSanLuong(@Body() dto: GhiSanLuongDto): Promise<KetQuaGhi> {
     return this.ghi.ghiApp(dto, this.thietBiId, this.audit.nguCanh());
+  }
+
+  /** NV của thiết bị + các Ngày mở nhập (ngày có phiên trạm còn hiệu lực) [D22] */
+  private async nvVaNgayMo(): Promise<{ nhanVienId: string | null; ngayMo: string[] }> {
+    const phien = await this.phien.phienHieuLuc(this.prisma, this.thietBiId);
+    return { nhanVienId: phien[0]?.nhanVienId ?? null, ngayMo: [...new Set(phien.map((p) => tuNgayDb(p.ngayLamViec)))] };
+  }
+
+  /** Giờ mặc định / giờ đang tính của các ngày đang mở + yêu cầu đã gửi · F6 */
+  @Get('gio-lam')
+  @CongNhan()
+  async xemGioLam(): Promise<GioLamCuaToi> {
+    const { nhanVienId, ngayMo } = await this.nvVaNgayMo();
+    return this.gioLam.cuaToi(nhanVienId, ngayMo);
+  }
+
+  /** Gửi yêu cầu sửa giờ (về sớm / tăng ca) — thay thế yêu cầu đang chờ cùng ngày · F6 */
+  @Post('gio-lam')
+  @CongNhan()
+  @HttpCode(200)
+  async guiYeuCauGio(@Body() dto: GuiYeuCauGioDto): Promise<GioLamCuaToi> {
+    const { nhanVienId, ngayMo } = await this.nvVaNgayMo();
+    await this.gioLam.guiYeuCau(nhanVienId, ngayMo, dto.ngay, dto.soGio);
+    return this.gioLam.cuaToi(nhanVienId, ngayMo);
   }
 }

@@ -4,7 +4,9 @@ import { YeuCauDangNhap } from './lib/xac-thuc';
 import { MAN_HINH_TV, MAN_HINH_WEB, type ManHinh } from './man-hinh';
 import { ChuyenTramPage } from './routes/danh-muc/chuyen-tram';
 import { MaHangPage } from './routes/danh-muc/ma-hang';
+import { DuyetGioPage } from './routes/san-xuat/duyet-gio';
 import { SoDoChuyenPage } from './routes/san-xuat/so-do-chuyen';
+import { CaiDatPage } from './routes/he-thong/cai-dat';
 import { NhanVienPage } from './routes/danh-muc/nhan-vien';
 import { TaiKhoanPage } from './routes/he-thong/tai-khoan';
 import { TrangTam } from './routes/trang-tam';
@@ -18,6 +20,8 @@ const DA_LAM: Record<string, ReactElement> = {
   'danh-muc/nhan-vien': <NhanVienPage />,
   'danh-muc/ma-hang': <MaHangPage />,
   'san-xuat/so-do-chuyen': <SoDoChuyenPage />,
+  'san-xuat/duyet-gio': <DuyetGioPage />,
+  'he-thong/cai-dat': <CaiDatPage />,
   'he-thong/tai-khoan': <TaiKhoanPage />,
 };
 

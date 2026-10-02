@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { PhamVi, VaiTro } from '@vsn/shared';
+import type { NgayLamViec, PhamVi, VaiTro } from '@vsn/shared';
 import { AuditService } from '../audit/audit.service.js';
 import { LoiNghiepVu } from '../loi/loi-nghiep-vu.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -61,6 +61,27 @@ export class PhamViService {
   async kiemTraXuong(pv: PhamVi, xuongId: string): Promise<void> {
     if (pv.loai === 'TOAN_NHA_MAY') return;
     if (pv.loai === 'XUONG' && pv.xuongIds.includes(xuongId)) return;
+    await this.tuChoi();
+  }
+
+  /** Chuyền trong phạm vi (null = toàn nhà máy) — XUONG quy ra chuyền của xưởng */
+  async chuyenIds(pv: PhamVi): Promise<string[] | null> {
+    if (pv.loai === 'TOAN_NHA_MAY') return null;
+    if (pv.loai === 'CHUYEN') return pv.chuyenIds;
+    const ds = await this.prisma.chuyen.findMany({ where: { xuongId: { in: pv.xuongIds } }, select: { id: true } });
+    return ds.map((c) => c.id);
+  }
+
+  /**
+   * `phamViGioLam(pv, ngay)` [TDD 10.2] [R 5.8]: chuyền gốc của NV TẠI NGÀY ĐÓ thuộc phạm vi [D18].
+   * Ngoài phạm vi (kể cả NV không có chuyền gốc ngày đó) → 403 + audit.
+   */
+  async kiemTraGioLam(pv: PhamVi, nhanVienId: string, ngay: NgayLamViec): Promise<void> {
+    if (pv.loai === 'TOAN_NHA_MAY') return;
+    const [c] = await this.prisma.$queryRaw<{ id: string; xuong_id: string }[]>`
+      SELECT id, xuong_id FROM chuyen WHERE id = chuyen_goc_ngay(${nhanVienId}::uuid, ${ngay}::date)`;
+    if (c && pv.loai === 'CHUYEN' && pv.chuyenIds.includes(c.id)) return;
+    if (c && pv.loai === 'XUONG' && pv.xuongIds.includes(c.xuong_id)) return;
     await this.tuChoi();
   }
 

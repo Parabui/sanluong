@@ -20,6 +20,8 @@ export const LOI = {
   // 409
   NGAY_DA_CHOT: { http: 409, message: 'Ngày này đã được chốt, không thể nhập thêm.' },
   THANG_DA_KHOA: { http: 409, message: 'Mã hàng của tháng này đã khóa sổ.' },
+  /** [R 5.7] có Mã hàng × Tháng chứa sản lượng của NV ngày đó đã khóa */
+  GIO_LAM_DA_KHOA: { http: 409, message: 'Giờ làm ngày này đã khóa sổ — chỉ sửa được sau khi mở khóa tháng.' },
   PHIEN_KHONG_CON: { http: 409, message: 'Phiên tại trạm này không còn hiệu lực.' },
   TRAM_DA_CO_NGUOI: { http: 409, message: 'Trạm đang có người khác – báo tổ trưởng.' },
   THIET_BI_DA_CO_NV_KHAC: { http: 409, message: 'Điện thoại này đã đăng nhập mã nhân viên khác hôm nay.' },

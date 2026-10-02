@@ -59,7 +59,7 @@ export class DanhMucController {
   }
 
   @Get('chuyen')
-  @Quyen(...DOC_DANH_MUC)
+  @Quyen(...DOC_DANH_MUC, 'GIO_LAM_DUYET') // Duyệt giờ: chọn chuyền gốc (lọc theo phạm vi)
   dsChuyen(@Query('xuongId', new ZodValidationPipe(zUuid.optional())) xuongId?: string): Promise<Chuyen[]> {
     return this.danhMuc.dsChuyen(this.phamVi, xuongId);
   }

@@ -50,7 +50,7 @@ export class PhienTramService {
   ) {}
 
   /** Phiên còn hiệu lực của thiết bị: chưa đóng, ngày thuộc cửa sổ nhập của chuyền (chưa chốt) */
-  private async phienHieuLuc(db: PrismaService | Tx, thietBiId: string) {
+  async phienHieuLuc(db: PrismaService | Tx, thietBiId: string) {
     const somNhat = await this.cuaSo.ngaySomNhatCoThe();
     const ds = await db.phienTram.findMany({
       where: { thietBiId, dangXuatLuc: null, ngayLamViec: { gte: ngayDb(somNhat) } },
