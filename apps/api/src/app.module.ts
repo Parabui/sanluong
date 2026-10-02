@@ -9,6 +9,9 @@ import { layTraceId } from './core/trace-id.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { DanhMucModule } from './modules/danh-muc/danh-muc.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { ImportModule } from './modules/import/import.module.js';
+import { NhanVienModule } from './modules/nhan-vien/nhan-vien.module.js';
+import { TaiKhoanModule } from './modules/tai-khoan/tai-khoan.module.js';
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import { HealthModule } from './modules/health/health.module.js';
     HealthModule,
     AuthModule,
     DanhMucModule,
+    NhanVienModule,
+    ImportModule,
+    TaiKhoanModule,
   ],
 })
 export class AppModule {}

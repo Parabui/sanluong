@@ -32,6 +32,8 @@ export interface TuyChonGoi<S extends z.ZodType> {
 
 export function taoApiClient(client: LoaiClient, goc = '/api') {
   async function goi<S extends z.ZodType>(duongDan: string, tc: TuyChonGoi<S>): Promise<z.infer<S>> {
+    // FormData (upload file): để trình duyệt tự đặt Content-Type multipart kèm boundary
+    const laForm = typeof FormData !== 'undefined' && tc.body instanceof FormData;
     let res: Response;
     try {
       res = await fetch(goc + duongDan, {
@@ -40,10 +42,10 @@ export function taoApiClient(client: LoaiClient, goc = '/api') {
         signal: tc.signal,
         headers: {
           [HEADER_CLIENT]: client,
-          ...(tc.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+          ...(tc.body !== undefined && !laForm ? { 'Content-Type': 'application/json' } : {}),
           ...tc.headers,
         },
-        body: tc.body !== undefined ? JSON.stringify(tc.body) : undefined,
+        body: laForm ? (tc.body as FormData) : tc.body !== undefined ? JSON.stringify(tc.body) : undefined,
       });
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') throw e;

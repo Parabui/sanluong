@@ -3,6 +3,8 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { YeuCauDangNhap } from './lib/xac-thuc';
 import { MAN_HINH_TV, MAN_HINH_WEB, type ManHinh } from './man-hinh';
 import { ChuyenTramPage } from './routes/danh-muc/chuyen-tram';
+import { NhanVienPage } from './routes/danh-muc/nhan-vien';
+import { TaiKhoanPage } from './routes/he-thong/tai-khoan';
 import { TrangTam } from './routes/trang-tam';
 import { DangNhapPage } from './routes/xac-thuc/dang-nhap';
 import { DoiMatKhauPage } from './routes/xac-thuc/doi-mat-khau';
@@ -11,6 +13,8 @@ import { AppShell } from './shell/app-shell';
 /** Màn hình đã implement; còn lại dùng TrangTam (chỉ báo chưa làm + đường dẫn giao diện gốc trong ui-demo) */
 const DA_LAM: Record<string, ReactElement> = {
   'danh-muc/chuyen-tram': <ChuyenTramPage />,
+  'danh-muc/nhan-vien': <NhanVienPage />,
+  'he-thong/tai-khoan': <TaiKhoanPage />,
 };
 
 const route = (m: ManHinh) => ({ path: m.duongDan, element: DA_LAM[m.duongDan] ?? <TrangTam manHinh={m} /> });

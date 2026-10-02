@@ -45,6 +45,15 @@ export const LOI = {
   /** Kích hoạt / thêm con khi xưởng hoặc chuyền chứa nó đang ngưng */
   CAP_TREN_DANG_NGUNG: { http: 422, message: 'Đơn vị cấp trên đang ngưng — kích hoạt lại trước.' },
   VONG_NGOAI_KHONG_NHAP_APP: { http: 422, message: 'Nhóm vòng ngoài không nhập sản lượng qua app.' },
+  SUPERADMIN_CUOI_CUNG: { http: 422, message: 'Phải luôn còn ít nhất 1 Superadmin đang hoạt động.' },
+  CHI_SUPERADMIN: { http: 403, message: 'Chỉ Superadmin được thực hiện thao tác này.' },
+  // Import Excel [TDD 19]
+  FILE_KHONG_HOP_LE: { http: 422, message: 'File không hợp lệ — chỉ nhận file Excel .xlsx.' },
+  FILE_QUA_NHIEU_DONG: { http: 422, message: 'File có quá 5.000 dòng — tách thành nhiều file.' },
+  FILE_SAI_MAU: { http: 422, message: 'File sai mẫu — thiếu cột bắt buộc.' },
+  IMPORT_HET_HAN: { http: 410, message: 'Bản xem trước đã hết hạn (30 phút) — chọn lại file.' },
+  // 413
+  FILE_QUA_LON: { http: 413, message: 'File quá 10 MB — tách thành nhiều file.' },
   // 429
   QUA_SO_LAN_SAI: { http: 429, message: 'Nhập sai quá nhiều lần, vui lòng thử lại sau.' },
   QUA_SO_LAN_CHUYEN_THIET_BI: { http: 429, message: 'Đã chuyển thiết bị quá 3 lần hôm nay – báo tổ trưởng.' },

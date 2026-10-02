@@ -10,3 +10,6 @@ export * from './schema/health.js';
 export * from './schema/auth.js';
 export * from './schema/danh-muc.js';
 export * from './cau-hinh.js';
+export * from './schema/nhan-vien.js';
+export * from './schema/import.js';
+export * from './schema/tai-khoan.js';

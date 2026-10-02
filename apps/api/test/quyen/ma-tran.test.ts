@@ -71,7 +71,8 @@ describe('Ma trận', () => {
       for (const vaiTro of VAI_TRO) {
         const duocPhep = chucNang.some((cn) => MA_TRAN_PRD[cn].includes(vaiTro));
         const res = await goi(route, cookie[vaiTro]);
-        if (duocPhep) expect([401, 403], `${vaiTro} phải được qua guard (nhận ${res.status})`).not.toContain(res.status);
+        // Qua guard: không 401 và không 403 KHONG_CO_QUYEN (403 khác — vd. CHI_SUPERADMIN — là quy tắc riêng của route)
+        if (duocPhep) expect(res.status === 401 || res.body.code === 'KHONG_CO_QUYEN', `${vaiTro} phải được qua guard (nhận ${res.status} ${res.body.code})`).toBe(false);
         else expect({ vaiTro, status: res.status, code: res.body.code }).toEqual({ vaiTro, status: 403, code: 'KHONG_CO_QUYEN' });
       }
       expect((await goi(route)).status, 'không có phiên').toBe(401);
@@ -91,9 +92,9 @@ describe('Ma trận', () => {
       await goi('GET /api/xuong', cookie.IE).expect(200);
     });
     await voiQuyen('SUPERADMIN', 'DANH_MUC_XUONG_CHUYEN', false, async () => {
-      await goi('GET /api/xuong', cookie.SUPERADMIN).expect(403);
+      await goi('POST /api/xuong', cookie.SUPERADMIN).expect(403);
     });
-    await goi('GET /api/xuong', cookie.SUPERADMIN).expect(200);
+    await goi('POST /api/xuong', cookie.SUPERADMIN).expect(400); // qua guard, dừng ở validation
   });
 
   it('[F8] truy cập ngoài quyền → audit TU_CHOI_TRUY_CAP, gộp theo (người, route, phút)', async () => {

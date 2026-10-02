@@ -71,7 +71,7 @@ export default tseslint.config(
           patterns: [
             { group: ['recharts', 'recharts/*'], message: 'apps/worker không được nạp Recharts.' },
             { group: ['@dnd-kit/*'], message: 'apps/worker không được nạp dnd-kit.' },
-            { group: ['@tanstack/react-table'], message: 'apps/worker không được nạp TanStack Table.' },
+            { group: ['@tanstack/react-table', '@vsn/ui/data-table'], message: 'apps/worker không được nạp TanStack Table.' },
           ],
         },
       ],

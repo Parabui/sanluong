@@ -12,7 +12,7 @@ const MA_THEO_HTTP: Record<number, MaLoi> = {
   401: 'CHUA_DANG_NHAP',
   403: 'KHONG_CO_QUYEN',
   404: 'KHONG_TIM_THAY',
-  413: 'DU_LIEU_KHONG_HOP_LE',
+  413: 'FILE_QUA_LON',
   429: 'QUA_SO_LAN_SAI',
 };
 
@@ -50,7 +50,8 @@ export class LoiFilter implements ExceptionFilter {
         status: 400,
         body: {
           code: 'DU_LIEU_KHONG_HOP_LE',
-          message: LOI.DU_LIEU_KHONG_HOP_LE.message,
+          // Message cụ thể của lỗi đầu tiên (tiếng Việt, từ schema trong @vsn/shared) — hiện thẳng tại ô nhập
+          message: chiTiet[0]?.message ?? LOI.DU_LIEU_KHONG_HOP_LE.message,
           field: chiTiet[0]?.field,
           traceId,
           chiTiet,

@@ -1,7 +1,7 @@
 /**
  * @vsn/ui — token + component dùng chung, chuyển từ ui-demo [TDD 14.1].
  * Component tĩnh giữ code demo; Modal/Drawer/Menu dựng lại trên Radix.
- * ⏳ DataTable (TanStack Table) thêm cùng màn hình bảng đầu tiên (F2, tuần 3).
+ * DataTable (TanStack Table) ở subpath '@vsn/ui/data-table' — worker không được nạp.
  */
 export { cn } from './cn.js';
 export * from './primitives.js';

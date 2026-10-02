@@ -23,6 +23,9 @@ class TaoChuyenDto extends createZodDto(zTaoChuyen) {}
 class SuaChuyenDto extends createZodDto(zSuaChuyen) {}
 class SuaTramDto extends createZodDto(zSuaTram) {}
 
+/** Màn khác cần đọc danh sách xưởng / chuyền để chọn */
+const DOC_DANH_MUC = ['DANH_MUC_XUONG_CHUYEN', 'NHAN_VIEN_QUAN_LY', 'TAI_KHOAN_QUAN_LY'] as const;
+
 const Id = () => Param('id', new ZodValidationPipe(zUuid));
 
 /** Danh mục Xưởng – Chuyền/Nhóm – Trạm · F9 — chỉ Superadmin (ma trận F8) */
@@ -38,7 +41,9 @@ export class DanhMucController {
     return this.cls.get('phamVi')!;
   }
 
+  /** Danh sách để chọn (dropdown) ở F2 Nhân viên, F8 Tài khoản — đọc theo phạm vi */
   @Get('xuong')
+  @Quyen(...DOC_DANH_MUC)
   dsXuong(): Promise<Xuong[]> {
     return this.danhMuc.dsXuong(this.phamVi);
   }
@@ -54,6 +59,7 @@ export class DanhMucController {
   }
 
   @Get('chuyen')
+  @Quyen(...DOC_DANH_MUC)
   dsChuyen(@Query('xuongId', new ZodValidationPipe(zUuid.optional())) xuongId?: string): Promise<Chuyen[]> {
     return this.danhMuc.dsChuyen(this.phamVi, xuongId);
   }
