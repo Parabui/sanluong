@@ -1,0 +1,75 @@
+/* ════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — chuyển từ ui-demo/src/app/globals.css (giữ nguyên TÊN biến) [TDD 14.1]
+   Tailwind v3.4 [D14]: biến MÀU khai báo dạng "R G B" để dùng được độ mờ:
+     tailwind.config → rgb(var(--brand) / <alpha-value>)  →  class `bg-brand/50`
+   ⚠ Trong CSS/inline style viết rgb(var(--brand)), KHÔNG viết var(--brand) trần.
+   Biến biểu đồ (--chart-*) giữ hex vì Recharts nhận trực tiếp.
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  /* ── Màu thương hiệu ── */
+  --brand: 242 152 48;          /* #F29830 */
+  --brand-hover: 224 133 28;    /* #E0851C */
+  --brand-soft: 254 243 230;    /* #FEF3E6 */
+  --brand-text: 154 83 6;       /* #9A5306 */
+  --brand-gray: 104 104 104;    /* #686868 */
+  /* ── Nền, chữ, viền ── */
+  --bg: 246 247 249;            /* #F6F7F9 */
+  --surface: 255 255 255;       /* #FFFFFF */
+  --border: 229 231 235;        /* #E5E7EB */
+  --border-strong: 208 213 221; /* #D0D5DD */
+  --text: 31 35 40;             /* #1F2328 */
+  --text-muted: 95 102 112;     /* #5F6670 */
+  --row-hover: 249 250 251;     /* #F9FAFB */
+  --group-bg: 243 244 246;      /* #F3F4F6 */
+  --thead-bg: 250 250 251;      /* #FAFAFB */
+  /* ── Trạng thái ── */
+  --empty-bg: 254 249 195;  --empty-text: 133 77 14;   --empty-bar: 202 138 4;   /* #FEF9C3 #854D0E #CA8A04 */
+  --warn-bg: 255 237 213;   --warn-text: 154 52 18;    --warn-bar: 234 88 12;    /* #FFEDD5 #9A3412 #EA580C */
+  --adjust-bg: 238 242 255; --adjust-text: 67 56 202;                           /* #EEF2FF #4338CA */
+  --support-bg: 240 249 255; --support-text: 3 105 161;                         /* #F0F9FF #0369A1 */
+  --open-bg: 239 246 255;   --open-text: 29 78 216;                             /* #EFF6FF #1D4ED8 */
+  --closed-bg: 240 253 244; --closed-text: 21 128 61;                           /* #F0FDF4 #15803D */
+  --locked-bg: 243 244 246; --locked-text: 55 65 81;                            /* #F3F4F6 #374151 */
+  --danger: 180 35 24;      --danger-bg: 254 243 242;  --success: 21 128 61;    /* #B42318 #FEF3F2 #15803D */
+  --disabled-bg: 243 244 246; --disabled-text: 156 163 175;                     /* #F3F4F6 #9CA3AF */
+  --on-dark: 255 255 255;   --toast-bg: 31 35 40;                               /* #FFFFFF #1F2328 */
+  --overlay: rgba(16, 24, 40, .24);
+  --sh-pop: 0 8px 24px rgba(16, 24, 40, .12);
+  --sh-bar: 0 -4px 16px rgba(16, 24, 40, .08);
+  /* ── Chữ (font tự host qua @fontsource) ── */
+  --font: "Be Vietnam Pro", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-code: "JetBrains Mono", ui-monospace, Consolas, monospace;   /* mã NV, mã công đoạn */
+  --fs-title: 20px; --lh-title: 28px; --fs-h: 16px; --fs-body: 14px; --lh-body: 20px;
+  --fs-chip: 13px; --fs-th: 12px; --fs-sub: 12px; --fs-qty: 15px; --fs-tag: 11px;
+  /* ── Khoảng cách & kích thước khung ── */
+  --content-pad: 20px; --block-gap: 16px;
+  --header-h: 56px; --sidebar-w: 232px; --sidebar-w-collapsed: 64px;
+  --toolbar-h: 56px; --summary-h: 44px; --statusbar-h: 40px; --thead-h: 36px; --row-h: 44px;
+  --drawer-w: 380px; --modal-w: 480px; --table-max: 1440px;
+  /* ── Bo góc, chuyển động ── */
+  --r-card: 8px; --r-ctl: 6px; --r-pill: 999px; --r-sheet: 20px;
+  --dur: 120ms; --dur-drawer: 160ms;
+  /* ── Biểu đồ (hex — đã kiểm bằng dataviz validator trong ui-demo) ── */
+  --chart-accent: #C2690B; --chart-accent-wash: rgba(194, 105, 11, .10); --chart-track: #F8E2C8;
+  --chart-grid: #EEF0F3; --chart-axis: #D0D5DD; --chart-label: #5F6670; --chart-target: #1F2328;
+  /* ── TV (tương phản chữ ≥ 7:1) ── */
+  --tv-bg: 14 17 22;        /* #0E1116 */
+  --tv-surface: 23 27 34;   /* #171B22 */
+  --tv-border: 42 48 58;    /* #2A303A */
+  --tv-text: 245 247 250;   /* #F5F7FA */
+  --tv-muted: 195 202 212;  /* #C3CAD4 */
+}
+
+/* Chế độ TV: cùng ramp, bậc chọn riêng cho nền tối */
+.tv {
+  --chart-grid: #232933; --chart-axis: #3A414D; --chart-label: #C3CAD4; --chart-target: #F5F7FA;
+  --chart-track: #3A2A18; --chart-accent-wash: rgba(194, 105, 11, .18);
+}
+
+/* App công nhân (điện thoại): bo góc lớn hơn, chữ ≥16px, vùng chạm 48px */
+.mobile {
+  --r-card: 12px; --r-ctl: 10px;
+  --overlay: rgba(16, 24, 40, .40);
+  --fs-base: 16px; --fs-qty-input: 28px; --tap: 48px;
+  --appbar-h: 56px; --tabs-h: 48px; --nav-h: 64px;
+}

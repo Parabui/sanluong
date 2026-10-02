@@ -1,0 +1,53 @@
+# ════════════════════════════════════════════════════════════════
+# Định tuyến theo đường dẫn [D2] [TDD 2.2]
+#   /api/*     → api:4000
+#   /quanly/*  → web/dist (SPA, base /quanly/)
+#   /tv        → 302 /quanly/tv
+#   /*         → worker/dist (PWA, SPA)
+# HTTPS do Cloudflare đảm nhận; Caddy chỉ nhận kết nối từ cloudflared trong mạng Docker.
+# ⏳ Tuần 11: Content-Security-Policy (self + Sentry) theo checklist bảo mật TDD 19.
+# ════════════════════════════════════════════════════════════════
+{
+	admin off
+	auto_https off
+}
+
+:80 {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	handle /api/* {
+		reverse_proxy api:4000
+	}
+
+	redir /tv /quanly/tv 302
+	redir /quanly /quanly/ 308
+
+	handle_path /quanly/* {
+		root * /srv/web
+		@coHash path /assets/*
+		@khongHash not path /assets/*
+		header @coHash Cache-Control "public, max-age=31536000, immutable"
+		header @khongHash Cache-Control "no-cache"
+		header Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		try_files {path} /index.html
+		file_server
+	}
+
+	handle {
+		root * /srv/worker
+		@coHash path /assets/*
+		@khongHash not path /assets/*
+		header @coHash Cache-Control "public, max-age=31536000, immutable"
+		header @khongHash Cache-Control "no-cache"
+		# Camera chỉ cho app công nhân (quét QR trạm)
+		header Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+		try_files {path} /index.html
+		file_server
+	}
+}

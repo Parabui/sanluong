@@ -1,0 +1,37 @@
+# CI [TDD 17.1]: install → lint → typecheck → test unit → test tích hợp → build → kiểm tra bundle worker
+name: ci
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TZ: Asia/Ho_Chi_Minh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4 # đọc phiên bản từ "packageManager"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      # Testcontainers cần Docker — runner ubuntu-latest có sẵn
+      - run: pnpm test:int
+      - run: pnpm build
+      - run: pnpm --filter @vsn/worker check:bundle
+      - run: pnpm audit --prod
+        continue-on-error: true # chỉ cảnh báo [TDD 19]

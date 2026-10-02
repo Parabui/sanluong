@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bảng sản lượng ngày · VSN Sản Lượng</title>
+<link rel="icon" href="../favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  // Tailwind chỉ trỏ vào CSS variables — design token nằm ở :root
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: { DEFAULT: 'var(--brand)', hover: 'var(--brand-hover)', soft: 'var(--brand-soft)', ink: 'var(--brand-text)', gray: 'var(--brand-gray)' },
+          page: 'var(--bg)', surface: 'var(--surface)',
+          line: { DEFAULT: 'var(--border)', strong: 'var(--border-strong)' },
+          ink: 'var(--text)', muted: 'var(--text-muted)', hover: 'var(--row-hover)', group: 'var(--group-bg)', thead: 'var(--thead-bg)',
+          empty: { bg: 'var(--empty-bg)', ink: 'var(--empty-text)', bar: 'var(--empty-bar)' },
+          warn: { bg: 'var(--warn-bg)', ink: 'var(--warn-text)', bar: 'var(--warn-bar)' },
+          adjust: { bg: 'var(--adjust-bg)', ink: 'var(--adjust-text)' },
+          support: { bg: 'var(--support-bg)', ink: 'var(--support-text)' },
+          open: { bg: 'var(--open-bg)', ink: 'var(--open-text)' },
+          closed: { bg: 'var(--closed-bg)', ink: 'var(--closed-text)' },
+          locked: { bg: 'var(--locked-bg)', ink: 'var(--locked-text)' },
+          danger: 'var(--danger)', success: 'var(--success)', ondark: 'var(--on-dark)',
+          disabled: { bg: 'var(--disabled-bg)', ink: 'var(--disabled-text)' },
+          toast: 'var(--toast-bg)'
+        },
+        fontFamily: { sans: 'var(--font)' },
+        fontSize: {
+          title: ['var(--fs-title)', { lineHeight: 'var(--lh-title)' }],
+          h: ['var(--fs-h)', { lineHeight: '24px' }],
+          body: ['var(--fs-body)', { lineHeight: 'var(--lh-body)' }],
+          chip: ['var(--fs-chip)', { lineHeight: '18px' }],
+          th: ['var(--fs-th)', { lineHeight: '16px' }],
+          sub: ['var(--fs-sub)', { lineHeight: '16px' }],
+          qty: ['var(--fs-qty)', { lineHeight: '20px' }],
+          tag: ['var(--fs-tag)', { lineHeight: '16px' }]
+        },
+        borderRadius: { card: 'var(--radius-card)', ctl: 'var(--radius-ctl)', pill: 'var(--radius-pill)' },
+        boxShadow: { pop: 'var(--shadow-pop)' },
+        transitionDuration: { fast: 'var(--dur)' },
+        spacing: { header: 'var(--header-h)', row: 'var(--row-h)' }
+      }
+    }
+  }
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    /* ── Màu thương hiệu ── */
+    --brand: #F29830; --brand-hover: #E0851C; --brand-soft: #FEF3E6; --brand-text: #9A5306; --brand-gray: #686868;
+    /* ── Nền, chữ, viền ── */
+    --bg: #F6F7F9; --surface: #FFFFFF; --border: #E5E7EB; --border-strong: #D0D5DD;
+    --text: #1F2328; --text-muted: #5F6670; --row-hover: #F9FAFB; --group-bg: #F3F4F6; --thead-bg: #FAFAFB;
+    /* ── Trạng thái ── */
+    --empty-bg: #FEF9C3; --empty-text: #854D0E; --empty-bar: #CA8A04;
+    --warn-bg: #FFEDD5; --warn-text: #9A3412; --warn-bar: #EA580C;
+    --adjust-bg: #EEF2FF; --adjust-text: #4338CA;
+    --support-bg: #F0F9FF; --support-text: #0369A1;
+    --open-bg: #EFF6FF; --open-text: #1D4ED8;
+    --closed-bg: #F0FDF4; --closed-text: #15803D;
+    --locked-bg: #F3F4F6; --locked-text: #374151;
+    --danger: #B42318; --success: #15803D;
+    --disabled-bg: #F3F4F6; --disabled-text: #9CA3AF;
+    --on-dark: #FFFFFF; --toast-bg: #1F2328;
+    --overlay: rgba(16, 24, 40, .24);
+    --shadow-pop: 0 8px 24px rgba(16, 24, 40, .12);
+    /* ── Chữ ── */
+    --font: "Be Vietnam Pro", "Segoe UI", Roboto, Arial, sans-serif;
+    --fs-title: 20px; --lh-title: 28px; --fs-h: 16px; --fs-body: 14px; --lh-body: 20px;
+    --fs-chip: 13px; --fs-th: 12px; --fs-sub: 12px; --fs-qty: 15px; --fs-tag: 11px;
+    /* ── Khoảng cách & kích thước khung ── */
+    --content-pad: 20px; --block-gap: 16px;
+    --header-h: 56px; --sidebar-w: 232px; --sidebar-w-collapsed: 64px;
+    --toolbar-h: 56px; --summary-h: 44px; --statusbar-h: 40px; --thead-h: 36px; --row-h: 44px;
+    --drawer-w: 380px; --modal-w: 480px; --table-max: 1440px;
+    /* ── Bo góc, chuyển động ── */
+    --radius-card: 8px; --radius-ctl: 6px; --radius-pill: 999px;
+    --dur: 120ms; --dur-drawer: 160ms;
+  }
+
+  html, body { height: 100%; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: var(--fs-body); line-height: var(--lh-body); -webkit-font-smoothing: antialiased; }
+  :focus-visible { outline: 2px solid var(--brand-text); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+  svg.lucide { stroke-width: 1.75; flex-shrink: 0; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; } }
+
+  /* ── Khung ứng dụng ── */
+  .app { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); grid-template-rows: var(--header-h) minmax(0, 1fr); height: 100vh; }
+  .app.collapsed { --sidebar-w: var(--sidebar-w-collapsed); }
+  .app > aside { grid-row: 1 / -1; }
+  .app.collapsed .hide-collapsed { display: none; }
+  .app.collapsed .nav-item { justify-content: center; padding: 0; }
+  .app.collapsed .nav-badge { position: absolute; top: 4px; right: 10px; min-width: 8px; height: 8px; padding: 0; font-size: 0; }
+  .app.collapsed .nav-group + .nav-group { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .app.collapsed .brand-row { justify-content: center; padding: 0; }
+
+  .nav-item[aria-current="page"]::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 0 3px 3px 0; background: var(--brand); }
+
+  /* ── Bảng ── */
+  .grid-table { border-collapse: separate; border-spacing: 0; table-layout: fixed; width: 100%; }
+  .grid-table thead th { position: sticky; top: 0; z-index: 10; background: var(--thead-bg); height: var(--thead-h); box-shadow: inset 0 -1px 0 var(--border); }
+  .grid-table td { border-bottom: 1px solid var(--border); height: var(--row-h); transition: background-color var(--dur); }
+  .grid-table tr.grp-end > td, .grid-table td.tram-span { border-bottom-color: var(--border-strong); }
+  .grid-table tr.st-empty > td:not(.tram-span) { background: var(--empty-bg); }
+  .grid-table tr.st-warn  > td:not(.tram-span) { background: var(--empty-bg); background: var(--warn-bg); }
+  .grid-table tr.st-empty > td.lead { box-shadow: inset 3px 0 0 var(--empty-bar); }
+  .grid-table tr.st-warn  > td.lead { box-shadow: inset 3px 0 0 var(--warn-bar); }
+  .grid-table tr.st-ok:hover > td:not(.tram-span), .grid-table tr.st-adjusted:hover > td:not(.tram-span) { background: var(--row-hover); }
+  .grid-table tr:hover .row-action, .grid-table tr:focus-within .row-action { opacity: 1; }
+
+  /* ── Switch ── */
+  .switch { width: 32px; height: 18px; border-radius: var(--radius-pill); background: var(--border-strong); position: relative; transition: background-color var(--dur); flex-shrink: 0; }
+  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); transition: transform var(--dur); }
+  [aria-checked="true"] > .switch { background: var(--brand); }
+  [aria-checked="true"] > .switch::after { transform: translateX(14px); }
+
+  /* ── Drawer / overlay ── */
+  .overlay { background: var(--overlay); }
+  .drawer { width: var(--drawer-w); transform: translateX(100%); transition: transform var(--dur-drawer) ease-out; }
+  .drawer.open { transform: translateX(0); }
+  .fade { opacity: 0; pointer-events: none; transition: opacity var(--dur-drawer); }
+  .fade.open { opacity: 1; pointer-events: auto; }
+
+  .tl-item::before { content: ""; position: absolute; left: 5px; top: 18px; bottom: -2px; width: 1px; background: var(--border); }
+  .tl-item:last-child::before { display: none; }
+
+  select.native { appearance: none; -webkit-appearance: none; background-image: none; }
+  .scroll-area { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+</style>
+</head>
+<body>
+
+<div id="app" class="app">
+  <!-- ═════════════ A. SIDEBAR ═════════════ -->
+  <aside class="bg-surface border-r border-line flex flex-col min-h-0" aria-label="Điều hướng chính">
+    <div class="brand-row h-header flex items-center gap-2.5 px-4 border-b border-line shrink-0">
+      <div class="w-8 h-8 rounded-ctl bg-brand text-ink grid place-items-center text-body font-bold shrink-0" aria-hidden="true">VS</div>
+      <div class="hide-collapsed leading-tight min-w-0">
+        <div class="text-[15px] font-bold text-ink whitespace-nowrap">VSN Sản Lượng</div>
+        <div class="text-tag text-brand-gray whitespace-nowrap">VIETSUN Đồng Nai</div>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto scroll-area px-2 py-3" id="nav"></nav>
+
+    <div class="border-t border-line px-2 py-2 shrink-0">
+      <button id="btn-collapse" class="nav-item relative w-full h-9 px-3 flex items-center gap-3 rounded-ctl text-body font-medium text-muted hover:bg-hover transition-colors duration-fast" data-tip="Mở rộng" data-tip-when="collapsed" aria-label="Thu gọn menu" aria-expanded="true">
+        <i data-lucide="panel-left-close" class="w-[18px] h-[18px]" id="collapse-icon"></i>
+        <span class="hide-collapsed">Thu gọn</span>
+      </button>
+      <p class="hide-collapsed px-3 pt-2 text-tag text-muted">v1.0 · © VIETSUN Đồng Nai</p>
+    </div>
+  </aside>
+
+  <!-- ═════════════ B. HEADER ═════════════ -->
+  <header class="bg-surface border-b border-line px-5 flex items-center gap-3 min-w-0 relative z-30">
+    <nav aria-label="Breadcrumb" class="text-body min-w-0 truncate">
+      <span class="text-muted">Sản xuất</span>
+      <span class="text-line-strong mx-1.5">/</span>
+      <span class="text-ink font-medium" aria-current="page">Bảng sản lượng ngày</span>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-3 shrink-0">
+      <div id="conn" class="flex items-center gap-1.5 text-sub text-muted" role="status">
+        <span class="w-2 h-2 rounded-full bg-success" id="conn-dot"></span><span id="conn-text">Đã kết nối</span>
+      </div>
+
+      <div class="relative" id="pending-wrap">
+        <button id="btn-pending" class="h-8 px-3 rounded-pill bg-empty-bg text-empty-ink text-chip font-semibold flex items-center gap-1.5 hover:brightness-[.98] transition duration-fast" aria-haspopup="menu" aria-expanded="false">
+          <i data-lucide="triangle-alert" class="w-4 h-4"></i><span id="pending-text">Còn 2 ngày chưa chốt</span>
+        </button>
+        <div id="menu-pending" role="menu" class="hidden absolute right-0 top-10 w-60 bg-surface border border-line rounded-card shadow-pop p-1 z-40"></div>
+      </div>
+
+      <span class="w-px h-6 bg-line" aria-hidden="true"></span>
+
+      <div class="relative">
+        <button id="btn-user" class="flex items-center gap-2.5 rounded-ctl pl-1 pr-2 py-1 hover:bg-hover transition-colors duration-fast" aria-haspopup="menu" aria-expanded="false">
+          <span class="w-8 h-8 rounded-full bg-brand-soft text-brand-ink grid place-items-center text-chip font-semibold">NB</span>
+          <span class="text-left leading-tight">
+            <span class="block text-chip font-semibold text-ink">Nguyễn Văn Bình</span>
+            <span class="block text-sub text-muted">Tổ trưởng · C05, C06</span>
+          </span>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-muted"></i>
+        </button>
+        <div id="menu-user" role="menu" class="hidden absolute right-0 top-12 w-48 bg-surface border border-line rounded-card shadow-pop p-1 z-40">
+          <button role="menuitem" class="w-full h-9 px-3 flex items-center gap-2.5 rounded-ctl text-body hover:bg-hover" data-demo="Đổi mật khẩu"><i data-lucide="key-round" class="w-4 h-4 text-muted"></i>Đổi mật khẩu</button>
+          <button role="menuitem" class="w-full h-9 px-3 flex items-center gap-2.5 rounded-ctl text-body text-danger hover:bg-hover" data-demo="Đăng xuất"><i data-lucide="log-out" class="w-4 h-4"></i>Đăng xuất</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═════════════ C. VÙNG NỘI DUNG ═════════════ -->
+  <main class="flex flex-col min-h-0 min-w-0">
+    <div id="offline-banner" class="hidden h-8 shrink-0 bg-danger text-ondark text-chip font-medium flex items-center justify-center gap-2" role="alert">
+      <i data-lucide="wifi-off" class="w-4 h-4"></i>Mất kết nối — thay đổi chưa được lưu lên máy chủ. Đang thử kết nối lại…
+    </div>
+
+    <div class="flex-1 min-h-0 flex flex-col" style="padding: var(--content-pad); gap: var(--block-gap);">
+      <div class="w-full mx-auto flex-1 min-h-0 flex flex-col" style="max-width: var(--table-max); gap: var(--block-gap);">
+
+        <!-- ① Thanh tiêu đề & bộ lọc -->
+        <section class="bg-surface border border-line rounded-card px-4 flex items-center gap-2.5 shrink-0" style="height: var(--toolbar-h)" aria-label="Bộ lọc">
+          <h1 class="text-title font-semibold whitespace-nowrap">Bảng sản lượng ngày</h1>
+
+          <label class="relative shrink-0">
+            <span class="sr-only">Chuyền</span>
+            <select id="sel-line" class="native w-40 h-9 pl-3 pr-8 rounded-ctl border border-line-strong bg-surface text-body font-medium cursor-pointer hover:border-muted transition-colors duration-fast">
+              <option value="C05">C05 · Chuyền 5</option>
+              <option value="C06">C06 · Chuyền 6</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-muted absolute right-2.5 top-2.5 pointer-events-none"></i>
+          </label>
+
+          <div class="flex items-center shrink-0" role="group" aria-label="Chọn ngày">
+            <button id="btn-prev" class="w-9 h-9 grid place-items-center rounded-l-ctl border border-line-strong bg-surface hover:bg-hover disabled:text-disabled-ink disabled:hover:bg-surface disabled:cursor-not-allowed transition-colors duration-fast" aria-label="Ngày trước"><i data-lucide="chevron-left" class="w-[18px] h-[18px]"></i></button>
+            <button id="btn-date" class="w-[180px] h-9 -ml-px -mr-px px-3 flex items-center gap-2 border border-line-strong bg-surface text-body hover:bg-hover transition-colors duration-fast" aria-label="Chọn ngày">
+              <i data-lucide="calendar" class="w-4 h-4 text-muted"></i><span id="date-label" class="num whitespace-nowrap"></span>
+            </button>
+            <input type="date" id="date-native" class="sr-only" tabindex="-1" min="2026-09-26" max="2026-09-29" aria-hidden="true">
+            <button id="btn-next" class="w-9 h-9 grid place-items-center rounded-r-ctl border border-line-strong bg-surface hover:bg-hover disabled:text-disabled-ink disabled:hover:bg-surface disabled:cursor-not-allowed transition-colors duration-fast" aria-label="Ngày sau"><i data-lucide="chevron-right" class="w-[18px] h-[18px]"></i></button>
+          </div>
+
+          <span id="status-chip" class="shrink-0"></span>
+
+          <button id="toggle-todo" role="switch" aria-checked="false" class="flex items-center gap-2 text-chip text-ink rounded-ctl px-1 py-1 shrink-0">
+            <span class="switch" aria-hidden="true"></span><span class="text-left leading-4 whitespace-normal w-[92px]">Chỉ hiện dòng cần xử lý</span>
+          </button>
+
+          <div id="close-area" class="ml-auto shrink-0 flex items-center"></div>
+        </section>
+
+        <!-- ② Dải tóm tắt -->
+        <section id="summary" class="flex items-center gap-2 shrink-0 min-w-0" style="height: var(--summary-h); margin: -4px 0" aria-label="Tóm tắt"></section>
+
+        <!-- ③ Bảng dữ liệu -->
+        <section class="bg-surface border border-line rounded-card overflow-hidden flex-1 min-h-0 flex flex-col" aria-label="Bảng sản lượng">
+          <div id="table-scroll" class="flex-1 min-h-0 overflow-auto scroll-area">
+            <table class="grid-table text-body" id="table">
+              <colgroup>
+                <col style="width:64px"><col style="min-width:260px"><col style="width:96px"><col style="width:180px">
+                <col style="width:110px"><col style="width:104px"><col style="width:160px"><col style="width:56px">
+              </colgroup>
+              <thead>
+                <tr class="text-th font-semibold uppercase tracking-[0.02em] text-muted">
+                  <th scope="col" class="px-3 text-center">Trạm</th>
+                  <th scope="col" class="px-3 text-left">Công đoạn</th>
+                  <th scope="col" class="px-3 text-left">Mã NV</th>
+                  <th scope="col" class="px-3 text-left">Họ tên</th>
+                  <th scope="col" class="px-3 text-right">Số lượng</th>
+                  <th scope="col" class="px-3 text-left">Nguồn</th>
+                  <th scope="col" class="px-3 text-left">Trạng thái</th>
+                  <th scope="col" class="px-3"><span class="sr-only">Thao tác</span></th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ④ Thanh trạng thái dưới -->
+    <footer class="bg-surface border-t border-line px-4 flex items-center gap-4 text-sub text-muted shrink-0" style="height: var(--statusbar-h)">
+      <ul class="flex items-center gap-4" aria-label="Chú thích màu">
+        <li class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-empty-bg border border-empty-bar"></span>Chưa có số</li>
+        <li class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-warn-bg border border-warn-bar"></span>Cần xem lại</li>
+        <li class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-adjust-bg border border-adjust-ink"></span>Đã điều chỉnh</li>
+        <li class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-support-bg border border-support-ink"></span>Hỗ trợ chuyền khác</li>
+      </ul>
+      <div class="ml-auto flex items-center gap-2">
+        <span id="updated-at">Cập nhật lúc 09:15 · Tự làm mới khi có thay đổi</span>
+        <button id="btn-refresh" class="w-7 h-7 grid place-items-center rounded-ctl hover:bg-hover text-muted transition-colors duration-fast" aria-label="Tải lại" data-tip="Tải lại"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<!-- ═════════════ D. DRAWER LỊCH SỬ ═════════════ -->
+<div id="drawer-overlay" class="overlay fade fixed inset-0 z-40"></div>
+<aside id="drawer" class="drawer fixed top-0 right-0 bottom-0 z-50 bg-surface shadow-pop flex flex-col" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true">
+  <div class="h-header px-4 flex items-center border-b border-line shrink-0">
+    <h2 id="drawer-title" class="text-h font-semibold">Lịch sử bản ghi</h2>
+    <button id="drawer-close" class="ml-auto w-9 h-9 grid place-items-center rounded-ctl hover:bg-hover text-muted" aria-label="Đóng"><i data-lucide="x" class="w-[18px] h-[18px]"></i></button>
+  </div>
+  <div id="drawer-body" class="flex-1 overflow-y-auto scroll-area p-4"></div>
+</aside>
+
+<!-- Modal chốt ngày -->
+<div id="modal-overlay" class="overlay fade fixed inset-0 z-50 grid place-items-center p-4">
+  <div id="modal" class="bg-surface rounded-card shadow-pop w-full" style="max-width: var(--modal-w)" role="alertdialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc"></div>
+</div>
+
+<div id="popover-root"></div>
+<div id="toasts" class="fixed bottom-5 right-5 z-[60] flex flex-col gap-2 items-end" aria-live="polite"></div>
+<div id="tip" role="tooltip" class="hidden fixed z-[70] max-w-xs px-2.5 py-1.5 rounded-ctl bg-toast text-ondark text-sub shadow-pop pointer-events-none"></div>
+
+<script>
+/* ═══════════════════════ TIỆN ÍCH ═══════════════════════ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = n => n == null ? '—' : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const ic = (name, cls = 'w-[18px] h-[18px]') => `<i data-lucide="${name}" class="${cls}"></i>`;
+const icons = () => window.lucide && lucide.createIcons();
+const clone = o => JSON.parse(JSON.stringify(o));
+const pDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+const ddmm = iso => iso.split('-').reverse().slice(0, 2).join('/');
+const ddmmyyyy = iso => iso.split('-').reverse().join('/');
+const weekday = iso => { const w = pDate(iso).getDay(); return w === 0 ? 'Chủ nhật' : 'Thứ ' + (w + 1); };
+const addDays = (iso, n) => { const d = pDate(iso); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+
+/* ═══════════════════════ DỮ LIỆU MẪU ═══════════════════════ */
+const NOW = { date: '2026-09-29', time: '09:15' };             // giả lập: 09:15 Thứ 3, 29/09/2026
+const USER = { name: 'Nguyễn Văn Bình' };
+const DATES = ['2026-09-26', '2026-09-27', '2026-09-28', '2026-09-29'];
+const SRC = {
+  app: { label: 'App', icon: 'smartphone' }, offline: { label: 'Offline', icon: 'wifi-off' },
+  proxy: { label: 'Nhập hộ', icon: 'user-plus' }, web: { label: 'Sửa Web', icon: 'pencil' }
+};
+const REASON_EDIT = ['Công nhân báo lại', 'Đếm lại bó hàng', 'Nhập nhầm công đoạn', 'Khác'];
+const REASON_PROXY = ['Không mang điện thoại', 'Hết pin', 'Không có phiên trạm', 'Khác'];
+
+// [trạm, mã hàng, mã CĐ, công đoạn, SMV, mã NV, họ tên, SL, nguồn, phụ]
+const RAW = [
+  [12, 'PL-2641', 'CD-40', 'Kiểm thành phẩm', 45, 'NV00231', 'Nguyễn Thị Lan', 412, 'app', { qc: true }],
+  [25, 'PL-2641', 'CD-38', 'Ủi thành phẩm', 40, 'NV00318', 'Trần Văn Hùng', 405, 'app'],
+  [26, 'PL-2641', 'CD-05', 'May nẹp cổ', 38, 'NV00412', 'Lê Thị Hoa', 520, 'app'],
+  [27, 'PL-2641', 'CD-06', 'Tra cổ', 52, 'NV00127', 'Phạm Thị Mai', 388, 'app'],
+  [27, 'PL-2641', 'CD-07', 'Diễu chân cổ', 24, 'NV00127', 'Phạm Thị Mai', 390, 'app'],
+  [28, 'PL-2641', 'CD-08', 'Ráp vai', 30, null, null, null, null, { st: 'empty', login: ['NV00509', 'Võ Thị Thu'] }],
+  [29, 'PL-2641', 'CD-12', 'May măng sét', 35, 'NV01022', 'Đỗ Thị Ngọc', 610, 'proxy', { st: 'adjusted', hist: [{ t: '08:05 29/09', from: null, to: 610, src: 'proxy', by: 'Nguyễn Văn Bình', reason: 'Không mang điện thoại' }] }],
+  [30, 'PL-2641', 'CD-13', 'Tra tay', 48, 'NV00788', 'Huỳnh Thị Kim', 455, 'app', { support: 'C03' }],
+  [31, 'PL-2641', 'CD-14', 'Can sườn', 42, 'NV00655', 'Bùi Thị Hạnh', 470, 'app'],
+  [32, 'PL-2641', 'CD-15', 'Vắt sổ sườn', 28, 'NV00702', 'Ngô Thị Yến', 430, 'web', { st: 'adjusted', hist: [{ t: '08:07 29/09', from: 460, to: 430, src: 'web', by: 'Nguyễn Văn Bình', reason: 'Đếm lại bó hàng' }, { t: '16:48 28/09', from: null, to: 460, src: 'app', by: 'Ngô Thị Yến' }] }],
+  [33, 'PL-2641', 'CD-16', 'May nhãn sườn', 20, 'NV00833', 'Lý Thị Trang', 300, 'offline', { st: 'warn', flag: 'Gửi sau khi công đoạn bị gỡ lúc 15:02 28/09' }],
+  [34, 'PL-2641', 'CD-18', 'Lên lai áo', 36, null, null, null, null, { st: 'empty', login: null }],
+  [35, 'PL-2641', 'CD-20', 'Đính nút', 18, 'NV00914', 'Phan Thị Nhung', 1120, 'app'],
+  [35, 'PL-2641', 'CD-21', 'Thùa khuy', 16, 'NV00914', 'Phan Thị Nhung', 1080, 'app'],
+  [36, 'PL-2641', 'CD-22', 'Cắt chỉ', 12, 'NV00956', 'Đặng Thị Vân', 1350, 'app'],
+  [37, 'PL-2641', 'CD-23', 'Gắn thẻ bài', 10, 'NV00987', 'Trương Thị Hằng', 800, 'app'],
+  [38, 'PL-2641', 'CD-24', 'Gấp xếp', 22, 'NV01003', 'Mai Thị Diễm', 395, 'app'],
+  [39, 'SH-2655', 'CD-03', 'Ráp đáy quần', 34, 'NV01045', 'Châu Thị Thảo', 160, 'app'],
+  [40, 'SH-2655', 'CD-04', 'Tra lưng', 50, null, null, null, null, { st: 'empty', login: ['NV01051', 'Tạ Thị Loan'] }],
+  [41, 'SH-2655', 'CD-05', 'Luồn thun', 26, 'NV01060', 'La Thị Phương', 150, 'app'],
+];
+
+const EMPLOYEES = [
+  ...new Map(RAW.filter(r => r[5]).map(r => [r[5], r[6]])).entries(),
+  ['NV00509', 'Võ Thị Thu'], ['NV01051', 'Tạ Thị Loan'], ['NV00501', 'Trịnh Thị Nga'],
+  ['NV00517', 'Hồ Thị Bích'], ['NV00540', 'Lương Văn Tâm'], ['NV00848', 'Lâm Thị Tuyết']
+].map(([nv, hoTen]) => ({ nv, hoTen }));
+
+function mkRow(a, i, dLabel) {
+  const [tram, mh, cd, ten, smv, nv, hoTen, sl, src, x = {}] = a;
+  const r = { id: 'r' + i, tram, mh, cd, ten, smv, nv, hoTen, sl, src, st: x.st || 'ok', qc: !!x.qc, support: x.support || null,
+    flag: x.flag || null, login: x.login ? { nv: x.login[0], hoTen: x.login[1] } : null, hist: x.hist ? clone(x.hist) : [] };
+  if (!x.hist && sl != null) {
+    r.hist = [src === 'offline'
+      ? { t: '17:40 ' + dLabel, from: null, to: sl, src, by: hoTen, reason: 'Đồng bộ từ máy offline' }
+      : { t: `16:${String(10 + i * 2).padStart(2, '0')} ${dLabel}`, from: null, to: sl, src, by: hoTen }];
+  }
+  return r;
+}
+
+function buildData() {
+  const d28 = RAW.map((a, i) => mkRow(a, i, '28/09'));
+  // 29/09 (hôm nay, 09:15): chỉ 5 dòng đầu có số, còn lại chưa có
+  const d29 = RAW.map((a, i) => {
+    const r = mkRow(a, i, '29/09');
+    if (i < 5) { r.st = 'ok'; r.src = 'app'; r.sl = Math.round(a[7] * 0.26); r.hist = [{ t: `09:0${i} 29/09`, from: null, to: r.sl, src: 'app', by: r.hoTen }]; }
+    else { r.login = a[5] ? { nv: a[5], hoTen: a[6] } : r.login; Object.assign(r, { nv: null, hoTen: null, sl: null, src: null, st: 'empty', flag: null, hist: [] }); }
+    return r;
+  });
+  // 26/09 (Thứ 7): đủ số, không còn ô vàng/cam, đã chốt
+  const fill = { 5: ['NV00509', 'Võ Thị Thu', 402], 11: ['NV00848', 'Lâm Thị Tuyết', 376], 18: ['NV01051', 'Tạ Thị Loan', 142] };
+  const d26 = RAW.map((a, i) => {
+    const b = [...a]; b[9] = { qc: a[9]?.qc, support: a[9]?.support };
+    if (fill[i]) { [b[5], b[6], b[7]] = fill[i]; b[8] = 'app'; }
+    b[7] = b[7] + ((i * 37) % 21) - 10; b[8] = 'app';
+    return mkRow(b, i, '26/09');
+  });
+  return {
+    C05: {
+      '2026-09-26': { status: 'closed', closedBy: 'Đã chốt bởi Nguyễn Văn Bình lúc 08:10 28/09/2026', rows: d26 },
+      '2026-09-27': { status: 'none', rows: [] },
+      '2026-09-28': { status: 'open', rows: d28, timeReq: 1 },
+      '2026-09-29': { status: 'open', rows: d29 }
+    },
+    C06: {}   // chưa có dữ liệu mẫu cho C06
+  };
+}
+
+/* ═══════════════════════ TRẠNG THÁI ═══════════════════════ */
+const state = {
+  data: buildData(), line: 'C05', date: '2026-09-28',
+  filter: null, onlyTodo: false, edit: null, online: true,
+  c06Open: true
+};
+const day = () => state.data[state.line][state.date] || { status: state.line === 'C06' ? 'nodata' : 'none', rows: [] };
+const canCloseFrom = iso => addDays(iso, 1);                        // chốt được từ 08:00 ngày hôm sau
+const notYetClosable = iso => !(NOW.date > iso && (NOW.date > canCloseFrom(iso) || NOW.time >= '08:00'));
+const editable = () => ['open', 'closed'].includes(day().status);
+const stamp = () => `${NOW.time} ${ddmm(NOW.date)}`;
+
+/* ═══════════════════════ SIDEBAR ═══════════════════════ */
+const NAV = [
+  { items: [{ label: 'Trang chủ', icon: 'house' }] },
+  { title: 'Sản xuất', items: [
+    { label: 'Bảng sản lượng ngày', icon: 'table-2', active: true },
+    { label: 'Sơ đồ chuyền', icon: 'git-branch' },
+    { label: 'Sơ đồ trạm trực tiếp', icon: 'radio' },
+    { label: 'Duyệt giờ làm', icon: 'clock', badge: 1 }] },
+  { title: 'Báo cáo', items: [{ label: 'Báo cáo', icon: 'chart-column' }, { label: 'Dashboard', icon: 'layout-dashboard' }] }
+];
+function renderNav() {
+  $('#nav').innerHTML = NAV.filter(g => g.items.length).map((g, gi) => `
+    <div class="nav-group ${gi ? 'mt-4' : ''}">
+      ${g.title ? `<div class="hide-collapsed h-7 px-3 flex items-center text-tag font-semibold uppercase tracking-[0.06em] text-muted">${g.title}</div>` : ''}
+      <ul class="flex flex-col gap-0.5">
+        ${g.items.map(it => `<li>
+          <a href="#" class="nav-item relative h-9 px-3 flex items-center gap-3 rounded-ctl text-body font-medium transition-colors duration-fast
+            ${it.active ? 'bg-brand-soft text-brand-ink font-semibold' : 'text-ink hover:bg-hover'}"
+            ${it.active ? 'aria-current="page"' : ''} data-tip="${it.label}" data-tip-when="collapsed" data-nav="${it.label}">
+            ${ic(it.icon, 'w-[18px] h-[18px]' + (it.active ? '' : ' text-muted'))}
+            <span class="hide-collapsed truncate">${it.label}</span>
+            ${it.badge ? `<span class="nav-badge ml-auto h-[18px] min-w-[18px] px-1.5 rounded-pill bg-danger text-ondark text-tag font-semibold grid place-items-center">${it.badge}</span>` : ''}
+          </a></li>`).join('')}
+      </ul>
+    </div>`).join('');
+}
+
+let manualCollapse = null;
+function setCollapsed(c) {
+  $('#app').classList.toggle('collapsed', c);
+  const b = $('#btn-collapse');
+  b.setAttribute('aria-label', c ? 'Mở rộng menu' : 'Thu gọn menu');
+  b.setAttribute('aria-expanded', String(!c));
+  b.querySelector('svg, i')?.replaceWith(Object.assign(document.createElement('i'), { className: 'w-[18px] h-[18px]' }));
+  b.querySelector('i').setAttribute('data-lucide', c ? 'panel-left-open' : 'panel-left-close');
+  icons();
+}
+const mq = matchMedia('(max-width: 1279px)');
+mq.addEventListener('change', e => { manualCollapse = null; setCollapsed(e.matches); });
+
+/* ═══════════════════════ HEADER ═══════════════════════ */
+function pendingList() {
+  const out = [];
+  const c05 = state.data.C05['2026-09-28'];
+  if (c05.status === 'open') out.push({ line: 'C05', date: '2026-09-28' });
+  if (state.c06Open) out.push({ line: 'C06', date: '2026-09-28' });
+  return out;
+}
+function renderPending() {
+  const list = pendingList();
+  $('#pending-wrap').classList.toggle('hidden', !list.length);
+  $('#pending-text').textContent = `Còn ${list.length} ngày chưa chốt`;
+  $('#menu-pending').innerHTML = `<div class="px-3 pt-2 pb-1 text-tag font-semibold uppercase tracking-[0.06em] text-muted">Ngày chưa chốt</div>` +
+    list.map(p => `<button role="menuitem" class="w-full h-9 px-3 flex items-center gap-2 rounded-ctl text-body hover:bg-hover" data-go="${p.line}|${p.date}">
+      ${ic('calendar-clock', 'w-4 h-4 text-empty-bar')}<span class="font-medium">${p.line}</span><span class="text-muted">·</span><span class="num">${ddmmyyyy(p.date)}</span>
+      ${ic('chevron-right', 'w-4 h-4 text-muted ml-auto')}</button>`).join('');
+}
+
+function setConnection(online) {
+  state.online = online;
+  $('#conn-dot').className = 'w-2 h-2 rounded-full ' + (online ? 'bg-success' : 'bg-danger');
+  $('#conn-text').textContent = online ? 'Đã kết nối' : 'Mất kết nối';
+  $('#offline-banner').classList.toggle('hidden', online);
+}
+window.setConnection = setConnection;           // thử: setConnection(false) trong Console
+addEventListener('offline', () => setConnection(false));
+addEventListener('online', () => setConnection(true));
+
+/* ═══════════════════════ ① TOOLBAR ═══════════════════════ */
+function statusChip(st) {
+  const m = {
+    open: ['bg-open-bg text-open-ink', '', 'Chưa chốt'],
+    closed: ['bg-closed-bg text-closed-ink', 'check', 'Đã chốt'],
+    locked: ['bg-locked-bg text-locked-ink', 'lock', 'Đã khóa']
+  }[st];
+  if (!m) return '';
+  return `<span class="h-6 px-2.5 rounded-pill inline-flex items-center gap-1 text-sub font-semibold whitespace-nowrap ${m[0]}">${m[1] ? ic(m[1], 'w-3.5 h-3.5') : ''}${m[2]}</span>`;
+}
+function renderToolbar() {
+  const d = day();
+  $('#sel-line').value = state.line;
+  $('#date-label').textContent = `${weekday(state.date)}, ${ddmmyyyy(state.date)}`;
+  $('#date-native').value = state.date;
+  $('#btn-prev').disabled = state.date <= DATES[0];
+  $('#btn-next').disabled = state.date >= NOW.date;
+  $('#status-chip').innerHTML = statusChip(d.status);
+  $('#toggle-todo').setAttribute('aria-checked', String(state.onlyTodo));
+
+  let html = '';
+  if (d.status === 'open') {
+    if (notYetClosable(state.date)) {
+      html = `<button class="h-9 px-4 rounded-ctl bg-disabled-bg text-disabled-ink text-body font-semibold flex items-center gap-2 cursor-not-allowed"
+        aria-disabled="true" data-tip="Chốt được từ 08:00 ngày ${ddmmyyyy(canCloseFrom(state.date))}">${ic('circle-check')}Chốt ngày</button>`;
+    } else {
+      html = `<button id="btn-close-day" class="h-9 px-4 rounded-ctl bg-brand hover:bg-brand-hover text-ink text-body font-semibold flex items-center gap-2 transition-colors duration-fast">${ic('circle-check')}Chốt ngày</button>`;
+    }
+  } else if (d.status === 'closed') {
+    const [who, when] = d.closedBy.replace('Đã chốt ', '').split(' lúc ');
+    html = `<span class="text-sub text-closed-ink flex flex-col items-end leading-4" aria-label="${esc(d.closedBy)}">
+      <span class="font-semibold whitespace-nowrap num">Đã chốt · ${esc(when)}</span><span class="whitespace-nowrap">${esc(who)}</span></span>`;
+  } else if (d.status === 'locked') {
+    html = `<span class="text-chip text-locked-ink flex items-center gap-1.5">${ic('lock', 'w-4 h-4')}Kỳ lương đã khóa sổ</span>`;
+  }
+  $('#close-area').innerHTML = html;
+}
+
+/* ═══════════════════════ ② TÓM TẮT ═══════════════════════ */
+const counts = rows => rows.reduce((c, r) => (c[r.st] = (c[r.st] || 0) + 1, c), {});
+function renderSummary() {
+  const d = day(), rows = d.rows, c = counts(rows);
+  const tram = new Set(rows.map(r => r.tram)).size;
+  const chip = (key, n, text, cls, icon = '') => n ? `
+    <button class="h-8 px-3 rounded-pill inline-flex items-center gap-1.5 text-chip whitespace-nowrap border transition-colors duration-fast ${cls}
+      ${state.filter === key ? 'ring-2 ring-offset-1 ring-current' : ''}" data-filter="${key}" aria-pressed="${state.filter === key}">
+      ${icon}<b class="font-semibold num">${n}</b> ${text}${state.filter === key ? ic('x', 'w-3.5 h-3.5 -mr-1') : ''}</button>` : '';
+  const qc = rows.find(r => r.qc);
+  $('#summary').innerHTML = `
+    <span class="h-8 px-3 rounded-pill inline-flex items-center text-chip bg-surface border border-line whitespace-nowrap"><b class="font-semibold num">${tram}</b>&nbsp;trạm · <b class="font-semibold num">&nbsp;${rows.length}</b>&nbsp;dòng</span>
+    ${chip('empty', c.empty, 'ô chưa có số', 'bg-empty-bg text-empty-ink border-transparent hover:border-empty-bar')}
+    ${chip('warn', c.warn, 'ô cảnh báo', 'bg-warn-bg text-warn-ink border-transparent hover:border-warn-bar', ic('triangle-alert', 'w-3.5 h-3.5'))}
+    ${chip('adjusted', c.adjusted, 'ô đã điều chỉnh', 'bg-adjust-bg text-adjust-ink border-transparent hover:border-adjust-ink')}
+    ${d.timeReq && state.line === 'C05' ? `<a href="#" id="link-time" class="h-8 px-3 rounded-pill inline-flex items-center gap-1.5 text-chip text-muted bg-surface border border-line hover:bg-hover whitespace-nowrap transition-colors duration-fast">${ic('clock', 'w-3.5 h-3.5')}<b class="font-semibold num text-ink">${d.timeReq}</b> yêu cầu giờ chờ duyệt</a>` : ''}
+    ${qc && qc.sl != null ? `<span class="ml-auto text-chip text-muted whitespace-nowrap">Hoàn thành (QC, ${qc.mh}): <b class="font-semibold text-ink num">${fmt(qc.sl)}</b> sp</span>` : ''}`;
+}
+
+/* ═══════════════════════ ③ BẢNG ═══════════════════════ */
+function visibleRows() {
+  let rows = day().rows;
+  if (state.filter) rows = rows.filter(r => r.st === state.filter);
+  if (state.onlyTodo) rows = rows.filter(r => r.st === 'empty' || r.st === 'warn');
+  return rows;
+}
+const lastAdj = r => r.hist.find(h => h.reason);
+const adjTip = r => { const h = lastAdj(r); return h ? `${h.from == null ? '—' : fmt(h.from)} → ${fmt(h.to)} · ${h.reason} · ${h.by} · ${h.t}` : ''; };
+
+function statusPill(r) {
+  if (r.st === 'empty') return `<span class="h-6 px-2.5 rounded-pill inline-flex items-center text-sub font-semibold bg-surface/60 text-empty-ink border border-empty-bar/40 whitespace-nowrap">Chưa có số</span>`;
+  if (r.st === 'warn') return `<span tabindex="0" class="h-6 px-2.5 rounded-pill inline-flex items-center gap-1 text-sub font-semibold bg-surface/60 text-warn-ink border border-warn-bar/40 whitespace-nowrap cursor-help" data-tip="${esc(r.flag)}">${ic('triangle-alert', 'w-3.5 h-3.5')}Cần xem lại</span>`;
+  if (r.st === 'adjusted') return `<span tabindex="0" class="h-6 px-2.5 rounded-pill inline-flex items-center text-sub font-semibold bg-adjust-bg text-adjust-ink whitespace-nowrap cursor-help" data-tip="${esc(adjTip(r))}">Đã điều chỉnh</span>`;
+  return '';
+}
+
+function qtyCell(r) {
+  const ed = state.edit && state.edit.id === r.id;
+  if (ed) {
+    const e = state.edit;
+    return `<div class="flex flex-col items-end gap-1">
+      <input id="qty-input" inputmode="numeric" autocomplete="off" value="${esc(e.value)}" aria-label="Số lượng mới"
+        aria-invalid="${!!e.error}" ${e.error ? 'aria-describedby="qty-err"' : ''}
+        class="num w-full h-8 px-2 text-right text-qty font-semibold rounded-ctl border-2 outline-none bg-surface ${e.error ? 'border-danger' : 'border-brand-ink'}">
+      ${e.error ? `<p id="qty-err" class="text-sub text-danger text-right leading-tight whitespace-normal">${e.error}</p>` : ''}
+    </div>`;
+  }
+  if (r.sl == null) {
+    return `<div class="flex items-center justify-end gap-1.5">
+      <span class="text-muted" aria-hidden="true">—</span>
+      ${editable() ? `<button class="btn-proxy h-7 px-1.5 rounded-ctl border border-line-strong bg-surface hover:bg-hover text-chip font-medium inline-flex items-center gap-1 whitespace-nowrap transition-colors duration-fast" data-proxy="${r.id}">${ic('user-plus', 'w-3.5 h-3.5')}Nhập hộ</button>` : ''}
+    </div>`;
+  }
+  const adj = r.st === 'adjusted';
+  const inner = `${adj ? ic('pencil', 'w-3.5 h-3.5 text-adjust-ink') : ''}<span class="num text-qty font-semibold">${fmt(r.sl)}</span>`;
+  if (!editable()) return `<div class="flex items-center justify-end gap-1.5">${inner}</div>`;
+  return `<button class="qty-btn w-full h-8 -my-1 px-2 -mx-2 flex items-center justify-end gap-1.5 rounded-ctl hover:bg-surface hover:ring-1 hover:ring-line-strong transition duration-fast"
+    data-edit="${r.id}" aria-label="Sửa số lượng ${fmt(r.sl)}" ${adj ? `data-tip="${esc(adjTip(r))}"` : ''} style="width:calc(100% + 16px)">${inner}</button>`;
+}
+
+function emptyState(icon, text, sub = '') {
+  return `<tr><td colspan="8" class="!h-auto !border-0"><div class="py-16 flex flex-col items-center gap-3 text-center">
+    ${ic(icon, 'w-10 h-10 text-muted')}<p class="text-body text-ink font-medium">${text}</p>${sub ? `<p class="text-sub text-muted">${sub}</p>` : ''}</div></td></tr>`;
+}
+
+function renderTable() {
+  const d = day(), tb = $('#tbody');
+  if (d.status === 'nodata') { tb.innerHTML = emptyState('database', `Chưa có dữ liệu mẫu cho chuyền ${state.line}`, 'Bản demo chỉ có dữ liệu chuyền C05.'); return icons(); }
+  if (!d.rows.length) { tb.innerHTML = emptyState('calendar-x', `Không có dữ liệu ngày ${ddmmyyyy(state.date)} (${weekday(state.date)})`); return icons(); }
+  const rows = visibleRows();
+  if (!rows.length) { tb.innerHTML = emptyState('circle-check', 'Không còn dòng nào cần xử lý', 'Bấm lại chip lọc hoặc tắt công tắc để xem toàn bộ.'); return icons(); }
+
+  // gom nhóm theo trạm (liên tiếp) để hợp dòng
+  const groups = [];
+  rows.forEach(r => { const g = groups[groups.length - 1]; g && g.tram === r.tram ? g.rows.push(r) : groups.push({ tram: r.tram, rows: [r] }); });
+
+  tb.innerHTML = groups.map(g => g.rows.map((r, i) => {
+    const first = i === 0, span = g.rows.length, last = i === span - 1;
+    const empty = r.st === 'empty';
+    const tramCls = span > 1 ? 'tram-span bg-surface' : 'lead';
+    return `<tr class="st-${r.st} ${last ? 'grp-end' : ''}" data-id="${r.id}">
+      ${first ? `<td rowspan="${span}" class="${tramCls} px-3 text-center align-middle text-qty font-semibold num">${r.tram}</td>` : ''}
+      <td class="${!first || span > 1 ? 'lead' : ''} px-3 py-0.5">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="h-[18px] px-1.5 rounded-pill bg-group text-tag font-semibold text-ink shrink-0 inline-flex items-center">${r.mh}</span>
+          <span class="font-medium truncate">${esc(r.ten)}</span>
+          ${r.qc ? `<span class="h-[18px] px-1.5 rounded-pill bg-closed-bg text-closed-ink text-tag font-semibold shrink-0 inline-flex items-center">QC ★</span>` : ''}
+        </div>
+        <div class="text-sub text-muted num">${r.cd} · SMV ${r.smv}s</div>
+      </td>
+      <td class="px-3 ${empty ? 'italic text-muted' : ''} num">${empty ? (r.login ? r.login.nv : '—') : r.nv}</td>
+      <td class="px-3 py-0.5">
+        ${empty
+          ? `<span class="italic text-muted truncate block">${r.login ? esc(r.login.hoTen) : 'Chưa có người đăng nhập'}</span>`
+          : `<span class="truncate block">${esc(r.hoTen)}</span>`}
+        ${r.support ? `<span class="mt-0.5 h-[18px] px-1.5 rounded-pill bg-support-bg text-support-ink text-tag font-semibold inline-flex items-center">Hỗ trợ từ ${r.support}</span>` : ''}
+      </td>
+      <td class="px-3 text-right relative">${qtyCell(r)}</td>
+      <td class="px-3">${r.src ? `<span class="inline-flex items-center gap-1.5 text-chip text-ink whitespace-nowrap">${ic(SRC[r.src].icon, 'w-3.5 h-3.5 text-muted')}${SRC[r.src].label}</span>` : '<span class="text-muted">—</span>'}</td>
+      <td class="px-3">${statusPill(r)}</td>
+      <td class="px-3 text-center">
+        <button class="row-action opacity-0 focus:opacity-100 w-8 h-8 grid place-items-center rounded-ctl text-muted hover:bg-group hover:text-ink transition duration-fast mx-auto"
+          data-history="${r.id}" aria-label="Lịch sử trạm ${r.tram} ${r.cd}" data-tip="Lịch sử">${ic('history', 'w-4 h-4')}</button>
+      </td>
+    </tr>`;
+  }).join('')).join('');
+  icons();
+}
+
+function render() { renderToolbar(); renderSummary(); renderTable(); renderPending(); icons(); }
+
+/* ═══════════════════════ SỬA SỐ ═══════════════════════ */
+function parseQty(v) {
+  v = String(v).trim();
+  if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, '');
+  if (!/^\d+$/.test(v)) return null;
+  const n = Number(v);
+  return n >= 0 && n <= 99999 ? n : null;
+}
+const findRow = id => day().rows.find(r => r.id === id);
+
+function startEdit(id) {
+  if (!editable()) return;
+  closePopover(true);
+  const r = findRow(id); if (!r) return;
+  state.edit = { id, value: String(r.sl), error: null };
+  renderTable();
+  const inp = $('#qty-input'); inp.focus(); inp.select();
+}
+function cancelEdit(focusBack = true) {
+  if (!state.edit) return;
+  const id = state.edit.id; state.edit = null; renderTable();
+  if (focusBack) $(`[data-edit="${id}"]`)?.focus();
+}
+function nextRowAfter(id) {
+  const rows = visibleRows(), i = rows.findIndex(r => r.id === id);
+  return rows[i + 1];
+}
+function focusNext(id) {
+  const n = nextRowAfter(id); if (!n) return;
+  if (n.sl != null) startEdit(n.id); else $(`[data-proxy="${n.id}"]`)?.focus();
+}
+function submitEdit(moveNext) {
+  const e = state.edit, inp = $('#qty-input'); if (!e || !inp) return;
+  e.value = inp.value;
+  const n = parseQty(inp.value), r = findRow(e.id);
+  if (n == null) {
+    e.error = 'Số lượng phải là số nguyên từ 0 đến 99.999';
+    renderTable(); const i2 = $('#qty-input'); i2.focus(); i2.setSelectionRange(i2.value.length, i2.value.length); return;
+  }
+  if (n === r.sl) { cancelEdit(!moveNext); if (moveNext) focusNext(r.id); return; }
+  e.error = null;
+  openReasonPopover(r, n, inp.closest('td'), moveNext);
+}
+
+/* ═══════════════════════ POPOVER ═══════════════════════ */
+let pop = null; // { el, anchor, onCancel }
+function placePopover() {
+  if (!pop) return;
+  const a = pop.anchor.getBoundingClientRect(), el = pop.el, w = el.offsetWidth, h = el.offsetHeight;
+  let left = Math.min(Math.max(8, a.right - w), innerWidth - w - 8);
+  let top = a.bottom + 4;
+  if (top + h > innerHeight - 8) top = Math.max(8, a.top - h - 4);
+  el.style.left = left + 'px'; el.style.top = top + 'px';
+}
+function showPopover(html, anchor, onCancel, label) {
+  closePopover(true);
+  const el = document.createElement('div');
+  el.className = 'fixed z-50 bg-surface border border-line rounded-card shadow-pop p-4';
+  el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', label);
+  el.innerHTML = html;
+  $('#popover-root').appendChild(el);
+  pop = { el, anchor, onCancel };
+  icons(); placePopover();
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancelPopover(); }
+    if (e.key === 'Tab') { // giữ focus trong popover
+      const f = $$('input,select,textarea,button:not([disabled])', el).filter(x => x.offsetParent);
+      if (!f.length) return;
+      if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    }
+  });
+  return el;
+}
+function closePopover(silent) { if (!pop) return; pop.el.remove(); pop = null; }
+function cancelPopover() { const p = pop; closePopover(); p?.onCancel?.(); }
+$('#table-scroll').addEventListener('scroll', placePopover);
+addEventListener('resize', placePopover);
+
+const reasonFields = (reasons, lowerWarn = '') => `
+  ${lowerWarn}
+  <label class="block text-chip font-medium mb-1" for="pr-reason">Lý do <span class="text-danger">*</span></label>
+  <div class="relative">
+    <select id="pr-reason" class="native w-full h-9 pl-3 pr-8 rounded-ctl border border-line-strong bg-surface text-body">
+      <option value="">— Chọn lý do —</option>${reasons.map(x => `<option>${x}</option>`).join('')}
+    </select>${ic('chevron-down', 'w-4 h-4 text-muted absolute right-2.5 top-2.5 pointer-events-none')}
+  </div>
+  <label class="block text-chip font-medium mt-3 mb-1" for="pr-note">Ghi chú <span class="text-muted font-normal" id="pr-note-hint">(bắt buộc khi chọn “Khác”)</span></label>
+  <textarea id="pr-note" rows="2" class="w-full px-3 py-2 rounded-ctl border border-line-strong bg-surface text-body resize-none" placeholder="Mô tả ngắn lý do…"></textarea>
+  <p id="pr-err" class="hidden text-sub text-danger mt-1.5 flex items-center gap-1" role="alert"></p>
+  <div class="flex justify-end gap-2 mt-4">
+    <button id="pr-cancel" class="h-9 px-4 rounded-ctl border border-line-strong bg-surface hover:bg-hover text-body font-medium transition-colors duration-fast">Hủy</button>
+    <button id="pr-save" class="h-9 px-4 rounded-ctl bg-brand hover:bg-brand-hover text-ink text-body font-semibold transition-colors duration-fast">Lưu</button>
+  </div>`;
+
+function readReason(el) {
+  const rs = $('#pr-reason', el).value, note = $('#pr-note', el).value.trim();
+  if (!rs) return { err: 'Vui lòng chọn lý do.', focus: '#pr-reason' };
+  if (rs === 'Khác' && !note) return { err: 'Vui lòng nhập ghi chú khi chọn “Khác”.', focus: '#pr-note' };
+  return { reason: rs === 'Khác' ? note : (note ? `${rs} — ${note}` : rs) };
+}
+function showErr(el, msg, focusSel) {
+  const p = $('#pr-err', el); p.textContent = msg; p.classList.remove('hidden');
+  const f = $(focusSel, el); f.classList.add('border-danger'); f.focus();
+}
+function wireReason(el, onSave) {
+  const save = () => onSave();
+  $('#pr-save', el).addEventListener('click', save);
+  $('#pr-cancel', el).addEventListener('click', cancelPopover);
+  $('#pr-reason', el).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save(); } });
+  $('#pr-note', el).addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); save(); } });
+  $('#pr-reason', el).addEventListener('change', () => { $('#pr-reason', el).classList.remove('border-danger'); $('#pr-err', el).classList.add('hidden'); });
+  $('#pr-note', el).addEventListener('input', () => { $('#pr-note', el).classList.remove('border-danger'); $('#pr-err', el).classList.add('hidden'); });
+}
+
+function openReasonPopover(r, n, anchor, moveNext) {
+  const lower = n < r.sl ? `<div class="mb-3 px-3 py-2 rounded-ctl bg-warn-bg text-warn-ink text-chip flex items-start gap-2">${ic('triangle-alert', 'w-4 h-4 mt-0.5')}<span>Số mới nhỏ hơn số cũ (<b class="num">${fmt(r.sl)} → ${fmt(n)}</b>)</span></div>` : '';
+  const el = showPopover(`
+    <div class="w-[300px]">
+      <div class="text-h font-semibold">Lý do điều chỉnh</div>
+      <div class="text-sub text-muted mt-0.5 mb-3 num">Trạm ${r.tram} · ${r.cd} ${esc(r.ten)} · <b class="text-ink">${fmt(r.sl)} → ${fmt(n)}</b></div>
+      ${reasonFields(REASON_EDIT, lower)}
+    </div>`, anchor, () => cancelEdit(true), 'Lý do điều chỉnh');
+  wireReason(el, () => {
+    const res = readReason(el);
+    if (res.err) return showErr(el, res.err, res.focus);
+    r.hist.unshift({ t: stamp(), from: r.sl, to: n, src: 'web', by: USER.name, reason: res.reason });
+    Object.assign(r, { sl: n, src: 'web', st: 'adjusted', flag: null });
+    closePopover(); state.edit = null; render(); toast('Đã lưu');
+    if (moveNext) focusNext(r.id); else $(`[data-edit="${r.id}"]`)?.focus();
+  });
+  $('#pr-reason', el).focus();
+}
+
+/* ═══════════════════════ NHẬP HỘ ═══════════════════════ */
+function openProxyPopover(id, anchor) {
+  const r = findRow(id); if (!r) return;
+  state.edit && cancelEdit(false);
+  const pre = r.login;
+  const el = showPopover(`
+    <div class="w-[320px]">
+      <div class="text-h font-semibold">Nhập hộ</div>
+      <div class="text-sub text-muted mt-0.5 mb-3 num">Trạm ${r.tram} · ${r.cd} ${esc(r.ten)} · ${ddmmyyyy(state.date)}</div>
+      <div class="grid grid-cols-[1fr_110px] gap-3">
+        <div class="relative">
+          <label class="block text-chip font-medium mb-1" for="px-nv">Mã NV <span class="text-danger">*</span></label>
+          <input id="px-nv" role="combobox" aria-expanded="false" aria-controls="px-list" aria-autocomplete="list" autocomplete="off"
+            value="${pre ? pre.nv : ''}" placeholder="VD: NV005…" class="num w-full h-9 px-3 rounded-ctl border border-line-strong bg-surface text-body uppercase">
+          <ul id="px-list" role="listbox" class="hidden absolute left-0 right-[-122px] top-[62px] z-10 bg-surface border border-line rounded-card shadow-pop p-1 max-h-52 overflow-auto"></ul>
+        </div>
+        <div>
+          <label class="block text-chip font-medium mb-1" for="px-qty">Số lượng <span class="text-danger">*</span></label>
+          <input id="px-qty" inputmode="numeric" autocomplete="off" class="num w-full h-9 px-3 rounded-ctl border border-line-strong bg-surface text-body text-right font-semibold">
+        </div>
+      </div>
+      <p id="px-name" class="text-sub mt-1 mb-3 ${pre ? 'text-ink' : 'text-muted'}">${pre ? `${ic('user', 'w-3.5 h-3.5 inline -mt-0.5')} ${esc(pre.hoTen)} <span class="text-muted">· đang đăng nhập trạm</span>` : 'Chưa có người đăng nhập trạm'}</p>
+      ${reasonFields(REASON_PROXY)}
+    </div>`, anchor, () => $(`[data-proxy="${id}"]`)?.focus(), 'Nhập hộ');
+
+  const nv = $('#px-nv', el), list = $('#px-list', el), name = $('#px-name', el);
+  let hi = -1, matches = [];
+  const pick = emp => { nv.value = emp.nv; name.className = 'text-sub mt-1 mb-3 text-ink'; name.innerHTML = `${ic('user', 'w-3.5 h-3.5 inline -mt-0.5')} ${esc(emp.hoTen)}`; icons(); closeList(); nv.classList.remove('border-danger'); };
+  const closeList = () => { list.classList.add('hidden'); nv.setAttribute('aria-expanded', 'false'); hi = -1; };
+  const drawList = () => {
+    const q = nv.value.trim().toUpperCase();
+    matches = q ? EMPLOYEES.filter(e => e.nv.startsWith(q) || e.hoTen.toUpperCase().includes(q)).slice(0, 6) : [];
+    if (!matches.length) return closeList();
+    list.innerHTML = matches.map((e, i) => `<li role="option" id="px-o${i}" aria-selected="${i === hi}" data-i="${i}"
+      class="h-9 px-3 flex items-center gap-3 rounded-ctl cursor-pointer text-body ${i === hi ? 'bg-brand-soft' : 'hover:bg-hover'}">
+      <span class="num font-medium w-[72px]">${e.nv}</span><span class="text-muted truncate">${esc(e.hoTen)}</span></li>`).join('');
+    list.classList.remove('hidden'); nv.setAttribute('aria-expanded', 'true');
+    nv.setAttribute('aria-activedescendant', hi >= 0 ? 'px-o' + hi : '');
+  };
+  nv.addEventListener('input', () => {
+    hi = -1; drawList();
+    const exact = EMPLOYEES.find(e => e.nv === nv.value.trim().toUpperCase());
+    name.className = 'text-sub mt-1 mb-3 ' + (exact ? 'text-ink' : 'text-muted');
+    name.textContent = exact ? exact.hoTen : 'Nhập mã hoặc tên để tìm nhân viên';
+  });
+  nv.addEventListener('keydown', e => {
+    if (list.classList.contains('hidden')) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); hi = (hi + 1) % matches.length; drawList(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); hi = (hi - 1 + matches.length) % matches.length; drawList(); }
+    else if (e.key === 'Enter' && hi >= 0) { e.preventDefault(); pick(matches[hi]); $('#px-qty', el).focus(); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeList(); }
+  });
+  list.addEventListener('mousedown', e => { const li = e.target.closest('[data-i]'); if (li) { e.preventDefault(); pick(matches[+li.dataset.i]); $('#px-qty', el).focus(); } });
+  nv.addEventListener('blur', () => setTimeout(closeList, 100));
+  $('#px-qty', el).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save(); } });
+
+  function save() {
+    $$('.border-danger', el).forEach(x => x.classList.remove('border-danger'));
+    const emp = EMPLOYEES.find(e => e.nv === nv.value.trim().toUpperCase());
+    if (!emp) return showErr(el, 'Mã NV không tồn tại — chọn từ danh sách gợi ý.', '#px-nv');
+    const n = parseQty($('#px-qty', el).value);
+    if (n == null) return showErr(el, 'Số lượng phải là số nguyên từ 0 đến 99.999', '#px-qty');
+    const res = readReason(el);
+    if (res.err) return showErr(el, res.err, res.focus);
+    r.hist.unshift({ t: stamp(), from: null, to: n, src: 'proxy', by: USER.name, reason: res.reason });
+    Object.assign(r, { nv: emp.nv, hoTen: emp.hoTen, sl: n, src: 'proxy', st: 'adjusted', login: null });
+    closePopover(); render(); toast('Đã lưu');
+    $(`[data-edit="${r.id}"]`)?.focus();
+  }
+  wireReason(el, save);
+  (pre ? $('#px-qty', el) : nv).focus();
+}
+
+/* ═══════════════════════ DRAWER ═══════════════════════ */
+let lastFocus = null;
+function openDrawer(id) {
+  const r = findRow(id); if (!r) return;
+  lastFocus = document.activeElement;
+  const who = r.nv ? `${r.nv} ${r.hoTen}` : 'Chưa có người nhập';
+  const srcPill = s => s ? `<span class="h-5 px-2 rounded-pill bg-group text-tag font-semibold inline-flex items-center gap-1">${ic(SRC[s].icon, 'w-3 h-3')}${SRC[s].label}</span>` : '';
+  $('#drawer-body').innerHTML = `
+    <div class="rounded-card border border-line bg-thead px-3 py-2.5 text-chip leading-relaxed">
+      <span class="font-semibold">Trạm ${r.tram}</span> · ${r.cd} ${esc(r.ten)} · ${esc(who)} · <span class="num">${ddmmyyyy(state.date)}</span>
+    </div>
+    ${r.hist.length ? `<ol class="mt-5">${r.hist.map((h, i) => `
+      <li class="tl-item relative pl-6 pb-5">
+        <span class="absolute left-0 top-1 w-[11px] h-[11px] rounded-full border-2 ${i === 0 ? 'border-brand bg-brand-soft' : 'border-line-strong bg-surface'}"></span>
+        <div class="text-sub text-muted num">${h.t}</div>
+        <div class="flex items-center gap-2 mt-0.5">
+          <span class="text-qty font-semibold num">${h.from == null ? fmt(h.to) : `${fmt(h.from)} → ${fmt(h.to)}`}</span>${srcPill(h.src)}
+        </div>
+        <div class="text-chip mt-1">${esc(h.by)}${h.reason ? ` — ${esc(h.reason)}` : ''}</div>
+      </li>`).join('')}</ol>`
+      : `<div class="py-12 flex flex-col items-center gap-2 text-muted text-chip">${ic('history', 'w-8 h-8')}Chưa có bản ghi nào cho công đoạn này.</div>`}
+    ${r.st === 'warn' ? `<div class="mt-2 px-3 py-2 rounded-ctl bg-warn-bg text-warn-ink text-chip flex gap-2">${ic('triangle-alert', 'w-4 h-4 mt-0.5')}${esc(r.flag)}</div>` : ''}`;
+  icons();
+  $('#drawer').classList.add('open'); $('#drawer').setAttribute('aria-hidden', 'false');
+  $('#drawer-overlay').classList.add('open');
+  setTimeout(() => $('#drawer-close').focus(), 20);
+}
+function closeDrawer() {
+  if (!$('#drawer').classList.contains('open')) return;
+  $('#drawer').classList.remove('open'); $('#drawer').setAttribute('aria-hidden', 'true');
+  $('#drawer-overlay').classList.remove('open');
+  lastFocus?.focus();
+}
+
+/* ═══════════════════════ MODAL CHỐT NGÀY ═══════════════════════ */
+function openCloseModal() {
+  const d = day(), c = counts(d.rows);
+  lastFocus = document.activeElement;
+  const warns = [];
+  if (c.empty) warns.push(['triangle-alert', 'text-empty-bar', `Còn <b class="num">${c.empty}</b> ô chưa có số`]);
+  if (d.timeReq) warns.push(['clock', 'text-muted', `Còn <b class="num">${d.timeReq}</b> yêu cầu giờ chờ duyệt`]);
+  $('#modal').innerHTML = `
+    <div class="p-5">
+      <h2 id="modal-title" class="text-h font-semibold">Chốt ngày ${ddmmyyyy(state.date)} – ${state.line}?</h2>
+      ${warns.length ? `<ul class="mt-4 flex flex-col gap-2">${warns.map(w => `<li class="flex items-center gap-2.5 px-3 py-2 rounded-ctl bg-thead border border-line text-body">${ic(w[0], 'w-[18px] h-[18px] ' + w[1])}<span>${w[2]}</span></li>`).join('')}</ul>` : ''}
+      <p id="modal-desc" class="mt-4 text-body text-muted">Sau khi chốt, công nhân không nhập được số của ngày này. Tổ trưởng vẫn sửa được (bắt buộc lý do).</p>
+    </div>
+    <div class="px-5 pb-5 flex justify-end gap-2">
+      <button id="m-cancel" class="h-9 px-4 rounded-ctl border border-line-strong bg-surface hover:bg-hover text-body font-medium transition-colors duration-fast">Hủy</button>
+      <button id="m-ok" class="h-9 px-4 rounded-ctl bg-brand hover:bg-brand-hover text-ink text-body font-semibold flex items-center gap-2 transition-colors duration-fast">${ic('circle-check')}Vẫn chốt ngày</button>
+    </div>`;
+  icons();
+  $('#modal-overlay').classList.add('open');
+  $('#m-cancel').onclick = closeModal;
+  $('#m-ok').onclick = () => {
+    d.status = 'closed';
+    d.closedBy = `Đã chốt bởi ${USER.name} lúc ${NOW.time} ${ddmmyyyy(NOW.date)}`;
+    closeModal(false); render(); toast(`Đã chốt ngày ${ddmmyyyy(state.date)} – ${state.line}`);
+  };
+  setTimeout(() => $('#m-cancel').focus(), 20);
+}
+function closeModal(restore = true) { $('#modal-overlay').classList.remove('open'); if (restore) lastFocus?.focus(); }
+$('#modal-overlay').addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Tab') { const f = $$('button', $('#modal')); const i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); } }
+});
+$('#modal-overlay').addEventListener('mousedown', e => { if (e.target.id === 'modal-overlay') closeModal(); });
+
+/* ═══════════════════════ TOAST & TOOLTIP ═══════════════════════ */
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'h-10 px-4 rounded-card bg-toast text-ondark text-chip font-medium flex items-center gap-2 shadow-pop';
+  t.innerHTML = `${ic('circle-check', 'w-4 h-4 text-closed-bg')}${esc(msg)}`;
+  $('#toasts').appendChild(t); icons();
+  setTimeout(() => t.remove(), 3000);
+}
+const tip = $('#tip');
+function showTip(el) {
+  if (el.dataset.tipWhen === 'collapsed' && !$('#app').classList.contains('collapsed')) return hideTip();
+  tip.textContent = el.dataset.tip; tip.classList.remove('hidden');
+  const a = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  if (el.dataset.tipWhen === 'collapsed') { tip.style.left = a.right + 8 + 'px'; tip.style.top = a.top + (a.height - h) / 2 + 'px'; return; }
+  tip.style.left = Math.min(Math.max(8, a.left + a.width / 2 - w / 2), innerWidth - w - 8) + 'px';
+  tip.style.top = (a.top - h - 6 < 8 ? a.bottom + 6 : a.top - h - 6) + 'px';
+}
+const hideTip = () => tip.classList.add('hidden');
+document.addEventListener('mouseover', e => { const el = e.target.closest('[data-tip]'); el && el.dataset.tip ? showTip(el) : hideTip(); });
+document.addEventListener('focusin', e => { const el = e.target.closest?.('[data-tip]'); el && el.dataset.tip && e.target.matches(':focus-visible') ? showTip(el) : hideTip(); });
+document.addEventListener('scroll', hideTip, true);
+
+/* ═══════════════════════ SỰ KIỆN ═══════════════════════ */
+function goDate(iso) { state.date = iso; state.filter = null; state.edit = null; closePopover(); render(); }
+$('#btn-prev').onclick = () => { const i = DATES.indexOf(state.date); if (i > 0) goDate(DATES[i - 1]); };
+$('#btn-next').onclick = () => { const i = DATES.indexOf(state.date); if (i < DATES.length - 1) goDate(DATES[i + 1]); };
+$('#btn-date').onclick = () => { try { $('#date-native').showPicker(); } catch { $('#date-native').click(); } };
+$('#date-native').onchange = e => { if (DATES.includes(e.target.value)) goDate(e.target.value); };
+$('#sel-line').onchange = e => { state.line = e.target.value; state.filter = null; state.edit = null; render(); };
+$('#toggle-todo').onclick = () => { state.onlyTodo = !state.onlyTodo; state.edit = null; render(); };
+$('#btn-collapse').onclick = () => { manualCollapse = !$('#app').classList.contains('collapsed'); setCollapsed(manualCollapse); };
+$('#btn-refresh').onclick = () => { $('#updated-at').textContent = `Cập nhật lúc ${NOW.time} · Tự làm mới khi có thay đổi`; toast('Đã tải lại dữ liệu'); };
+$('#drawer-close').onclick = closeDrawer;
+$('#drawer-overlay').onclick = closeDrawer;
+
+function toggleMenu(btn, menu, force) {
+  const open = force ?? menu.classList.contains('hidden');
+  menu.classList.toggle('hidden', !open); btn.setAttribute('aria-expanded', String(open));
+  if (open) menu.querySelector('[role=menuitem]')?.focus();
+}
+$('#btn-pending').onclick = e => { e.stopPropagation(); toggleMenu($('#btn-pending'), $('#menu-pending')); toggleMenu($('#btn-user'), $('#menu-user'), false); };
+$('#btn-user').onclick = e => { e.stopPropagation(); toggleMenu($('#btn-user'), $('#menu-user')); toggleMenu($('#btn-pending'), $('#menu-pending'), false); };
+
+document.addEventListener('click', e => {
+  const t = e.target;
+  // đóng menu khi bấm ra ngoài
+  if (!t.closest('#menu-pending,#btn-pending')) toggleMenu($('#btn-pending'), $('#menu-pending'), false);
+  if (!t.closest('#menu-user,#btn-user')) toggleMenu($('#btn-user'), $('#menu-user'), false);
+  // bấm ra ngoài khi đang sửa / có popover → hủy (rồi xử lý tiếp cú bấm)
+  if (pop && !pop.el.contains(t) && !pop.anchor.contains(t)) cancelPopover();
+  else if (!pop && state.edit && !t.closest('#qty-input')) cancelEdit(false);
+
+  const go = t.closest('[data-go]');
+  if (go) { const [l, d] = go.dataset.go.split('|'); state.line = l; toggleMenu($('#btn-pending'), $('#menu-pending'), false); return goDate(d); }
+  const f = t.closest('[data-filter]');
+  if (f) { state.filter = state.filter === f.dataset.filter ? null : f.dataset.filter; state.edit = null; return render(); }
+  const ed = t.closest('[data-edit]');
+  if (ed) return startEdit(ed.dataset.edit);
+  const px = t.closest('[data-proxy]');
+  if (px) return openProxyPopover(px.dataset.proxy, $(`[data-proxy="${px.dataset.proxy}"]`).closest('td'));
+  const h = t.closest('[data-history]');
+  if (h) return openDrawer(h.dataset.history);
+  if (t.closest('#btn-close-day')) return openCloseModal();
+  if (t.closest('#link-time')) { e.preventDefault(); return toast('Mở màn Duyệt giờ làm (demo)'); }
+  const nav = t.closest('[data-nav]');
+  if (nav) { e.preventDefault(); if (!nav.hasAttribute('aria-current')) toast(`“${nav.dataset.nav}” — ngoài phạm vi demo`); return; }
+  const demo = t.closest('[data-demo]');
+  if (demo) { toggleMenu($('#btn-user'), $('#menu-user'), false); return toast(`${demo.dataset.demo} — ngoài phạm vi demo`); }
+});
+
+
+document.addEventListener('keydown', e => {
+  if (e.target.id === 'qty-input') {
+    if (e.key === 'Enter') { e.preventDefault(); submitEdit(false); }
+    else if (e.key === 'Tab' && !e.shiftKey) { e.preventDefault(); submitEdit(true); }
+    else if (e.key === 'Escape') { e.preventDefault(); cancelEdit(true); }
+    return;
+  }
+  if (e.key === 'Escape') {
+    if ($('#drawer').classList.contains('open')) return closeDrawer();
+    toggleMenu($('#btn-pending'), $('#menu-pending'), false); toggleMenu($('#btn-user'), $('#menu-user'), false);
+  }
+  if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target.closest('[role=menu]')) {
+    e.preventDefault(); const items = $$('[role=menuitem]', e.target.closest('[role=menu]')); const i = items.indexOf(e.target);
+    items[(i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+  }
+});
+$('#table-scroll').addEventListener('input', e => { if (e.target.id === 'qty-input' && state.edit) { state.edit.value = e.target.value; } });
+
+/* ═══════════════════════ KHỞI ĐỘNG ═══════════════════════ */
+renderNav();
+render();
+setCollapsed(mq.matches);
+</script>
+</body>
+</html>

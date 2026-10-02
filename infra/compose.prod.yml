@@ -1,0 +1,74 @@
+# ════════════════════════════════════════════════════════════════
+# PRODUCTION (và chạy thử bản production trên máy dev) [TDD 2.1, 17.2]
+#   docker compose -f infra/compose.prod.yml --env-file .env up -d
+# Image do GitHub Actions build, đẩy lên GHCR private (release.yml — ⏳).
+# ⏳ Chưa có: container `backup` (tuần 11), `dozzle` (tuần 11), deploy.sh (tuần 13).
+# ════════════════════════════════════════════════════════════════
+name: vsn-sanluong
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+services:
+  caddy:
+    image: ${VSN_REGISTRY:-ghcr.io/vsn-dn}/vsn-web:${VSN_TAG}
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      # Chỉ để chạy thử trên máy (cloudflared gọi vào qua mạng nội bộ Docker)
+      - "127.0.0.1:8088:80"
+    logging: *logging
+
+  api:
+    image: ${VSN_REGISTRY:-ghcr.io/vsn-dn}/vsn-api:${VSN_TAG}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      TZ: Asia/Ho_Chi_Minh
+      API_PORT: "4000"
+      DATABASE_URL: ${DATABASE_URL}
+      DB_POOL_MAX: ${DB_POOL_MAX:-20}
+      DB_POOL_TIMEOUT_MS: ${DB_POOL_TIMEOUT_MS:-10000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      APP_VERSION: ${VSN_TAG}
+    mem_limit: 2g # [D24]
+    logging: *logging
+
+  postgres:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_DB: vsn_sanluong
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      VSN_APP_PASSWORD: ${VSN_APP_PASSWORD}
+      VSN_MIGRATE_PASSWORD: ${VSN_MIGRATE_PASSWORD}
+      VSN_BACKUP_PASSWORD: ${VSN_BACKUP_PASSWORD}
+      TZ: Asia/Ho_Chi_Minh
+      PGTZ: Asia/Ho_Chi_Minh
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vsn_sanluong"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    logging: *logging
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN} # tunnel RIÊNG `vsn-sanluong` → http://caddy:80
+    depends_on: [caddy]
+    logging: *logging
+
+volumes:
+  pgdata:

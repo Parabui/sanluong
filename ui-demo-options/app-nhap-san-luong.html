@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<title>Nhập sản lượng · VSN Sản Lượng</title>
+<link rel="icon" href="../favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  const v = n => `var(--${n})`;
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: { DEFAULT: v('brand'), hover: v('brand-hover'), soft: v('brand-soft'), ink: v('brand-text'), gray: v('brand-gray') },
+          page: v('bg'), surface: v('surface'), line: { DEFAULT: v('border'), strong: v('border-strong') },
+          ink: v('text'), muted: v('text-muted'), hover: v('row-hover'), group: v('group-bg'),
+          empty: { bg: v('empty-bg'), ink: v('empty-text'), bar: v('empty-bar') },
+          warn: { bg: v('warn-bg'), ink: v('warn-text'), bar: v('warn-bar') },
+          adjust: { bg: v('adjust-bg'), ink: v('adjust-text') },
+          open: { bg: v('open-bg'), ink: v('open-text') },
+          closed: { bg: v('closed-bg'), ink: v('closed-text') },
+          danger: { DEFAULT: v('danger'), bg: v('danger-bg') }, success: v('success'),
+          disabled: { bg: v('disabled-bg'), ink: v('disabled-text') },
+          ondark: v('on-dark'), toast: v('toast-bg'), device: v('device')
+        },
+        fontFamily: { sans: v('font'), mono: v('font-mono') },
+        borderRadius: { card: v('radius-card'), ctl: v('radius-ctl'), pill: v('radius-pill'), sheet: v('radius-sheet') },
+        boxShadow: { pop: v('shadow-pop'), bar: v('shadow-bar') },
+        transitionDuration: { fast: v('dur') }
+      }
+    }
+  }
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    /* ── Token dùng chung với Web (merged.html) ── */
+    --brand: #F29830; --brand-hover: #E0851C; --brand-soft: #FEF3E6; --brand-text: #9A5306; --brand-gray: #686868;
+    --bg: #F6F7F9; --surface: #FFFFFF; --border: #E5E7EB; --border-strong: #D0D5DD;
+    --text: #1F2328; --text-muted: #5F6670; --row-hover: #F9FAFB; --group-bg: #F3F4F6;
+    --empty-bg: #FEF9C3; --empty-text: #854D0E; --empty-bar: #CA8A04;
+    --warn-bg: #FFEDD5; --warn-text: #9A3412; --warn-bar: #EA580C;
+    --adjust-bg: #EEF2FF; --adjust-text: #4338CA;
+    --open-bg: #EFF6FF; --open-text: #1D4ED8;
+    --closed-bg: #F0FDF4; --closed-text: #15803D;
+    --danger: #B42318; --danger-bg: #FEF3F2; --success: #15803D;
+    --disabled-bg: #F3F4F6; --disabled-text: #9CA3AF;
+    --on-dark: #FFFFFF; --toast-bg: #1F2328;
+    --overlay: rgba(16, 24, 40, .40);
+    --shadow-pop: 0 8px 24px rgba(16, 24, 40, .12);
+    --font: "Be Vietnam Pro", "Segoe UI", Roboto, Arial, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    --radius-card: 12px; --radius-ctl: 10px; --radius-pill: 999px; --radius-sheet: 20px;
+    --dur: 120ms;
+    /* ── Token riêng cho App điện thoại ── */
+    --fs-base: 16px;            /* ≥16px để iOS không tự phóng to khi chạm ô nhập */
+    --fs-qty-input: 28px;
+    --tap: 48px;                /* vùng chạm tối thiểu (Android 48dp / iOS 44pt) */
+    --appbar-h: 56px; --tabs-h: 48px; --nav-h: 64px;
+    --shadow-bar: 0 -4px 16px rgba(16, 24, 40, .08);
+    --device: #111418;          /* viền khung điện thoại khi xem trên máy tính */
+  }
+  html, body { height: 100%; }
+  body { font-family: var(--font); font-size: var(--fs-base); line-height: 1.5; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid var(--brand-text); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+  svg.lucide { stroke-width: 1.75; flex-shrink: 0; }
+  button, [role=tab] { touch-action: manipulation; }
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; animation: none !important; } }
+
+  /* ── Khung điện thoại (chỉ khi xem trên máy tính) ── */
+  .stage { min-height: 100%; display: flex; align-items: center; justify-content: center; gap: 40px; padding: 24px; }
+  .phone { position: relative; width: 390px; height: 844px; max-height: calc(100vh - 48px); border-radius: 48px; border: 12px solid var(--device); background: var(--bg); overflow: hidden; box-shadow: 0 30px 60px rgba(16,24,40,.25); flex-shrink: 0; }
+  @media (max-width: 899px) {
+    .stage { padding: 0; display: block; }
+    .phone { width: 100%; height: 100dvh; max-height: none; border: 0; border-radius: 0; box-shadow: none; }
+    .demo-panel { display: none; }
+  }
+  .demo-panel { max-height: calc(100vh - 48px); overflow-y: auto; scrollbar-width: thin; }
+  .app { position: absolute; inset: 0; display: flex; flex-direction: column; }
+  .scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+  .scroll::-webkit-scrollbar { display: none; }
+  .tabs-scroll { overflow-x: auto; scrollbar-width: none; }
+  .tabs-scroll::-webkit-scrollbar { display: none; }
+  .safe-b { padding-bottom: env(safe-area-inset-bottom); }
+
+  /* ── Sheet / dialog ── */
+  .veil { position: absolute; inset: 0; background: var(--overlay); opacity: 0; pointer-events: none; transition: opacity 180ms; z-index: 40; }
+  .veil.open { opacity: 1; pointer-events: auto; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 50; background: var(--surface); border-radius: var(--radius-sheet) var(--radius-sheet) 0 0; max-height: 88%; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 220ms cubic-bezier(.2,.8,.2,1); }
+  .sheet.open { transform: none; }
+  .spin { animation: spin 800ms linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .pop-in { animation: popIn 180ms ease-out; }
+  @keyframes popIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- ═════════ ĐIỆN THOẠI ═════════ -->
+  <div class="phone" id="phone">
+    <div class="app" id="app">
+
+      <!-- App bar: người dùng + kết nối -->
+      <header class="bg-surface shrink-0 z-20" style="padding-top: env(safe-area-inset-top)">
+        <div class="flex items-center gap-3 px-4" style="height: var(--appbar-h)">
+          <span class="w-10 h-10 rounded-full bg-brand-soft text-brand-ink grid place-items-center text-[15px] font-semibold shrink-0" aria-hidden="true">PM</span>
+          <div class="min-w-0 leading-tight">
+            <div class="text-[16px] font-semibold truncate">Phạm Thị Mai</div>
+            <div class="text-[13px] text-muted whitespace-nowrap"><span class="font-mono">NV00127</span> · C05</div>
+          </div>
+          <span id="conn" class="ml-auto h-7 px-2.5 rounded-pill text-[12px] font-semibold inline-flex items-center gap-1.5 shrink-0" role="status"></span>
+          <button id="btn-menu" class="w-11 h-11 -mr-2 grid place-items-center rounded-full hover:bg-hover" aria-label="Tùy chọn" aria-haspopup="dialog"><i data-lucide="ellipsis-vertical" class="w-5 h-5"></i></button>
+        </div>
+        <!-- Tab trạm -->
+        <div class="border-b border-line">
+          <div id="tabs" class="tabs-scroll flex items-end gap-1 px-2" style="height: var(--tabs-h)" role="tablist" aria-label="Trạm đang đăng nhập"></div>
+        </div>
+      </header>
+
+      <!-- Nội dung: Nhập -->
+      <main id="view-nhap" class="flex-1 min-h-0 flex flex-col">
+        <div id="datebar" class="shrink-0 bg-surface border-b border-line px-4 py-2.5 flex items-center gap-2"></div>
+        <div id="scroller" class="scroll flex-1 min-h-0">
+          <div id="banners" class="px-4 pt-3 flex flex-col gap-2 empty:hidden" aria-live="polite"></div>
+          <div id="cards" class="px-4 py-3 flex flex-col gap-3"></div>
+        </div>
+        <div id="savebar" class="shrink-0 bg-surface shadow-bar px-4 py-3 z-10"></div>
+      </main>
+      <main id="view-other" class="hidden flex-1 min-h-0 scroll"></main>
+
+      <!-- Điều hướng dưới -->
+      <nav class="shrink-0 bg-surface border-t border-line safe-b z-20" aria-label="Điều hướng">
+        <div id="bottomnav" class="grid grid-cols-3" style="height: var(--nav-h)"></div>
+      </nav>
+    </div>
+
+    <!-- Lớp phủ, sheet, toast (nằm trong khung điện thoại) -->
+    <div id="veil" class="veil"></div>
+    <section id="sheet" class="sheet shadow-pop" role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true"></section>
+    <div id="toasts" class="absolute left-4 right-4 z-[60] flex flex-col items-center gap-2 pointer-events-none" style="top: 116px" aria-live="polite"></div>
+  </div>
+
+  <!-- ═════════ BẢNG KỊCH BẢN DEMO (chỉ trên máy tính) ═════════ -->
+  <aside class="demo-panel w-[340px] self-center bg-surface border border-line rounded-card p-5 text-[14px]">
+    <div class="text-[12px] font-semibold uppercase tracking-[0.06em] text-muted">Màn chuẩn App công nhân</div>
+    <h1 class="text-[20px] font-semibold leading-tight mt-1">Nhập sản lượng</h1>
+    <p class="text-[13px] text-muted mt-1">PWA · F1 (R1–R6) · giả lập 09:15 Thứ 3, 29/09/2026 · chuyền C05</p>
+
+    <h2 class="text-[13px] font-semibold mt-5 mb-2">Kịch bản</h2>
+    <div id="scenarios" class="flex flex-col gap-1.5" role="radiogroup" aria-label="Kịch bản demo"></div>
+
+    <h2 class="text-[13px] font-semibold mt-5 mb-2">Thử nhanh</h2>
+    <ul class="text-[13px] text-muted flex flex-col gap-1.5 list-disc pl-4">
+      <li>Gõ số <b class="text-ink">nhỏ hơn</b> số đã lưu → hỏi xác nhận ghi đè</li>
+      <li>Gõ <b class="text-ink">2000</b> ở “Tra cổ” → cảnh báo số cao bất thường (trần = giờ làm × 3600 ÷ SMV × 1,5)</li>
+      <li>Chọn ngày <b class="text-ink">28/09</b> → nhập bổ sung ngày chưa chốt</li>
+      <li><b class="text-ink">+ Thêm trạm</b> → Trạm 34 (trống) hoặc Trạm 28 (đang có người)</li>
+    </ul>
+    <button id="btn-reset" class="mt-5 w-full h-10 rounded-ctl border border-line-strong hover:bg-hover text-[14px] font-medium flex items-center justify-center gap-2"><i data-lucide="rotate-ccw" class="w-4 h-4"></i>Đặt lại demo</button>
+  </aside>
+</div>
+
+<script>
+/* ═════════ Tiện ích ═════════ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = n => n == null ? '—' : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const ic = (n, c = 'w-5 h-5') => `<i data-lucide="${n}" class="${c}"></i>`;
+const icons = () => window.lucide && lucide.createIcons();
+const pDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+const ddmm = iso => iso.split('-').reverse().slice(0, 2).join('/');
+const weekday = iso => { const w = pDate(iso).getDay(); return w === 0 ? 'Chủ nhật' : 'Thứ ' + (w + 1); };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+/* ═════════ Dữ liệu mẫu (khớp Bảng sản lượng ngày trên Web) ═════════ */
+const NOW = { date: '2026-09-29', time: '09:15' };
+const ME = { nv: 'NV00127', name: 'Phạm Thị Mai' };
+const LEADER = 'Nguyễn Văn Bình';
+const HOURS = iso => { const w = pDate(iso).getDay(); return w === 0 ? 0 : w === 6 ? 8 : 9; };   // T2–T6 9 giờ · T7 8 giờ
+// Trạm → công đoạn được gán (sơ đồ chuyền C05)
+const OPS = {
+  12: [['PL-2641', 'CD-40', 'Kiểm thành phẩm', 45]], 25: [['PL-2641', 'CD-38', 'Ủi thành phẩm', 40]], 26: [['PL-2641', 'CD-05', 'May nẹp cổ', 38]],
+  27: [['PL-2641', 'CD-06', 'Tra cổ', 52], ['PL-2641', 'CD-07', 'Diễu chân cổ', 24]],
+  28: [['PL-2641', 'CD-08', 'Ráp vai', 30]], 29: [['PL-2641', 'CD-12', 'May măng sét', 35]], 30: [['PL-2641', 'CD-13', 'Tra tay', 48]],
+  31: [['PL-2641', 'CD-14', 'Can sườn', 42]], 32: [['PL-2641', 'CD-15', 'Vắt sổ sườn', 28]], 33: [['PL-2641', 'CD-16', 'May nhãn sườn', 20]],
+  34: [['PL-2641', 'CD-18', 'Lên lai áo', 36]], 35: [['PL-2641', 'CD-20', 'Đính nút', 18], ['PL-2641', 'CD-21', 'Thùa khuy', 16]],
+  36: [['PL-2641', 'CD-22', 'Cắt chỉ', 12]], 37: [['PL-2641', 'CD-23', 'Gắn thẻ bài', 10]], 38: [['PL-2641', 'CD-24', 'Gấp xếp', 22]],
+  39: [['SH-2655', 'CD-03', 'Ráp đáy quần', 34]], 40: [['SH-2655', 'CD-04', 'Tra lưng', 50]], 41: [['SH-2655', 'CD-05', 'Luồn thun', 26]]
+};
+// Người đang đăng nhập các trạm hôm nay
+const OCCUPANT = {
+  12: 'Nguyễn Thị Lan', 25: 'Trần Văn Hùng', 26: 'Lê Thị Hoa', 28: 'Võ Thị Thu|NV00509|07:02', 29: 'Đỗ Thị Ngọc', 30: 'Huỳnh Thị Kim', 31: 'Bùi Thị Hạnh',
+  32: 'Ngô Thị Yến', 33: 'Lý Thị Trang', 35: 'Phan Thị Nhung', 36: 'Đặng Thị Vân', 37: 'Trương Thị Hằng', 38: 'Mai Thị Diễm',
+  39: 'Châu Thị Thảo', 40: 'Tạ Thị Loan', 41: 'La Thị Phương'
+};
+const STATIONS = [12, 25, ...Array.from({ length: 16 }, (_, i) => 26 + i)];
+const DATES = ['2026-09-29', '2026-09-28', '2026-09-27', '2026-09-26'];   // hôm nay + 3 ngày liền trước
+
+const SCENARIOS = [
+  ['normal', 'Bình thường', 'Hôm nay đã lưu 101 / 101 lúc 09:03'],
+  ['offline', 'Mất mạng khi bấm Lưu', 'Giữ số trên form + Thử lại (MVP)'],
+  ['kicked', 'Bị đăng xuất hộ khỏi trạm', 'Server từ chối, giữ số trên form'],
+  ['adjusted', 'Tổ trưởng đã điều chỉnh 1 ô', 'Ô chỉ đọc + lý do (R6)'],
+  ['noops', 'Trạm chưa có công đoạn', 'Liên hệ tổ trưởng'],
+  ['closed', 'Ngày 28/09 bị chốt khi đang nhập', '“Ngày đã chốt, liên hệ tổ trưởng”']
+];
+
+/* ═════════ Trạng thái ═════════ */
+let S;
+function initState(scenario = 'normal') {
+  S = {
+    scenario, view: 'nhap', date: NOW.date, online: scenario !== 'offline', saving: false,
+    days: { '2026-09-29': 'open', '2026-09-28': 'open', '2026-09-27': 'off', '2026-09-26': 'closed' },
+    sessions: { '2026-09-29': [27], '2026-09-28': [27] },           // phiên trạm điện thoại còn giữ (R1)
+    active: { '2026-09-29': 27, '2026-09-28': 27 },
+    rec: {                                                            // bản ghi đã lưu trên server
+      '2026-09-29|27|CD-06': { v: 101, at: '09:03' }, '2026-09-29|27|CD-07': { v: 101, at: '09:04' },
+      '2026-09-28|27|CD-06': { v: 388, at: '16:16 28/09' }, '2026-09-28|27|CD-07': { v: 390, at: '16:18 28/09' }
+    },
+    occ: { ...OCCUPANT }, draft: {}, err: {}, banner: null, kicked: {}, noops: scenario === 'noops' ? [27] : [],
+    closeOnSave: scenario === 'closed', kickOnSave: scenario === 'kicked'
+  };
+  if (scenario === 'adjusted') S.rec['2026-09-29|27|CD-07'] = { v: 110, at: '09:10', adj: { old: 101, reason: 'Công nhân báo lại', by: LEADER, at: '09:10 29/09' } };
+  if (scenario === 'closed') S.date = '2026-09-28';
+}
+const key = (d, t, cd) => `${d}|${t}|${cd}`;
+const tram = () => S.active[S.date];
+const opsOf = t => S.noops.includes(t) && S.date === NOW.date ? [] : (OPS[t] || []).map(([mh, cd, ten, smv]) => ({ mh, cd, ten, smv }));
+const cap = smv => Math.floor(HOURS(S.date) * 3600 / smv * 1.5);
+const openDates = () => DATES.filter(d => S.days[d] === 'open' && (S.sessions[d] || []).length);   // Ngày mở nhập có phiên trên máy
+const locked = () => S.days[S.date] !== 'open' || !!S.kicked[`${S.date}|${tram()}`];
+function parseQty(v) { v = String(v).trim(); if (v === '') return { empty: true }; if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, ''); if (!/^\d+$/.test(v)) return { bad: true }; const n = +v; return n > 99999 ? { bad: true } : { n }; }
+function changes(t = tram(), d = S.date) {
+  return opsOf(t).filter(o => { const k = key(d, t, o.cd), dr = S.draft[k]; if (dr == null) return false; const r = S.rec[k], p = parseQty(dr);
+    if (r?.adj) return false; return p.bad || (p.n != null && p.n !== r?.v); });
+}
+
+/* ═════════ Header ═════════ */
+function renderConn() {
+  const c = $('#conn');
+  c.className = 'ml-auto h-7 px-2.5 rounded-pill text-[12px] font-semibold inline-flex items-center gap-1.5 shrink-0 ' + (S.online ? 'bg-closed-bg text-closed-ink' : 'bg-danger-bg text-danger');
+  c.innerHTML = `<span class="w-2 h-2 rounded-full ${S.online ? 'bg-success' : 'bg-danger'}"></span>${S.online ? 'Trực tuyến' : 'Mất mạng'}`;
+}
+function renderTabs() {
+  const list = S.sessions[S.date] || [];
+  const today = S.date === NOW.date;
+  $('#tabs').innerHTML = list.map(t => {
+    const on = t === tram(), dirty = changes(t).length, kicked = S.kicked[`${S.date}|${t}`];
+    return `<button role="tab" aria-selected="${on}" data-tab="${t}" class="relative h-11 px-4 rounded-t-ctl text-[15px] whitespace-nowrap flex items-center gap-1.5 transition-colors duration-fast
+      ${on ? 'font-semibold text-ink' : 'text-muted hover:text-ink'}">
+      ${kicked ? ic('lock', 'w-4 h-4 text-danger') : ''}Trạm ${t}
+      ${dirty ? `<span class="w-2 h-2 rounded-full bg-brand" aria-label="chưa lưu"></span>` : ''}
+      ${on ? '<span class="absolute left-3 right-3 bottom-0 h-[3px] rounded-t bg-brand"></span>' : ''}</button>`;
+  }).join('') + (today ? `<button data-add-station class="h-11 px-3 ml-1 text-[15px] font-medium text-brand-ink flex items-center gap-1 whitespace-nowrap rounded-ctl hover:bg-brand-soft">${ic('plus', 'w-[18px] h-[18px]')}Thêm trạm</button>` : '');
+}
+
+/* ═════════ Thanh ngày ═════════ */
+function renderDatebar() {
+  const past = S.date !== NOW.date;
+  $('#datebar').innerHTML = `
+    <button id="btn-date" class="h-11 pl-3 pr-2.5 rounded-ctl border flex items-center gap-2 text-[15px] ${past ? 'border-empty-bar bg-empty-bg text-empty-ink' : 'border-line-strong bg-surface'}" aria-haspopup="dialog">
+      ${ic('calendar', 'w-[18px] h-[18px]')}<span class="font-semibold">${past ? '' : 'Hôm nay · '}${weekday(S.date)}, ${ddmm(S.date)}</span>${ic('chevron-down', 'w-4 h-4 opacity-70')}</button>
+    <span class="ml-auto text-[13px] text-muted text-right leading-tight">${HOURS(S.date) ? `Ca ${HOURS(S.date)} giờ` : ''}</span>`;
+}
+
+/* ═════════ Thẻ công đoạn ═════════ */
+function cardHTML(o) {
+  const t = tram(), k = key(S.date, t, o.cd), r = S.rec[k], dr = S.draft[k], lock = locked();
+  const head = `<div class="flex items-center gap-2 text-[13px] text-muted">
+      <span class="h-6 px-2 rounded-pill bg-group text-ink text-[12px] font-semibold inline-flex items-center">${o.mh}</span>
+      <span class="font-mono text-[12px]">${o.cd}</span><span>· SMV ${o.smv}s</span>
+      <span class="ml-auto" data-status="${k}">${statusHTML(k)}</span></div>
+    <h3 class="text-[18px] font-semibold mt-1.5 leading-snug">${esc(o.ten)}</h3>`;
+  if (r?.adj) return `<article class="rounded-card border border-line bg-surface p-4" data-card="${k}">${head}
+    <div class="mt-3 rounded-ctl bg-adjust-bg text-adjust-ink p-3 flex gap-3">
+      ${ic('pencil', 'w-5 h-5 mt-0.5')}
+      <div class="text-[14px] leading-snug"><div class="font-semibold">Tổ trưởng đã điều chỉnh: <span class="num text-[20px] align-[-2px]">${fmt(r.v)}</span></div>
+      <div>${esc(r.adj.reason)} · ${fmt(r.adj.old)} → ${fmt(r.v)}</div><div class="text-[13px] opacity-80">${esc(r.adj.by)} · ${r.adj.at}</div></div>
+    </div>
+    <p class="text-[13px] text-muted mt-2 flex items-center gap-1.5">${ic('lock', 'w-4 h-4')}Không sửa được trên app. Sai số? Báo tổ trưởng.</p></article>`;
+  const val = dr ?? (r ? String(r.v) : '');
+  return `<article class="rounded-card border bg-surface p-4 transition-colors duration-fast ${dr != null && changes().some(c => c.cd === o.cd) ? 'border-brand' : 'border-line'}" data-card="${k}">${head}
+    <div class="mt-3 flex items-stretch gap-2">
+      <button data-step="-1" data-k="${k}" class="w-[52px] h-[56px] rounded-ctl border border-line-strong grid place-items-center text-ink hover:bg-hover disabled:text-disabled-ink disabled:bg-disabled-bg" ${lock ? 'disabled' : ''} aria-label="Bớt 1">${ic('minus', 'w-6 h-6')}</button>
+      <input data-input="${k}" data-smv="${o.smv}" inputmode="numeric" enterkeyhint="next" autocomplete="off" value="${esc(val)}" placeholder="0" ${lock ? 'disabled' : ''}
+        aria-label="Tổng số đã làm – ${esc(o.ten)}" aria-describedby="hint-${o.cd} err-${o.cd}"
+        class="num flex-1 min-w-0 h-[56px] rounded-ctl border-2 ${S.err[k] ? 'border-danger' : 'border-line-strong focus:border-brand-ink'} bg-surface text-center font-semibold outline-none disabled:bg-disabled-bg disabled:text-muted" style="font-size: var(--fs-qty-input)">
+      <button data-step="1" data-k="${k}" class="w-[52px] h-[56px] rounded-ctl border border-line-strong grid place-items-center text-ink hover:bg-hover disabled:text-disabled-ink disabled:bg-disabled-bg" ${lock ? 'disabled' : ''} aria-label="Thêm 1">${ic('plus', 'w-6 h-6')}</button>
+    </div>
+    <div class="mt-2 flex items-center gap-2">
+      ${[10, 20].map(n => `<button data-step="${n}" data-k="${k}" class="h-9 px-3 rounded-pill border border-line-strong text-[14px] font-medium hover:bg-hover disabled:text-disabled-ink" ${lock ? 'disabled' : ''}>+${n}</button>`).join('')}
+      <span id="hint-${o.cd}" class="ml-auto text-[13px] text-right leading-tight" data-delta="${k}">${deltaHTML(k)}</span>
+    </div>
+    <p id="err-${o.cd}" class="text-[14px] text-danger mt-1.5 ${S.err[k] ? '' : 'hidden'}" data-err="${k}" role="alert">${S.err[k] ? ic('circle-alert', 'w-4 h-4 inline -mt-0.5') + ' ' + esc(S.err[k]) : ''}</p>
+  </article>`;
+}
+function statusHTML(k) {
+  const r = S.rec[k];
+  if (r?.adj) return `<span class="inline-flex items-center gap-1 text-adjust-ink font-medium">${ic('pencil', 'w-3.5 h-3.5')}Đã điều chỉnh</span>`;
+  if (r) return `<span class="inline-flex items-center gap-1 text-closed-ink font-medium">${ic('circle-check', 'w-4 h-4')}Đã lưu ${r.at.split(' ')[0]}</span>`;
+  return `<span class="inline-flex items-center gap-1 text-empty-ink font-medium">${ic('circle-dashed', 'w-4 h-4')}Chưa nhập</span>`;
+}
+function deltaHTML(k) {
+  const r = S.rec[k], dr = S.draft[k];
+  if (dr == null) return r ? `<span class="text-muted">Đã lưu <b class="num text-ink">${fmt(r.v)}</b></span>` : '<span class="text-muted">Nhập tổng số từ đầu ngày</span>';
+  const p = parseQty(dr);
+  if (p.bad || p.empty) return '';
+  if (!r) return `<span class="text-brand-ink font-semibold">Chưa lưu</span>`;
+  if (p.n === r.v) return `<span class="text-muted">Không đổi</span>`;
+  const d = p.n - r.v;
+  return `<span class="${d < 0 ? 'text-warn-ink' : 'text-brand-ink'} font-semibold num">${fmt(r.v)} → ${fmt(p.n)} (${d > 0 ? '+' : '−'}${fmt(Math.abs(d))})</span><br><span class="text-muted">chưa lưu</span>`;
+}
+
+function bannerHTML() {
+  const out = [];
+  const b = S.banner;
+  if (b?.type === 'offline') out.push(`<div class="rounded-card bg-danger-bg border border-danger/30 p-3 flex gap-3 pop-in">${ic('wifi-off', 'w-5 h-5 text-danger mt-0.5')}
+    <div class="flex-1 text-[14px] leading-snug"><div class="font-semibold text-danger">Chưa lưu được – kiểm tra mạng</div><div>Số bạn nhập vẫn còn trên màn hình. Có mạng lại thì bấm Thử lại.</div></div></div>`);
+  const kk = S.kicked[`${S.date}|${tram()}`];
+  if (kk) out.push(`<div class="rounded-card bg-danger-bg border border-danger/30 p-3 flex gap-3 pop-in">${ic('user-x', 'w-5 h-5 text-danger mt-0.5')}
+    <div class="flex-1 text-[14px] leading-snug"><div class="font-semibold text-danger">Bạn đã bị đăng xuất khỏi Trạm ${tram()} lúc ${kk.at} bởi ${esc(kk.by)}</div>
+    <div>Số bạn nhập vẫn còn. Đăng nhập lại để lưu.</div>
+    <button data-relogin class="mt-2 h-10 px-4 rounded-ctl bg-surface border border-line-strong font-semibold text-[14px]">Đăng nhập lại Trạm ${tram()}</button></div></div>`);
+  if (S.days[S.date] === 'closed') out.push(`<div class="rounded-card bg-group border border-line p-3 flex gap-3 pop-in">${ic('lock', 'w-5 h-5 text-muted mt-0.5')}
+    <div class="flex-1 text-[14px] leading-snug"><div class="font-semibold">Ngày ${ddmm(S.date)} đã chốt, liên hệ tổ trưởng</div><div class="text-muted">Số chưa lưu không gửi được nữa. Báo tổ trưởng để nhập hộ.</div>
+    <button data-go-today class="mt-2 h-10 px-4 rounded-ctl bg-surface border border-line-strong font-semibold text-[14px]">Về hôm nay</button></div></div>`);
+  else if (S.date !== NOW.date) out.push(`<div class="rounded-card bg-empty-bg border border-empty-bar/40 p-3 flex gap-3">${ic('history', 'w-5 h-5 text-empty-ink mt-0.5')}
+    <div class="flex-1 text-[14px] leading-snug text-empty-ink"><div class="font-semibold">Đang nhập cho ${weekday(S.date)}, ${ddmm(S.date)} — không phải hôm nay</div><div>Chỉ nhập bổ sung khi ngày này chưa chốt.</div></div>
+    <button data-go-today class="self-center h-10 px-3 rounded-ctl bg-surface border border-empty-bar/50 text-[14px] font-semibold text-empty-ink whitespace-nowrap">Hôm nay</button></div>`);
+  if (!store.get('vsn-hint-total') && S.date === NOW.date && S.days[S.date] === 'open' && !kk) out.push(`<div class="rounded-card bg-open-bg p-3 flex gap-3" id="hint-total">${ic('info', 'w-5 h-5 text-open-ink mt-0.5')}
+    <div class="flex-1 text-[14px] leading-snug"><div class="font-semibold text-open-ink">Nhập TỔNG số đã làm từ đầu ngày</div><div>Ví dụ: sáng làm 60, chiều thêm 40 → nhập <b>100</b>. Số mới sẽ thay số cũ.</div></div>
+    <button data-dismiss-hint class="self-start w-9 h-9 -mr-1 -mt-1 grid place-items-center rounded-full hover:bg-surface/70" aria-label="Đã hiểu, ẩn hướng dẫn">${ic('x', 'w-4 h-4')}</button></div>`);
+  return out.join('');
+}
+
+function renderCards() {
+  $('#banners').innerHTML = bannerHTML();
+  const list = S.sessions[S.date] || [];
+  if (!list.length) {
+    $('#cards').innerHTML = `<div class="py-16 text-center flex flex-col items-center gap-3">${ic('scan-line', 'w-12 h-12 text-muted')}
+      <p class="text-[17px] font-semibold">Chưa đăng nhập trạm nào</p><p class="text-[14px] text-muted max-w-[260px]">Quét mã QR dán tại trạm hoặc chọn trạm từ danh sách.</p>
+      <button data-add-station class="mt-2 h-12 px-5 rounded-ctl bg-brand text-ink font-semibold flex items-center gap-2">${ic('plus')}Thêm trạm</button></div>`;
+    return icons();
+  }
+  const ops = opsOf(tram());
+  $('#cards').innerHTML = ops.length ? ops.map(cardHTML).join('') + `<p class="text-[13px] text-muted text-center pt-1 pb-2">Trạm ${tram()} · ${ops.length} công đoạn được gán hôm ${S.date === NOW.date ? 'nay' : ddmm(S.date)}</p>`
+    : `<div class="py-16 text-center flex flex-col items-center gap-3">${ic('clipboard-x', 'w-12 h-12 text-muted')}
+      <p class="text-[17px] font-semibold">Trạm ${tram()} chưa có công đoạn</p><p class="text-[14px] text-muted max-w-[260px]">Hôm nay trạm chưa được gán công đoạn nào. Liên hệ tổ trưởng.</p></div>`;
+  icons();
+}
+
+/* ═════════ Thanh Lưu ═════════ */
+function renderSavebar() {
+  const bar = $('#savebar'), list = S.sessions[S.date] || [];
+  if (!list.length || !opsOf(tram()).length) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  const ch = changes(), n = ch.length, lock = locked();
+  const lastAt = opsOf(tram()).map(o => S.rec[key(S.date, tram(), o.cd)]?.at).filter(Boolean).sort().pop();
+  let left, btn;
+  if (lock) { left = `<span class="text-muted">${S.days[S.date] !== 'open' ? 'Ngày đã chốt' : 'Đã bị đăng xuất khỏi trạm'}</span>`; btn = `<button disabled class="h-[52px] px-6 rounded-ctl bg-disabled-bg text-disabled-ink font-semibold flex items-center gap-2">${ic('lock', 'w-5 h-5')}Không lưu được</button>`; }
+  else if (S.saving) { left = `<span class="text-muted">Đang gửi lên máy chủ…</span>`; btn = `<button disabled aria-busy="true" class="h-[52px] px-6 rounded-ctl bg-brand text-ink font-semibold flex items-center gap-2 opacity-80">${ic('loader-circle', 'w-5 h-5 spin')}Đang lưu…</button>`; }
+  else if (S.banner?.type === 'offline' && n) { left = `<span class="text-danger font-semibold">${n} công đoạn chưa lưu</span>`; btn = `<button data-save class="h-[52px] px-6 rounded-ctl bg-brand hover:bg-brand-hover text-ink font-semibold flex items-center gap-2">${ic('refresh-cw', 'w-5 h-5')}Thử lại</button>`; }
+  else if (n) { left = `<span><b class="text-brand-ink num">${n}</b> công đoạn chưa lưu</span>`; btn = `<button data-save class="h-[52px] px-6 min-w-[140px] rounded-ctl bg-brand hover:bg-brand-hover text-ink text-[17px] font-semibold flex items-center justify-center gap-2 transition-colors duration-fast">${ic('save', 'w-5 h-5')}Lưu</button>`; }
+  else { left = `<span class="text-closed-ink flex items-center gap-1.5">${ic('circle-check', 'w-4 h-4')}${lastAt ? `Đã lưu hết · ${lastAt.split(' ')[0]}` : 'Chưa có số nào'}</span>`; btn = `<button disabled class="h-[52px] px-6 min-w-[140px] rounded-ctl bg-disabled-bg text-disabled-ink font-semibold">Lưu</button>`; }
+  bar.innerHTML = `<div class="flex items-center gap-3"><div class="flex-1 min-w-0 text-[14px] leading-tight">${left}</div>${btn}</div>`;
+  icons();
+}
+
+/* ═════════ Điều hướng dưới & màn khác ═════════ */
+function renderNav() {
+  const items = [['nhap', 'square-pen', 'Nhập'], ['cuatoi', 'chart-column', 'Của tôi'], ['giolam', 'clock', 'Giờ làm']];
+  $('#bottomnav').innerHTML = items.map(([id, icn, label]) => `<button data-view="${id}" class="flex flex-col items-center justify-center gap-0.5 text-[12px] font-medium ${S.view === id ? 'text-brand-ink' : 'text-muted'}" ${S.view === id ? 'aria-current="page"' : ''}>
+    <span class="w-14 h-8 rounded-pill grid place-items-center ${S.view === id ? 'bg-brand-soft' : ''}">${ic(icn, 'w-[22px] h-[22px]')}</span>${label}</button>`).join('');
+  $('#view-nhap').classList.toggle('hidden', S.view !== 'nhap');
+  $('#view-other').classList.toggle('hidden', S.view === 'nhap');
+  if (S.view !== 'nhap') $('#view-other').innerHTML = `<div class="py-24 px-8 text-center flex flex-col items-center gap-3">${ic(S.view === 'cuatoi' ? 'chart-column' : 'clock', 'w-12 h-12 text-muted')}
+    <p class="text-[17px] font-semibold">${S.view === 'cuatoi' ? 'Của tôi — 30 ngày gần nhất' : 'Giờ làm — xem & gửi yêu cầu sửa'}</p>
+    <p class="text-[14px] text-muted">${S.view === 'cuatoi' ? 'F11' : 'F6'} · dựng ở bước sau, dùng lại khung app bar + điều hướng dưới của màn này.</p></div>`;
+  icons();
+}
+function render() { renderConn(); renderTabs(); renderDatebar(); renderCards(); renderSavebar(); renderNav(); renderScenarios(); icons(); }
+function refreshLive(k) {   // cập nhật khi đang gõ, không vẽ lại ô nhập để giữ bàn phím
+  const d = $(`[data-delta="${k}"]`); if (d) d.innerHTML = deltaHTML(k);
+  const card = $(`[data-card="${k}"]`), dirty = changes().some(c => key(S.date, tram(), c.cd) === k);
+  card?.classList.toggle('border-brand', dirty); card?.classList.toggle('border-line', !dirty);
+  renderSavebar(); renderTabs(); icons();
+}
+function setErr(k, msg) {
+  S.err[k] = msg; const p = $(`[data-err="${k}"]`), inp = $(`[data-input="${k}"]`);
+  if (p) { p.innerHTML = msg ? ic('circle-alert', 'w-4 h-4 inline -mt-0.5') + ' ' + esc(msg) : ''; p.classList.toggle('hidden', !msg); }
+  if (inp) { inp.classList.toggle('border-danger', !!msg); inp.classList.toggle('border-line-strong', !msg); inp.setAttribute('aria-invalid', String(!!msg)); }
+  icons();
+}
+
+/* ═════════ Sheet (bottom sheet dùng chung) ═════════ */
+let lastFocus = null, sheetClose = null;
+function openSheet(html, onClose) {
+  lastFocus = document.activeElement; sheetClose = onClose || null;
+  const sh = $('#sheet');
+  sh.innerHTML = `<div class="pt-2 pb-1 grid place-items-center shrink-0"><span class="w-10 h-1.5 rounded-full bg-line-strong"></span></div>${html}`;
+  icons();
+  sh.classList.add('open'); sh.setAttribute('aria-hidden', 'false'); $('#veil').classList.add('open');
+  setTimeout(() => (sh.querySelector('[data-autofocus]') || sh.querySelector('button, input'))?.focus(), 60);
+}
+function closeSheet(restore = true) {
+  const sh = $('#sheet'); if (!sh.classList.contains('open')) return;
+  sh.classList.remove('open'); sh.setAttribute('aria-hidden', 'true'); $('#veil').classList.remove('open');
+  const cb = sheetClose; sheetClose = null; cb?.();
+  if (restore) lastFocus?.focus?.();
+}
+const sheetHead = (title, sub = '') => `<div class="px-5 pt-2 pb-3 shrink-0"><h2 id="sheet-title" class="text-[19px] font-semibold">${title}</h2>${sub ? `<p class="text-[14px] text-muted mt-0.5">${sub}</p>` : ''}</div>`;
+const btnPrimary = (attrs, label, icn = '') => `<button ${attrs} class="h-[52px] w-full flex-1 rounded-ctl bg-brand hover:bg-brand-hover text-ink text-[16px] font-semibold flex items-center justify-center gap-2">${icn ? ic(icn) : ''}${label}</button>`;
+const btnGhost = (attrs, label) => `<button ${attrs} class="h-[52px] w-full flex-1 rounded-ctl border border-line-strong bg-surface hover:bg-hover text-[16px] font-medium">${label}</button>`;
+
+/* Chọn ngày */
+function openDateSheet() {
+  const rows = DATES.map(d => {
+    const st = S.days[d], has = (S.sessions[d] || []).length, ok = st === 'open' && has, cur = d === S.date;
+    const note = d === NOW.date ? 'Hôm nay' : st === 'off' ? 'Nghỉ — không có ca' : st === 'closed' ? 'Đã chốt' : !has ? 'Không còn phiên trên máy' : 'Chưa chốt · nhập bổ sung được';
+    return `<button ${ok ? `data-pick-date="${d}"` : 'disabled aria-disabled="true"'} class="w-full min-h-[60px] px-4 flex items-center gap-3 rounded-card text-left ${cur ? 'bg-brand-soft' : ok ? 'hover:bg-hover' : 'opacity-60'}">
+      <span class="w-11 text-center leading-none"><span class="block text-[12px] text-muted font-semibold uppercase">${weekday(d).replace('Thứ ', 'T').replace('Chủ nhật', 'CN')}</span><span class="block text-[20px] font-semibold num mt-1">${d.slice(8)}</span></span>
+      <span class="flex-1"><span class="block text-[16px] font-medium">${weekday(d)}, ${ddmm(d)}</span><span class="block text-[13px] ${ok ? 'text-muted' : 'text-muted'}">${note}</span></span>
+      ${cur ? ic('check', 'w-5 h-5 text-brand-ink') : ok ? ic('chevron-right', 'w-5 h-5 text-muted') : ic('lock', 'w-4 h-4 text-muted')}</button>`;
+  }).join('');
+  openSheet(`${sheetHead('Chọn ngày làm việc', 'Chỉ nhập được hôm nay và ngày chưa chốt trong 3 ngày gần nhất mà máy còn giữ phiên trạm.')}
+    <div class="scroll px-3 flex flex-col gap-1">${rows}</div>
+    <p class="px-5 py-3 text-[13px] text-muted flex gap-2">${ic('info', 'w-4 h-4 mt-0.5')}Thiếu phiên hoặc ngày đã chốt → nhờ tổ trưởng nhập hộ.</p>
+    <div class="px-4 pb-4 safe-b">${btnGhost('data-close-sheet', 'Đóng')}</div>`);
+}
+
+/* Xác nhận trước khi lưu: số nhỏ hơn / cao bất thường */
+function openConfirm(items, onOk) {
+  openSheet(`${sheetHead('Kiểm tra lại trước khi lưu')}
+    <ul class="px-5 flex flex-col gap-2">${items.map(it => `<li class="rounded-card p-3 flex gap-3 ${it.kind === 'lower' ? 'bg-warn-bg text-warn-ink' : 'bg-danger-bg text-danger'}">
+      ${ic(it.kind === 'lower' ? 'trending-down' : 'triangle-alert', 'w-5 h-5 mt-0.5')}
+      <div class="text-[15px] leading-snug"><div class="font-semibold">${esc(it.ten)}</div><div>${it.msg}</div></div></li>`).join('')}</ul>
+    <div class="px-4 pt-4 pb-4 safe-b flex gap-3">${btnGhost('data-close-sheet data-autofocus', 'Sửa lại')}${btnPrimary('data-confirm-save', 'Vẫn lưu')}</div>`);
+  $('[data-confirm-save]').onclick = () => { closeSheet(false); onOk(); };
+}
+
+/* Thêm trạm (chọn trạm → đăng nhập) */
+function openAddStation() {
+  const mine = S.sessions[NOW.date] || [];
+  const cells = STATIONS.map(t => {
+    const me = mine.includes(t), occ = S.occ[t]?.split('|')[0];
+    return `<button ${me ? 'disabled' : `data-pick-station="${t}"`} class="h-[68px] rounded-card border p-2 text-left flex flex-col justify-between
+      ${me ? 'border-brand bg-brand-soft' : 'border-line hover:border-line-strong hover:bg-hover'}">
+      <span class="text-[18px] font-semibold num leading-none">${t}</span>
+      <span class="text-[11px] leading-tight truncate ${me ? 'text-brand-ink font-semibold' : occ ? 'text-muted' : 'text-closed-ink font-semibold'}">${me ? 'Của bạn' : occ ? esc(occ) : 'Trống'}</span></button>`;
+  }).join('');
+  openSheet(`${sheetHead('Thêm trạm', 'Chuyền C05 · hôm nay ' + ddmm(NOW.date))}
+    <div class="px-4 pb-3 shrink-0"><button data-scan class="w-full h-[52px] rounded-ctl bg-ink text-surface font-semibold flex items-center justify-center gap-2">${ic('scan-line')}Quét mã QR tại trạm</button></div>
+    <div class="px-5 pb-2 text-[13px] font-semibold text-muted shrink-0">Hoặc chọn trạm</div>
+    <div class="scroll px-4 pb-3 grid grid-cols-4 gap-2">${cells}</div>
+    <div class="px-4 pb-4 pt-1 safe-b shrink-0">${btnGhost('data-close-sheet', 'Đóng')}</div>`);
+}
+function openLogin(t, relogin = false) {
+  const occ = relogin ? null : S.occ[t]?.split('|');
+  openSheet(`${sheetHead(`${relogin ? 'Đăng nhập lại' : 'Đăng nhập'} Trạm ${t}`, `${(OPS[t] || []).map(o => o[2]).join(' · ') || 'Chưa có công đoạn'}`)}
+    <div class="px-5 flex flex-col gap-3">
+      <label class="block"><span class="block text-[14px] font-medium mb-1">Mã nhân viên</span>
+        <div class="h-[52px] px-4 rounded-ctl border border-line bg-group flex items-center gap-3"><span class="font-mono text-[17px] font-semibold">${ME.nv}</span><span class="text-muted">· ${ME.name}</span>${ic('lock', 'w-4 h-4 text-muted ml-auto')}</div>
+        <span class="block text-[13px] text-muted mt-1">Điện thoại này đã dùng mã ${ME.nv} hôm nay. Muốn đổi người phải đăng xuất hết các trạm.</span></label>
+      ${occ ? `<div class="rounded-card bg-warn-bg text-warn-ink p-3 flex gap-3">${ic('user-round-x', 'w-5 h-5 mt-0.5')}<div class="text-[14px] leading-snug">
+        <div class="font-semibold">Trạm đang có ${esc(occ[0])}${occ[1] ? ` (${occ[1]})` : ''} đăng nhập${occ[2] ? ` từ ${occ[2]}` : ''}</div>
+        <div>Đăng nhập sẽ đăng xuất người này. Việc này được ghi lại.</div></div></div>` : ''}
+    </div>
+    <div class="px-4 pt-4 pb-4 safe-b flex gap-3">${btnGhost('data-close-sheet', 'Hủy')}${btnPrimary(`data-do-login="${t}" data-autofocus`, occ ? 'Đăng xuất người đó & vào' : 'Đăng nhập', 'log-in')}</div>`);
+}
+
+/* Menu */
+function openMenu() {
+  const t = tram(), today = S.date === NOW.date;
+  openSheet(`${sheetHead('Tùy chọn')}
+    <div class="px-3 pb-2 flex flex-col">
+      ${today && t ? `<button data-logout="${t}" class="h-14 px-3 rounded-card flex items-center gap-3 text-[16px] hover:bg-hover">${ic('log-out', 'w-5 h-5 text-muted')}Đăng xuất Trạm ${t}</button>` : ''}
+      ${today && (S.sessions[NOW.date] || []).length > 1 ? `<button data-logout="all" class="h-14 px-3 rounded-card flex items-center gap-3 text-[16px] hover:bg-hover">${ic('log-out', 'w-5 h-5 text-muted')}Đăng xuất tất cả trạm hôm nay</button>` : ''}
+      <button data-demo="Hướng dẫn sử dụng (F18)" class="h-14 px-3 rounded-card flex items-center gap-3 text-[16px] hover:bg-hover">${ic('book-open', 'w-5 h-5 text-muted')}Hướng dẫn sử dụng</button>
+      <button data-reset-hint class="h-14 px-3 rounded-card flex items-center gap-3 text-[16px] hover:bg-hover">${ic('info', 'w-5 h-5 text-muted')}Hiện lại gợi ý “Nhập tổng số”</button>
+    </div>
+    <div class="px-4 pb-4 safe-b">${btnGhost('data-close-sheet', 'Đóng')}</div>`);
+}
+
+/* ═════════ Lưu ═════════ */
+function validateAll() {
+  const t = tram(), items = []; let firstBad = null;
+  for (const o of opsOf(t)) {
+    const k = key(S.date, t, o.cd), dr = S.draft[k]; if (dr == null || S.rec[k]?.adj) continue;
+    const p = parseQty(dr), r = S.rec[k];
+    if (p.empty) { setErr(k, 'Nhập số lượng, hoặc bấm − để về số đã lưu'); firstBad ??= k; continue; }
+    if (p.bad) { setErr(k, 'Số lượng phải là số nguyên từ 0 đến 99.999'); firstBad ??= k; continue; }
+    setErr(k, null);
+    if (r && p.n < r.v) items.push({ kind: 'lower', ten: o.ten, msg: `Số mới <b class="num">${fmt(p.n)}</b> nhỏ hơn số đã lưu <b class="num">${fmt(r.v)}</b>. Ghi đè?` });
+    if (p.n > cap(o.smv)) items.push({ kind: 'high', ten: o.ten, msg: `Số <b class="num">${fmt(p.n)}</b> cao bất thường (tối đa khoảng <b class="num">${fmt(cap(o.smv))}</b> cho ca ${HOURS(S.date)} giờ). Bạn chắc chắn?` });
+  }
+  return { items, firstBad };
+}
+function trySave() {
+  if (S.saving || locked() || !changes().length) return;
+  const { items, firstBad } = validateAll();
+  if (firstBad) { $(`[data-input="${firstBad}"]`)?.focus(); return; }
+  if (items.length) return openConfirm(items, doSave);
+  doSave();
+}
+async function doSave() {
+  const t = tram(), d = S.date, ch = changes(t, d);
+  S.saving = true; S.banner = null; renderSavebar();
+  await sleep(700);
+  S.saving = false;
+  if (!S.online) { S.banner = { type: 'offline' }; renderCards(); renderSavebar(); $('#scroller').scrollTop = 0; return; }
+  if (S.kickOnSave && d === NOW.date) { S.kickOnSave = false; S.kicked[`${d}|${t}`] = { at: '09:12', by: LEADER }; render(); $('#scroller').scrollTop = 0; return; }
+  if (S.closeOnSave && d === '2026-09-28') { S.closeOnSave = false; S.days[d] = 'closed'; render(); $('#scroller').scrollTop = 0; return; }
+  const at = d === NOW.date ? NOW.time : `${NOW.time} ${ddmm(NOW.date)}`;
+  ch.forEach(o => { const k = key(d, t, o.cd); S.rec[k] = { v: parseQty(S.draft[k]).n, at }; delete S.draft[k]; delete S.err[k]; });
+  render();
+  toast(`Đã lưu ${ch.length} công đoạn · Trạm ${t}`);
+}
+
+/* ═════════ Toast ═════════ */
+function toast(msg, icn = 'circle-check') {
+  const t = document.createElement('div');
+  t.className = 'pop-in min-h-11 px-4 py-2.5 rounded-pill bg-toast text-ondark text-[14px] font-medium flex items-center gap-2 shadow-pop';
+  t.innerHTML = `${ic(icn, 'w-[18px] h-[18px] text-closed-bg')}<span>${esc(msg)}</span>`;
+  $('#toasts').appendChild(t); icons(); setTimeout(() => t.remove(), 2800);
+}
+
+/* ═════════ Bảng kịch bản ═════════ */
+function renderScenarios() {
+  $('#scenarios').innerHTML = SCENARIOS.map(([id, label, sub]) => `<button role="radio" aria-checked="${S.scenario === id}" data-scenario="${id}"
+    class="w-full text-left px-3 py-2 rounded-ctl border flex gap-2.5 items-start ${S.scenario === id ? 'border-brand bg-brand-soft' : 'border-line hover:bg-hover'}">
+    <span class="mt-1 w-3.5 h-3.5 rounded-full border-2 shrink-0 ${S.scenario === id ? 'border-brand-ink bg-brand-ink shadow-[inset_0_0_0_2px_white]' : 'border-line-strong'}"></span>
+    <span><span class="block text-[14px] font-medium leading-tight">${label}</span><span class="block text-[12px] text-muted">${sub}</span></span></button>`).join('') +
+    (S.scenario === 'offline' ? `<button data-online class="mt-1 h-9 rounded-ctl border border-line-strong text-[13px] font-medium flex items-center justify-center gap-1.5 hover:bg-hover">${ic('wifi', 'w-4 h-4')}${S.online ? 'Đã có mạng lại' : 'Bật mạng lại'}</button>` : '');
+}
+
+/* ═════════ Sự kiện ═════════ */
+const app = $('#phone');
+app.addEventListener('input', e => {
+  const k = e.target.dataset.input; if (!k) return;
+  const r = S.rec[k]; S.draft[k] = e.target.value;
+  if (r && String(r.v) === e.target.value.trim()) delete S.draft[k];
+  if (S.err[k]) setErr(k, null);
+  refreshLive(k);
+});
+app.addEventListener('focusin', e => { if (e.target.dataset.input) setTimeout(() => e.target.select(), 0); });
+app.addEventListener('keydown', e => {
+  if (e.target.dataset.input && e.key === 'Enter') {
+    e.preventDefault(); const all = $$('[data-input]:not([disabled])'), i = all.indexOf(e.target);
+    if (all[i + 1]) all[i + 1].focus(); else { e.target.blur(); trySave(); }
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('#sheet').classList.contains('open')) closeSheet();
+  if (e.key === 'Tab' && $('#sheet').classList.contains('open')) {
+    const f = $$('button:not([disabled]), input', $('#sheet')); const i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+  }
+});
+$('#veil').addEventListener('click', () => closeSheet());
+$('#btn-menu').onclick = openMenu;
+$('#btn-reset').onclick = () => { initState(S.scenario); render(); toast('Đã đặt lại demo', 'rotate-ccw'); };
+
+document.addEventListener('click', e => {
+  const t = e.target; let el;
+  if ((el = t.closest('[data-step]'))) {
+    const k = el.dataset.k, inp = $(`[data-input="${k}"]`), cur = parseQty(inp.value).n ?? S.rec[k]?.v ?? 0;
+    inp.value = String(Math.max(0, Math.min(99999, cur + +el.dataset.step))); inp.dispatchEvent(new Event('input', { bubbles: true })); return;
+  }
+  if ((el = t.closest('[data-tab]'))) { S.active[S.date] = +el.dataset.tab; S.banner = null; renderTabs(); renderCards(); renderSavebar(); icons(); return; }
+  if (t.closest('[data-save]')) return trySave();
+  if (t.closest('#btn-date')) return openDateSheet();
+  if ((el = t.closest('[data-pick-date]'))) { S.date = el.dataset.pickDate; S.banner = null; closeSheet(false); render(); return $('#btn-date')?.focus(); }
+  if (t.closest('[data-go-today]')) { S.date = NOW.date; S.banner = null; return render(); }
+  if (t.closest('[data-close-sheet]')) return closeSheet();
+  if (t.closest('[data-add-station]')) return openAddStation();
+  if (t.closest('[data-scan]')) { closeSheet(false); return toast('Mở camera quét QR (F12) — demo', 'scan-line'); }
+  if ((el = t.closest('[data-pick-station]'))) return openLogin(+el.dataset.pickStation);
+  if ((el = t.closest('[data-do-login]'))) {
+    const st = +el.dataset.doLogin, list = S.sessions[NOW.date] ||= [];
+    const k = `${NOW.date}|${st}`, relogin = !!S.kicked[k];
+    delete S.kicked[k]; if (!list.includes(st)) list.push(st);
+    delete S.occ[st]; S.date = NOW.date; S.active[NOW.date] = st; closeSheet(false); render();
+    return toast(relogin ? `Đã đăng nhập lại Trạm ${st} — số chưa lưu vẫn còn` : `Đã vào Trạm ${st}`, 'log-in');
+  }
+  if (t.closest('[data-relogin]')) return openLogin(tram(), true);
+  if ((el = t.closest('[data-logout]'))) {
+    const which = el.dataset.logout, list = S.sessions[NOW.date] || [];
+    const targets = which === 'all' ? [...list] : [+which];
+    const dirty = targets.reduce((n, st) => n + changes(st, NOW.date).length, 0);
+    if (dirty && !el.dataset.force) {
+      closeSheet(false);
+      return openSheet(`${sheetHead('Còn số chưa lưu', `${dirty} công đoạn chưa lưu sẽ bị bỏ nếu đăng xuất.`)}
+        <div class="px-4 pb-4 safe-b flex gap-3">${btnGhost('data-close-sheet data-autofocus', 'Quay lại lưu')}<button data-logout="${which}" data-force="1" class="h-[52px] flex-1 rounded-ctl border border-danger text-danger font-semibold">Vẫn đăng xuất</button></div>`);
+    }
+    S.sessions[NOW.date] = list.filter(x => !targets.includes(x));
+    targets.forEach(st => opsOf(st).forEach(o => { delete S.draft[key(NOW.date, st, o.cd)]; }));
+    S.active[NOW.date] = S.sessions[NOW.date][0]; closeSheet(false); render();
+    return toast(which === 'all' ? 'Đã đăng xuất tất cả trạm' : `Đã đăng xuất Trạm ${which}`, 'log-out');
+  }
+  if ((el = t.closest('[data-view]'))) { S.view = el.dataset.view; return renderNav(); }
+  if (t.closest('[data-dismiss-hint]')) { store.set('vsn-hint-total', '1'); $('#hint-total')?.remove(); return; }
+  if (t.closest('[data-reset-hint]')) { try { localStorage.removeItem('vsn-hint-total'); } catch {} closeSheet(false); return renderCards(); }
+  if ((el = t.closest('[data-demo]'))) { closeSheet(false); return toast(`${el.dataset.demo} — ngoài phạm vi demo`, 'info'); }
+  if ((el = t.closest('[data-scenario]'))) { initState(el.dataset.scenario); return render(); }
+  if (t.closest('[data-online]')) { S.online = true; renderConn(); renderScenarios(); icons(); return toast('Đã có mạng lại — bấm Thử lại để lưu', 'wifi'); }
+});
+
+initState();
+render();
+</script>
+</body>
+</html>

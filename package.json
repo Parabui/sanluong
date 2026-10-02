@@ -1,0 +1,30 @@
+{
+  "name": "vsn-sanluong",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build:shared": "pnpm --filter @vsn/shared build",
+    "dev": "pnpm build:shared && pnpm --parallel --filter @vsn/shared --filter @vsn/api --filter @vsn/worker --filter @vsn/web dev",
+    "build": "pnpm build:shared && pnpm --recursive --filter !@vsn/shared build",
+    "lint": "eslint .",
+    "typecheck": "pnpm build:shared && pnpm --recursive typecheck",
+    "test": "pnpm --recursive test",
+    "test:int": "pnpm --filter @vsn/api test:int",
+    "e2e": "echo \"Playwright: chưa thiết lập (tuần 12)\" && exit 1",
+    "db:up": "docker compose -f infra/compose.yml up -d postgres",
+    "db:down": "docker compose -f infra/compose.yml down"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.0.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.71.0"
+  }
+}

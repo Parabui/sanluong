@@ -1,0 +1,27 @@
+# Phụ thuộc & build
+node_modules/
+dist/
+dev-dist/
+coverage/
+*.tsbuildinfo
+
+# Prisma client sinh tự động
+apps/api/src/generated/
+
+# Secret — chỉ commit .env.example
+.env
+.env.*
+!.env.example
+
+# ui-demo (Next.js)
+ui-demo/.next/
+ui-demo/next-env.d.ts
+
+# Hệ điều hành / editor
+.DS_Store
+Thumbs.db
+*.log
+
+# Dữ liệu nội bộ / kết quả chạy trên máy — không đưa lên repo
+*.xlsx
+_kiem-tra-may/ket-qua*.txt

@@ -1,0 +1,100 @@
+/* Stylesheet dùng chung cho worker + web. Mỗi app import file này ở main.tsx. */
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+
+/* ── Nền tảng (chuyển từ ui-demo/globals.css) ── */
+html, body { height: 100%; }
+body {
+  font-family: var(--font); background: rgb(var(--bg)); color: rgb(var(--text));
+  font-size: var(--fs-body); line-height: var(--lh-body); -webkit-font-smoothing: antialiased;
+}
+button:not(:disabled), [role="button"], a[href], summary, label[for], select { cursor: pointer; }
+:focus-visible { outline: 2px solid rgb(var(--brand-text)); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+svg.lucide { stroke-width: 1.75; flex-shrink: 0; }
+kbd { font-family: var(--font-code); }
+select.native { appearance: none; -webkit-appearance: none; background-image: none; }
+.scroll-area { scrollbar-width: thin; scrollbar-color: rgb(var(--border-strong)) transparent; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; animation: none !important; }
+}
+
+/* ── Khung ứng dụng Web ── */
+.app-shell {
+  display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  grid-template-rows: var(--header-h) minmax(0, 1fr); height: 100vh;
+  transition: grid-template-columns var(--dur-drawer) ease-out;
+}
+.app-shell.collapsed { --sidebar-w: var(--sidebar-w-collapsed); }
+.app-shell > aside { grid-row: 1 / -1; }
+.app-shell.collapsed .hide-collapsed { display: none; }
+.app-shell.collapsed .nav-item { justify-content: center; padding: 0; }
+.app-shell.collapsed .nav-badge { position: absolute; top: 4px; right: 10px; min-width: 8px; height: 8px; padding: 0; font-size: 0; }
+.app-shell.collapsed .nav-group + .nav-group { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgb(var(--border)); }
+.app-shell.collapsed .brand-row { justify-content: center; padding: 0; }
+.nav-item[aria-current="page"]::before {
+  content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px;
+  border-radius: 0 3px 3px 0; background: rgb(var(--brand));
+}
+
+/* ── Bảng ── */
+.grid-table { border-collapse: separate; border-spacing: 0; table-layout: fixed; width: 100%; }
+.grid-table thead th {
+  position: sticky; top: 0; z-index: 10; background: rgb(var(--thead-bg)); height: var(--thead-h);
+  box-shadow: inset 0 -1px 0 rgb(var(--border));
+}
+.grid-table td { border-bottom: 1px solid rgb(var(--border)); height: var(--row-h); transition: background-color var(--dur); }
+.grid-table tr.grp-end > td, .grid-table td.tram-span { border-bottom-color: rgb(var(--border-strong)); }
+.grid-table tr.st-empty > td:not(.tram-span) { background: rgb(var(--empty-bg)); }
+.grid-table tr.st-warn > td:not(.tram-span) { background: rgb(var(--warn-bg)); }
+.grid-table tr.st-empty > td.lead { box-shadow: inset 3px 0 0 rgb(var(--empty-bar)); }
+.grid-table tr.st-warn > td.lead { box-shadow: inset 3px 0 0 rgb(var(--warn-bar)); }
+.grid-table tr.st-ok:hover > td:not(.tram-span),
+.grid-table tr.st-adjusted:hover > td:not(.tram-span),
+.grid-table.hoverable tbody tr:hover > td { background: rgb(var(--row-hover)); }
+.grid-table tr:hover .row-action, .grid-table tr:focus-within .row-action { opacity: 1; }
+
+/* ── Switch ── */
+.switch {
+  width: 32px; height: 18px; border-radius: var(--r-pill); background: rgb(var(--border-strong));
+  position: relative; transition: background-color var(--dur); flex-shrink: 0;
+}
+.switch::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px;
+  border-radius: 50%; background: rgb(var(--surface)); transition: transform var(--dur);
+}
+[aria-checked="true"] > .switch { background: rgb(var(--brand)); }
+[aria-checked="true"] > .switch::after { transform: translateX(14px); }
+
+/* ── Overlay / timeline ── */
+.overlay { background: var(--overlay); }
+.tl-item::before { content: ""; position: absolute; left: 5px; top: 18px; bottom: -2px; width: 1px; background: rgb(var(--border)); }
+.tl-item:last-child::before { display: none; }
+
+/* ── Chip chọn lý do (radio) ── */
+.chip-radio input:checked + span { background: rgb(var(--text)); color: rgb(var(--surface)); border-color: rgb(var(--text)); }
+.chip-radio input:focus-visible + span { outline: 2px solid rgb(var(--brand-text)); outline-offset: 2px; }
+
+/* ── Hiệu ứng ── */
+.pop-in { animation: popIn 180ms ease-out; }
+@keyframes popIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.page-in { animation: pageIn 200ms ease-out; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.toast-in { animation: toastIn 180ms cubic-bezier(.2, .8, .2, 1); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+.spin { animation: spin 800ms linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.live-dot { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+/* ── Kéo thả (Sơ đồ chuyền) ── */
+.drop-target { outline: 2px dashed rgb(var(--brand)); outline-offset: -2px; background: rgb(var(--brand-soft)) !important; }
+
+/* ── App công nhân ── */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.safe-b { padding-bottom: env(safe-area-inset-bottom); }
+
+@tailwind utilities;

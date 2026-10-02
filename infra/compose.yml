@@ -1,0 +1,30 @@
+# ════════════════════════════════════════════════════════════════
+# DEV — chỉ chạy PostgreSQL trong Docker; 3 app chạy trực tiếp bằng `pnpm dev` [TDD 3.1]
+#   pnpm db:up      (= docker compose -f infra/compose.yml up -d postgres)
+# Biến môi trường lấy từ ../.env (copy từ .env.example)
+# ════════════════════════════════════════════════════════════════
+name: vsn-sanluong-dev
+
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      POSTGRES_DB: vsn_sanluong
+      TZ: Asia/Ho_Chi_Minh
+      PGTZ: Asia/Ho_Chi_Minh
+      VSN_MIGRATE_CREATEDB: "true"
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vsn_sanluong"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

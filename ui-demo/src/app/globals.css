@@ -1,0 +1,261 @@
+@import "tailwindcss";
+
+/* ════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — giữ nguyên từ ui-demo-options/merged.html
+   Tailwind chỉ trỏ vào CSS variables; mọi giá trị nằm ở :root
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  /* ── Màu thương hiệu ── */
+  --brand: #F29830; --brand-hover: #E0851C; --brand-soft: #FEF3E6; --brand-text: #9A5306; --brand-gray: #686868;
+  /* ── Nền, chữ, viền ── */
+  --bg: #F6F7F9; --surface: #FFFFFF; --border: #E5E7EB; --border-strong: #D0D5DD;
+  --text: #1F2328; --text-muted: #5F6670; --row-hover: #F9FAFB; --group-bg: #F3F4F6; --thead-bg: #FAFAFB;
+  /* ── Trạng thái ── */
+  --empty-bg: #FEF9C3; --empty-text: #854D0E; --empty-bar: #CA8A04;
+  --warn-bg: #FFEDD5; --warn-text: #9A3412; --warn-bar: #EA580C;
+  --adjust-bg: #EEF2FF; --adjust-text: #4338CA;
+  --support-bg: #F0F9FF; --support-text: #0369A1;
+  --open-bg: #EFF6FF; --open-text: #1D4ED8;
+  --closed-bg: #F0FDF4; --closed-text: #15803D;
+  --locked-bg: #F3F4F6; --locked-text: #374151;
+  --danger: #B42318; --danger-bg: #FEF3F2; --success: #15803D;
+  --disabled-bg: #F3F4F6; --disabled-text: #9CA3AF;
+  --on-dark: #FFFFFF; --toast-bg: #1F2328;
+  --overlay: rgba(16, 24, 40, .24);
+  --sh-pop: 0 8px 24px rgba(16, 24, 40, .12);
+  --sh-bar: 0 -4px 16px rgba(16, 24, 40, .08);
+  /* ── Chữ ── */
+  --font: var(--font-be-vietnam), "Be Vietnam Pro", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-code: var(--font-jetbrains), "JetBrains Mono", ui-monospace, Consolas, monospace;   /* mã NV, mã công đoạn */
+  --fs-title: 20px; --lh-title: 28px; --fs-h: 16px; --fs-body: 14px; --lh-body: 20px;
+  --fs-chip: 13px; --fs-th: 12px; --fs-sub: 12px; --fs-qty: 15px; --fs-tag: 11px;
+  /* ── Khoảng cách & kích thước khung ── */
+  --content-pad: 20px; --block-gap: 16px;
+  --header-h: 56px; --sidebar-w: 232px; --sidebar-w-collapsed: 64px;
+  --toolbar-h: 56px; --summary-h: 44px; --statusbar-h: 40px; --thead-h: 36px; --row-h: 44px;
+  --drawer-w: 380px; --modal-w: 480px; --table-max: 1440px;
+  /* ── Bo góc, chuyển động ── */
+  --r-card: 8px; --r-ctl: 6px; --r-pill: 999px; --r-sheet: 20px;
+  --dur: 120ms; --dur-drawer: 160ms;
+  /* ── Biểu đồ (đã kiểm bằng dataviz validator) ──
+     --chart-accent #C2690B: bậc đậm của cam thương hiệu — ≥3:1 trên nền trắng, nằm trong dải sáng L 0.48–0.67 trên nền TV.
+     Cam gốc #F29830 chỉ 2,26:1 trên nền trắng → giữ cho nút / điểm nhấn, không dùng tô dữ liệu. */
+  --chart-accent: #C2690B; --chart-accent-wash: rgba(194, 105, 11, .10); --chart-track: #F8E2C8;
+  --chart-grid: #EEF0F3; --chart-axis: #D0D5DD; --chart-label: #5F6670; --chart-target: #1F2328;
+  /* ── TV (tương phản chữ ≥ 7:1) ── */
+  --tv-bg: #0E1116; --tv-surface: #171B22; --tv-border: #2A303A; --tv-text: #F5F7FA; --tv-muted: #C3CAD4;
+}
+
+/* Chế độ TV: cùng ramp, bậc chọn riêng cho nền tối */
+.tv {
+  --chart-grid: #232933; --chart-axis: #3A414D; --chart-label: #C3CAD4; --chart-target: #F5F7FA;
+  --chart-track: #3A2A18; --chart-accent-wash: rgba(194, 105, 11, .18);
+}
+
+/* App công nhân (điện thoại): bo góc lớn hơn, chữ ≥16px, vùng chạm 48px */
+.mobile {
+  --r-card: 12px; --r-ctl: 10px;
+  --overlay: rgba(16, 24, 40, .40);
+  --fs-base: 16px; --fs-qty-input: 28px; --tap: 48px;
+  --appbar-h: 56px; --tabs-h: 48px; --nav-h: 64px;
+  --device: #111418;
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-text);
+  --color-brand-gray: var(--brand-gray);
+  --color-page: var(--bg);
+  --color-surface: var(--surface);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-ink: var(--text);
+  --color-muted: var(--text-muted);
+  --color-hover: var(--row-hover);
+  --color-group: var(--group-bg);
+  --color-thead: var(--thead-bg);
+  --color-empty-bg: var(--empty-bg);
+  --color-empty-ink: var(--empty-text);
+  --color-empty-bar: var(--empty-bar);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-ink: var(--warn-text);
+  --color-warn-bar: var(--warn-bar);
+  --color-adjust-bg: var(--adjust-bg);
+  --color-adjust-ink: var(--adjust-text);
+  --color-support-bg: var(--support-bg);
+  --color-support-ink: var(--support-text);
+  --color-open-bg: var(--open-bg);
+  --color-open-ink: var(--open-text);
+  --color-closed-bg: var(--closed-bg);
+  --color-closed-ink: var(--closed-text);
+  --color-locked-bg: var(--locked-bg);
+  --color-locked-ink: var(--locked-text);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-success: var(--success);
+  --color-ondark: var(--on-dark);
+  --color-disabled-bg: var(--disabled-bg);
+  --color-disabled-ink: var(--disabled-text);
+  --color-toast: var(--toast-bg);
+  --color-tv-bg: var(--tv-bg);
+  --color-tv-surface: var(--tv-surface);
+  --color-tv-border: var(--tv-border);
+  --color-tv-text: var(--tv-text);
+  --color-tv-muted: var(--tv-muted);
+
+  --font-sans: var(--font);
+  --font-mono: var(--font-code);
+
+  --text-title: var(--fs-title);
+  --text-title--line-height: var(--lh-title);
+  --text-h: var(--fs-h);
+  --text-h--line-height: 24px;
+  --text-body: var(--fs-body);
+  --text-body--line-height: var(--lh-body);
+  --text-chip: var(--fs-chip);
+  --text-chip--line-height: 18px;
+  --text-th: var(--fs-th);
+  --text-th--line-height: 16px;
+  --text-sub: var(--fs-sub);
+  --text-sub--line-height: 16px;
+  --text-qty: var(--fs-qty);
+  --text-qty--line-height: 20px;
+  --text-tag: var(--fs-tag);
+  --text-tag--line-height: 16px;
+
+  --radius-card: var(--r-card);
+  --radius-ctl: var(--r-ctl);
+  --radius-pill: var(--r-pill);
+  --radius-sheet: var(--r-sheet);
+
+  --shadow-pop: var(--sh-pop);
+  --shadow-bar: var(--sh-bar);
+
+  --spacing-header: var(--header-h);
+  --spacing-row: var(--row-h);
+}
+
+@utility duration-fast {
+  --tw-duration: var(--dur);
+  transition-duration: var(--dur);
+}
+
+html, body { height: 100%; }
+body {
+  font-family: var(--font); background: var(--bg); color: var(--text);
+  font-size: var(--fs-body); line-height: var(--lh-body); -webkit-font-smoothing: antialiased;
+}
+button:not(:disabled), [role="button"], a[href], summary, label[for], select { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--brand-text); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+svg.lucide { stroke-width: 1.75; flex-shrink: 0; }
+kbd { font-family: var(--font-code); }
+select.native { appearance: none; -webkit-appearance: none; background-image: none; }
+.scroll-area { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; animation: none !important; }
+}
+
+/* ── Khung ứng dụng Web ── */
+.app-shell {
+  display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  grid-template-rows: var(--header-h) minmax(0, 1fr); height: 100vh;
+  transition: grid-template-columns var(--dur-drawer) ease-out;
+}
+.app-shell.collapsed { --sidebar-w: var(--sidebar-w-collapsed); }
+.app-shell > aside { grid-row: 1 / -1; }
+.app-shell.collapsed .hide-collapsed { display: none; }
+.app-shell.collapsed .nav-item { justify-content: center; padding: 0; }
+.app-shell.collapsed .nav-badge { position: absolute; top: 4px; right: 10px; min-width: 8px; height: 8px; padding: 0; font-size: 0; }
+.app-shell.collapsed .nav-group + .nav-group { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+.app-shell.collapsed .brand-row { justify-content: center; padding: 0; }
+.nav-item[aria-current="page"]::before {
+  content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px;
+  border-radius: 0 3px 3px 0; background: var(--brand);
+}
+
+/* ── Bảng ── */
+.grid-table { border-collapse: separate; border-spacing: 0; table-layout: fixed; width: 100%; }
+.grid-table thead th {
+  position: sticky; top: 0; z-index: 10; background: var(--thead-bg); height: var(--thead-h);
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+.grid-table td { border-bottom: 1px solid var(--border); height: var(--row-h); transition: background-color var(--dur); }
+.grid-table tr.grp-end > td, .grid-table td.tram-span { border-bottom-color: var(--border-strong); }
+.grid-table tr.st-empty > td:not(.tram-span) { background: var(--empty-bg); }
+.grid-table tr.st-warn > td:not(.tram-span) { background: var(--warn-bg); }
+.grid-table tr.st-empty > td.lead { box-shadow: inset 3px 0 0 var(--empty-bar); }
+.grid-table tr.st-warn > td.lead { box-shadow: inset 3px 0 0 var(--warn-bar); }
+.grid-table tr.st-ok:hover > td:not(.tram-span),
+.grid-table tr.st-adjusted:hover > td:not(.tram-span),
+.grid-table.hoverable tbody tr:hover > td { background: var(--row-hover); }
+.grid-table tr:hover .row-action, .grid-table tr:focus-within .row-action { opacity: 1; }
+
+/* ── Switch ── */
+.switch {
+  width: 32px; height: 18px; border-radius: var(--r-pill); background: var(--border-strong);
+  position: relative; transition: background-color var(--dur); flex-shrink: 0;
+}
+.switch::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px;
+  border-radius: 50%; background: var(--surface); transition: transform var(--dur);
+}
+[aria-checked="true"] > .switch { background: var(--brand); }
+[aria-checked="true"] > .switch::after { transform: translateX(14px); }
+
+/* ── Drawer / overlay ── */
+.overlay { background: var(--overlay); }
+.drawer { width: var(--drawer-w); transform: translateX(100%); transition: transform var(--dur-drawer) ease-out; }
+.drawer.open { transform: translateX(0); }
+.fade { opacity: 0; pointer-events: none; transition: opacity var(--dur-drawer); }
+.fade.open { opacity: 1; pointer-events: auto; }
+.tl-item::before { content: ""; position: absolute; left: 5px; top: 18px; bottom: -2px; width: 1px; background: var(--border); }
+.tl-item:last-child::before { display: none; }
+
+/* ── Chip chọn lý do (radio) ── */
+.chip-radio input:checked + span { background: var(--text); color: var(--surface); border-color: var(--text); }
+.chip-radio input:focus-visible + span { outline: 2px solid var(--brand-text); outline-offset: 2px; }
+
+/* ── Hiệu ứng ── */
+.pop-in { animation: popIn 180ms ease-out; }
+@keyframes popIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.page-in { animation: pageIn 200ms ease-out; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.toast-in { animation: toastIn 180ms cubic-bezier(.2, .8, .2, 1); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+.spin { animation: spin 800ms linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.live-dot { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+/* ── Kéo thả (Sơ đồ chuyền) ── */
+.drop-target { outline: 2px dashed var(--brand); outline-offset: -2px; background: var(--brand-soft) !important; }
+
+/* ── Khung điện thoại (App công nhân, khi xem trên máy tính) ── */
+.stage { min-height: 100vh; display: flex; align-items: center; justify-content: center; gap: 40px; padding: 24px; }
+.phone {
+  position: relative; width: 390px; height: 844px; max-height: calc(100vh - 48px); border-radius: 48px;
+  border: 12px solid var(--device); background: var(--bg); overflow: hidden;
+  box-shadow: 0 30px 60px rgba(16, 24, 40, .25); flex-shrink: 0;
+}
+@media (max-width: 899px) {
+  .stage { padding: 0; display: block; }
+  .phone { width: 100%; height: 100dvh; max-height: none; border: 0; border-radius: 0; box-shadow: none; }
+  .demo-panel { display: none; }
+}
+.demo-panel { max-height: calc(100vh - 48px); overflow-y: auto; scrollbar-width: thin; }
+.phone-app { position: absolute; inset: 0; display: flex; flex-direction: column; font-size: var(--fs-base); line-height: 1.5; }
+.phone-app button, .phone-app [role="tab"] { touch-action: manipulation; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.safe-b { padding-bottom: env(safe-area-inset-bottom); }
+.veil { position: absolute; inset: 0; background: var(--overlay); opacity: 0; pointer-events: none; transition: opacity 180ms; z-index: 40; }
+.veil.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 50; background: var(--surface);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0; max-height: 88%; display: flex; flex-direction: column;
+  transform: translateY(100%); transition: transform 220ms cubic-bezier(.2, .8, .2, 1);
+}
+.sheet.open { transform: none; }

@@ -1,0 +1,22 @@
+// ════════════════════════════════════════════════════════════════
+// VSN Sản Lượng — Prisma schema
+// Nguồn: PRD mục ⑩ + TDD mục 6.1 (bảng bổ sung) · Quy ước: TDD 6.2
+//   - id: UUID · tên camelCase, DB snake_case qua @map / @@map
+//   - ngày làm việc: DateTime @db.Date · thời điểm: DateTime @db.Timestamptz(3)
+//   - bảng nghiệp vụ có `version Int @default(0)` (optimistic lock)
+// Ràng buộc nâng cao (partial unique, CHECK, exclusion, trigger, view) viết bằng SQL tay
+// NGAY TRONG thư mục migration (TDD 6.3, 6.6, 17.3).
+//
+// ⏳ Model sẽ được thêm ở bước tiếp theo (tuần 1 — "Prisma schema đầy đủ").
+// ════════════════════════════════════════════════════════════════
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}

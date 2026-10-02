@@ -1,0 +1,7 @@
+packages:
+  - apps/*
+  - packages/*
+# ui-demo/ là prototype Next.js độc lập (npm riêng), KHÔNG thuộc workspace.
+allowBuilds:
+  '@prisma/engines': true
+  prisma: true

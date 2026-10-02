@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bảng sản lượng ngày · VSN Sản Lượng</title>
+<link rel="icon" href="../favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  const v = n => `var(--${n})`;
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: { DEFAULT: v('brand'), hover: v('brand-hover'), soft: v('brand-soft'), ink: v('brand-ink') },
+          rail: { DEFAULT: v('rail'), hover: v('rail-hover'), text: v('rail-text'), line: v('rail-line') },
+          canvas: v('canvas'), surface: v('surface'), sunken: v('sunken'),
+          line: { DEFAULT: v('line'), strong: v('line-strong') },
+          ink: v('ink'), muted: v('muted'), onbrand: v('on-brand'), ondark: v('on-dark'),
+          amber: { bg: v('amber-bg'), ink: v('amber-ink'), bar: v('amber-bar') },
+          alert: { bg: v('alert-bg'), ink: v('alert-ink'), bar: v('alert-bar') },
+          violet: { bg: v('violet-bg'), ink: v('violet-ink'), bar: v('violet-bar') },
+          sky: { bg: v('sky-bg'), ink: v('sky-ink') },
+          ok: { bg: v('ok-bg'), ink: v('ok-ink'), bar: v('ok-bar') },
+          info: { bg: v('info-bg'), ink: v('info-ink') },
+          meter: v('meter'), 'meter-track': v('meter-track')
+        },
+        fontFamily: { sans: v('font'), mono: v('font-mono') },
+        borderRadius: { card: v('r-card'), ctl: v('r-ctl') },
+        boxShadow: { card: v('shadow-card'), pop: v('shadow-pop') },
+        transitionDuration: { fast: v('dur') }
+      }
+    }
+  }
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    /* Thương hiệu — cam VIETSUN chỉ làm điểm nhấn; chữ trên nền cam luôn là màu tối */
+    --brand: #F29830; --brand-hover: #E5861A; --brand-soft: #FFF4E6; --brand-ink: #9A5306; --on-brand: #1B1206;
+    /* Khung */
+    --rail: #17212B; --rail-hover: #223140; --rail-text: #AEB9C5; --rail-line: #26333F; --on-dark: #FFFFFF;
+    --canvas: #F3F4F6; --surface: #FFFFFF; --sunken: #F8F9FB;
+    --line: #E4E7EC; --line-strong: #CDD3DB; --ink: #111827; --muted: #596271;
+    /* Trạng thái — mỗi trạng thái có icon riêng, không chỉ dựa vào màu */
+    --amber-bg: #FEF6DC; --amber-ink: #7A4A00; --amber-bar: #D99A06;     /* chưa có số */
+    --alert-bg: #FFECE6; --alert-ink: #B42318; --alert-bar: #E4572E;     /* cần xem lại */
+    --violet-bg: #F1EEFF; --violet-ink: #5536C8; --violet-bar: #7C5CFA;  /* đã điều chỉnh */
+    --sky-bg: #E7F3FC; --sky-ink: #0B6297;                               /* hỗ trợ chuyền khác */
+    --ok-bg: #E9F7EF; --ok-ink: #17703E; --ok-bar: #22A05A;              /* đã chốt */
+    --info-bg: #EAF1FF; --info-ink: #1D4ED8;                             /* hôm nay / chưa chốt */
+    --meter: #7C8898; --meter-track: #EDF0F3;
+    /* Chữ */
+    --font: "Be Vietnam Pro", "Segoe UI", Roboto, Arial, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    /* Hình khối */
+    --r-card: 12px; --r-ctl: 8px;
+    --shadow-card: 0 1px 2px rgba(16,24,40,.05);
+    --shadow-pop: 0 12px 32px rgba(16,24,40,.16);
+    --overlay: rgba(15,23,32,.4);
+    --dur: 150ms;
+    --panel-w: 360px; --rail-w: 76px;
+  }
+  html, body { height: 100%; }
+  body { font-family: var(--font); background: var(--canvas); color: var(--ink); font-size: 14px; line-height: 20px; -webkit-font-smoothing: antialiased; }
+  :focus-visible { outline: 2px solid var(--brand-ink); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+  svg.lucide { stroke-width: 1.75; flex-shrink: 0; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; animation: none !important; } }
+  .scroll { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+
+  .rail-item[aria-current="page"] { background: var(--rail-hover); color: var(--on-dark); }
+  .rail-item[aria-current="page"]::before { content: ""; position: absolute; left: -10px; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--brand); }
+
+  /* Bảng */
+  .tbl { border-collapse: separate; border-spacing: 0; width: 100%; table-layout: fixed; }
+  .tbl thead th { position: sticky; top: 0; z-index: 5; background: var(--sunken); height: 36px; box-shadow: inset 0 -1px 0 var(--line); }
+  .tbl td { height: 44px; border-bottom: 1px solid var(--line); transition: background-color var(--dur); }
+  .tbl tr.grp-start td { border-top: 1px solid var(--line-strong); }
+  .tbl tr.grp-start:first-child td { border-top: 0; }
+  .tbl tr[data-row] { cursor: pointer; }
+  .tbl tr[data-row]:hover td { background: var(--sunken); }
+  .tbl tr.st-empty td { background: var(--amber-bg); }
+  .tbl tr.st-warn td { background: var(--alert-bg); }
+  .tbl tr.st-empty td:first-child { box-shadow: inset 4px 0 0 var(--amber-bar); }
+  .tbl tr.st-warn td:first-child { box-shadow: inset 4px 0 0 var(--alert-bar); }
+  .tbl tr.st-empty:hover td, .tbl tr.st-warn:hover td { filter: brightness(.985); }
+  .tbl tr.is-sel td { background: var(--brand-soft) !important; box-shadow: inset 0 2px 0 var(--brand), inset 0 -2px 0 var(--brand) !important; }
+  .tbl tr.is-sel td:first-child { box-shadow: inset 4px 0 0 var(--brand), inset 0 2px 0 var(--brand), inset 0 -2px 0 var(--brand) !important; }
+  .tbl tr.is-sel td:last-child { box-shadow: inset -2px 0 0 var(--brand), inset 0 2px 0 var(--brand), inset 0 -2px 0 var(--brand) !important; }
+  .tbl tr:focus-visible { outline: 2px solid var(--brand-ink); outline-offset: -2px; }
+
+  .chip-radio input:checked + span { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
+  .chip-radio input:focus-visible + span { outline: 2px solid var(--brand-ink); outline-offset: 2px; }
+
+  .fade { opacity: 0; pointer-events: none; transition: opacity var(--dur); }
+  .fade.open { opacity: 1; pointer-events: auto; }
+  .overlay { background: var(--overlay); }
+  .slide-in { animation: slideIn 180ms ease-out; }
+  @keyframes slideIn { from { transform: translateX(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .tl li::before { content: ""; position: absolute; left: 5px; top: 16px; bottom: -4px; width: 1px; background: var(--line); }
+  .tl li:last-child::before { display: none; }
+</style>
+</head>
+<body>
+<div class="h-screen flex overflow-hidden">
+
+  <!-- ═══ Thanh điều hướng dọc (rail) ═══ -->
+  <nav class="bg-rail shrink-0 flex flex-col items-center py-3 gap-1" style="width: var(--rail-w)" aria-label="Điều hướng chính">
+    <a href="#" class="w-11 h-11 rounded-ctl bg-brand text-onbrand grid place-items-center font-bold text-[15px] mb-3" aria-label="VSN Sản Lượng — Trang chủ" data-nav="Trang chủ">VS</a>
+    <div id="rail" class="flex flex-col items-center gap-1 flex-1 w-full px-2.5"></div>
+    <button class="rail-item relative w-full h-14 rounded-ctl flex flex-col items-center justify-center gap-1 text-rail-text hover:bg-rail-hover hover:text-ondark transition-colors duration-fast" id="btn-shortcuts">
+      <i data-lucide="keyboard" class="w-5 h-5"></i><span class="text-[10px] font-medium leading-none">Phím tắt</span>
+    </button>
+  </nav>
+
+  <div class="flex-1 min-w-0 flex flex-col">
+    <!-- ═══ Header ═══ -->
+    <header class="h-14 shrink-0 bg-surface border-b border-line px-5 flex items-center gap-4">
+      <div class="min-w-0">
+        <div class="text-[11px] text-muted leading-none mb-1">Sản xuất</div>
+        <h1 class="text-[17px] font-semibold leading-tight whitespace-nowrap">Bảng sản lượng ngày</h1>
+      </div>
+      <div class="ml-auto flex items-center gap-3">
+        <label class="relative hidden md:block">
+          <span class="sr-only">Tìm công nhân hoặc công đoạn</span>
+          <i data-lucide="search" class="w-4 h-4 text-muted absolute left-3 top-2.5"></i>
+          <input id="search" type="search" autocomplete="off" placeholder="Tìm công nhân, mã NV, công đoạn…"
+            class="w-[280px] h-9 pl-9 pr-9 rounded-ctl bg-sunken border border-line text-[13px] placeholder:text-muted focus:bg-surface focus:border-line-strong outline-none transition-colors duration-fast">
+          <kbd class="absolute right-2 top-2 h-5 px-1.5 rounded border border-line bg-surface text-[11px] text-muted font-mono grid place-items-center">/</kbd>
+        </label>
+        <div class="relative" id="pending-wrap">
+          <button id="btn-pending" class="h-9 px-3 rounded-ctl bg-amber-bg text-amber-ink text-[13px] font-semibold flex items-center gap-2" aria-haspopup="menu" aria-expanded="false">
+            <i data-lucide="calendar-clock" class="w-4 h-4"></i><span id="pending-text"></span>
+          </button>
+          <div id="menu-pending" role="menu" class="hidden absolute right-0 top-11 w-72 bg-surface border border-line rounded-card shadow-pop p-2 z-40"></div>
+        </div>
+        <div class="relative">
+          <button id="btn-user" class="flex items-center gap-2.5 h-10 pl-1 pr-2 rounded-ctl hover:bg-sunken transition-colors duration-fast" aria-haspopup="menu" aria-expanded="false">
+            <span class="w-8 h-8 rounded-full bg-brand-soft text-brand-ink grid place-items-center text-[13px] font-semibold">NB</span>
+            <span class="text-left leading-tight hidden lg:block">
+              <span class="block text-[13px] font-semibold">Nguyễn Văn Bình</span>
+              <span class="block text-[12px] text-muted">Tổ trưởng · C05, C06</span>
+            </span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-muted"></i>
+          </button>
+          <div id="menu-user" role="menu" class="hidden absolute right-0 top-12 w-48 bg-surface border border-line rounded-card shadow-pop p-1 z-40">
+            <button role="menuitem" class="w-full h-9 px-3 flex items-center gap-2.5 rounded-ctl text-[14px] hover:bg-sunken" data-demo="Đổi mật khẩu"><i data-lucide="key-round" class="w-4 h-4 text-muted"></i>Đổi mật khẩu</button>
+            <button role="menuitem" class="w-full h-9 px-3 flex items-center gap-2.5 rounded-ctl text-[14px] text-alert-ink hover:bg-sunken" data-demo="Đăng xuất"><i data-lucide="log-out" class="w-4 h-4"></i>Đăng xuất</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══ Thanh ngữ cảnh: chuyền + dải ngày ═══ -->
+    <div class="h-16 shrink-0 bg-surface border-b border-line px-5 flex items-center gap-4">
+      <div id="line-seg" class="flex p-1 bg-sunken border border-line rounded-ctl" role="radiogroup" aria-label="Chuyền"></div>
+      <span class="w-px h-8 bg-line"></span>
+      <div id="days" class="flex items-center gap-1.5" role="radiogroup" aria-label="Ngày"></div>
+      <button id="btn-cal" class="w-9 h-9 rounded-ctl border border-line grid place-items-center text-muted hover:bg-sunken transition-colors duration-fast" aria-label="Chọn ngày khác" data-tip="Chọn ngày khác"><i data-lucide="calendar" class="w-[18px] h-[18px]"></i></button>
+      <input type="date" id="date-native" class="sr-only" tabindex="-1" min="2026-09-26" max="2026-09-29" aria-hidden="true">
+      <div id="ctx-note" class="ml-auto text-[12px] text-muted text-right leading-tight hidden xl:block"></div>
+    </div>
+
+    <div class="flex-1 min-h-0 flex">
+      <!-- ═══ Vùng dữ liệu ═══ -->
+      <main class="flex-1 min-w-0 p-4 flex flex-col">
+        <section class="flex-1 min-h-0 bg-surface border border-line rounded-card shadow-card flex flex-col overflow-hidden">
+          <div class="h-12 shrink-0 px-3 flex items-center gap-2 border-b border-line">
+            <div class="flex p-0.5 bg-sunken rounded-ctl border border-line" role="tablist" aria-label="Cách xem">
+              <button role="tab" data-view="list" class="view-tab h-8 px-3 rounded-[6px] text-[13px] font-medium flex items-center gap-1.5 transition-colors duration-fast"><i data-lucide="rows-3" class="w-4 h-4"></i>Danh sách</button>
+              <button role="tab" data-view="map" class="view-tab h-8 px-3 rounded-[6px] text-[13px] font-medium flex items-center gap-1.5 transition-colors duration-fast"><i data-lucide="layout-grid" class="w-4 h-4"></i>Sơ đồ</button>
+            </div>
+            <div id="filters" class="flex items-center gap-1.5 ml-1 min-w-0 overflow-x-auto scroll"></div>
+            <div id="qc" class="ml-auto shrink-0 text-[13px] text-muted whitespace-nowrap"></div>
+          </div>
+          <div id="data" class="flex-1 min-h-0 overflow-auto scroll"></div>
+          <div class="h-9 shrink-0 border-t border-line px-3 flex items-center gap-4 text-[12px] text-muted">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-amber-bar"></span>Chưa có số</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-alert-bar"></span>Cần xem lại</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-violet-bar"></span>Đã điều chỉnh</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-sky-ink"></span>Hỗ trợ chuyền khác</span>
+            <span class="ml-auto hidden xl:flex items-center gap-1.5"><kbd class="font-mono px-1 border border-line rounded">↑</kbd><kbd class="font-mono px-1 border border-line rounded">↓</kbd> chọn dòng · <kbd class="font-mono px-1 border border-line rounded">Enter</kbd> sửa · <kbd class="font-mono px-1 border border-line rounded">N</kbd> việc tiếp theo</span>
+          </div>
+        </section>
+      </main>
+
+      <!-- ═══ Bảng điều khiển phải: Việc cần làm / Chi tiết ═══ -->
+      <aside id="panel" class="shrink-0 bg-surface border-l border-line flex flex-col min-h-0" style="width: var(--panel-w)" aria-label="Bảng xử lý"></aside>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal-wrap" class="fade overlay fixed inset-0 z-50 grid place-items-center p-4">
+  <div id="modal" class="bg-surface rounded-card shadow-pop w-full max-w-[500px]" role="alertdialog" aria-modal="true" aria-labelledby="modal-title"></div>
+</div>
+<div id="toasts" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] flex flex-col gap-2 items-center" aria-live="polite"></div>
+<div id="tip" role="tooltip" class="hidden fixed z-[70] max-w-xs px-2.5 py-1.5 rounded-ctl bg-rail text-ondark text-[12px] shadow-pop pointer-events-none"></div>
+
+<script>
+/* ════════ Tiện ích ════════ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = n => n == null ? '—' : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const ic = (n, c = 'w-4 h-4') => `<i data-lucide="${n}" class="${c}"></i>`;
+const icons = () => window.lucide && lucide.createIcons();
+const clone = o => JSON.parse(JSON.stringify(o));
+const pDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+const ddmm = iso => iso.split('-').reverse().slice(0, 2).join('/');
+const ddmmyyyy = iso => iso.split('-').reverse().join('/');
+const wdShort = iso => { const w = pDate(iso).getDay(); return w === 0 ? 'CN' : 'T' + (w + 1); };
+const wdLong = iso => { const w = pDate(iso).getDay(); return w === 0 ? 'Chủ nhật' : 'Thứ ' + (w + 1); };
+const initials = n => n ? n.split(' ').slice(-2).map(w => w[0]).join('') : '?';
+
+/* ════════ Dữ liệu mẫu (chung với bản 📐) ════════ */
+const NOW = { date: '2026-09-29', time: '09:15' };
+const USER = 'Nguyễn Văn Bình';
+const DATES = ['2026-09-26', '2026-09-27', '2026-09-28', '2026-09-29'];
+const SHIFT_MIN = 480;
+const SRC = { app: ['App', 'smartphone'], offline: ['Offline', 'wifi-off'], proxy: ['Nhập hộ', 'user-plus'], web: ['Sửa Web', 'pencil'] };
+const REASONS = {
+  edit: ['Công nhân báo lại', 'Đếm lại bó hàng', 'Nhập nhầm công đoạn', 'Khác'],
+  warn: ['Đã kiểm tra, số đúng', 'Công nhân báo lại', 'Đếm lại bó hàng', 'Khác'],
+  proxy: ['Không mang điện thoại', 'Hết pin', 'Không có phiên trạm', 'Khác']
+};
+const RAW = [
+  [12, 'PL-2641', 'CD-40', 'Kiểm thành phẩm', 45, 'NV00231', 'Nguyễn Thị Lan', 412, 'app', { qc: true }],
+  [25, 'PL-2641', 'CD-38', 'Ủi thành phẩm', 40, 'NV00318', 'Trần Văn Hùng', 405, 'app'],
+  [26, 'PL-2641', 'CD-05', 'May nẹp cổ', 38, 'NV00412', 'Lê Thị Hoa', 520, 'app'],
+  [27, 'PL-2641', 'CD-06', 'Tra cổ', 52, 'NV00127', 'Phạm Thị Mai', 388, 'app'],
+  [27, 'PL-2641', 'CD-07', 'Diễu chân cổ', 24, 'NV00127', 'Phạm Thị Mai', 390, 'app'],
+  [28, 'PL-2641', 'CD-08', 'Ráp vai', 30, null, null, null, null, { st: 'empty', login: ['NV00509', 'Võ Thị Thu'] }],
+  [29, 'PL-2641', 'CD-12', 'May măng sét', 35, 'NV01022', 'Đỗ Thị Ngọc', 610, 'proxy', { st: 'adjusted', hist: [{ t: '08:05 29/09', from: null, to: 610, src: 'proxy', by: USER, reason: 'Không mang điện thoại' }] }],
+  [30, 'PL-2641', 'CD-13', 'Tra tay', 48, 'NV00788', 'Huỳnh Thị Kim', 455, 'app', { support: 'C03' }],
+  [31, 'PL-2641', 'CD-14', 'Can sườn', 42, 'NV00655', 'Bùi Thị Hạnh', 470, 'app'],
+  [32, 'PL-2641', 'CD-15', 'Vắt sổ sườn', 28, 'NV00702', 'Ngô Thị Yến', 430, 'web', { st: 'adjusted', hist: [{ t: '08:07 29/09', from: 460, to: 430, src: 'web', by: USER, reason: 'Đếm lại bó hàng' }, { t: '16:48 28/09', from: null, to: 460, src: 'app', by: 'Ngô Thị Yến' }] }],
+  [33, 'PL-2641', 'CD-16', 'May nhãn sườn', 20, 'NV00833', 'Lý Thị Trang', 300, 'offline', { st: 'warn', flag: 'Gửi sau khi công đoạn bị gỡ lúc 15:02 28/09' }],
+  [34, 'PL-2641', 'CD-18', 'Lên lai áo', 36, null, null, null, null, { st: 'empty', login: null }],
+  [35, 'PL-2641', 'CD-20', 'Đính nút', 18, 'NV00914', 'Phan Thị Nhung', 1120, 'app'],
+  [35, 'PL-2641', 'CD-21', 'Thùa khuy', 16, 'NV00914', 'Phan Thị Nhung', 1080, 'app'],
+  [36, 'PL-2641', 'CD-22', 'Cắt chỉ', 12, 'NV00956', 'Đặng Thị Vân', 1350, 'app'],
+  [37, 'PL-2641', 'CD-23', 'Gắn thẻ bài', 10, 'NV00987', 'Trương Thị Hằng', 800, 'app'],
+  [38, 'PL-2641', 'CD-24', 'Gấp xếp', 22, 'NV01003', 'Mai Thị Diễm', 395, 'app'],
+  [39, 'SH-2655', 'CD-03', 'Ráp đáy quần', 34, 'NV01045', 'Châu Thị Thảo', 160, 'app'],
+  [40, 'SH-2655', 'CD-04', 'Tra lưng', 50, null, null, null, null, { st: 'empty', login: ['NV01051', 'Tạ Thị Loan'] }],
+  [41, 'SH-2655', 'CD-05', 'Luồn thun', 26, 'NV01060', 'La Thị Phương', 150, 'app'],
+];
+const EMP = [...new Map([...RAW.filter(r => r[5]).map(r => [r[5], r[6]]),
+  ['NV00509', 'Võ Thị Thu'], ['NV01051', 'Tạ Thị Loan'], ['NV00501', 'Trịnh Thị Nga'], ['NV00517', 'Hồ Thị Bích'], ['NV00540', 'Lương Văn Tâm'], ['NV00848', 'Lâm Thị Tuyết']])]
+  .map(([nv, name]) => ({ nv, name }));
+
+function mkRow(a, i, dl) {
+  const [tram, mh, cd, ten, smv, nv, name, sl, src, x = {}] = a;
+  const r = { id: 'r' + i, tram, mh, cd, ten, smv, nv, name, sl, src, st: x.st || 'ok', qc: !!x.qc, support: x.support || null,
+    flag: x.flag || null, login: x.login ? { nv: x.login[0], name: x.login[1] } : null, hist: x.hist ? clone(x.hist) : [] };
+  if (!x.hist && sl != null) r.hist = [src === 'offline'
+    ? { t: '17:40 ' + dl, from: null, to: sl, src, by: name, reason: 'Đồng bộ từ máy offline' }
+    : { t: `16:${String(10 + i * 2).padStart(2, '0')} ${dl}`, from: null, to: sl, src, by: name }];
+  return r;
+}
+function buildData() {
+  const d28 = RAW.map((a, i) => mkRow(a, i, '28/09'));
+  const d29 = RAW.map((a, i) => {
+    const r = mkRow(a, i, '29/09');
+    if (i < 5) { Object.assign(r, { st: 'ok', src: 'app', sl: Math.round(a[7] * 0.26) }); r.hist = [{ t: `09:0${i} 29/09`, from: null, to: r.sl, src: 'app', by: r.name }]; }
+    else { r.login = a[5] ? { nv: a[5], name: a[6] } : r.login; Object.assign(r, { nv: null, name: null, sl: null, src: null, st: 'empty', flag: null, hist: [] }); }
+    return r;
+  });
+  const fill = { 5: ['NV00509', 'Võ Thị Thu', 402], 11: ['NV00848', 'Lâm Thị Tuyết', 376], 18: ['NV01051', 'Tạ Thị Loan', 142] };
+  const d26 = RAW.map((a, i) => {
+    const b = [...a]; b[9] = { qc: a[9]?.qc, support: a[9]?.support };
+    if (fill[i]) [b[5], b[6], b[7]] = fill[i];
+    b[7] = b[7] + ((i * 37) % 21) - 10; b[8] = 'app';
+    return mkRow(b, i, '26/09');
+  });
+  return {
+    C05: {
+      '2026-09-26': { status: 'closed', closedAt: '08:10 28/09/2026', closedBy: USER, rows: d26 },
+      '2026-09-27': { status: 'off', rows: [] },
+      '2026-09-28': { status: 'open', rows: d28, timeReq: [{ nv: 'NV00655', name: 'Bùi Thị Hạnh', hours: '10,5' }] },
+      '2026-09-29': { status: 'open', rows: d29 }
+    },
+    C06: {}
+  };
+}
+
+/* ════════ Trạng thái ════════ */
+const S = { data: buildData(), line: 'C05', date: '2026-09-28', view: 'list', filter: 'all', q: '', sel: null, c06Open: true, timeDone: false };
+const day = () => S.data[S.line][S.date] || { status: 'nodata', rows: [] };
+const notYet = iso => NOW.date <= iso || (NOW.date === addDay(iso) && NOW.time < '08:00');
+function addDay(iso) { const d = pDate(iso); d.setDate(d.getDate() + 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+const row = id => day().rows.find(r => r.id === id);
+const issues = d => d.rows.filter(r => r.st === 'empty' || r.st === 'warn');
+const timeReqs = d => (S.line === 'C05' && !S.timeDone && d.timeReq) || [];
+const stamp = () => `${NOW.time} ${ddmm(NOW.date)}`;
+const minutes = r => r.sl == null ? null : Math.round(r.sl * r.smv / 60);
+const workerMinutes = (d, nv) => d.rows.filter(r => r.nv === nv).reduce((s, r) => s + (minutes(r) || 0), 0);
+
+/* ════════ Rail ════════ */
+const NAV = [
+  ['house', 'Trang chủ'], ['table-2', 'Sản lượng', true], ['git-branch', 'Sơ đồ'], ['radio', 'Trực tiếp'],
+  ['clock', 'Duyệt giờ', false, 1], ['chart-column', 'Báo cáo'], ['layout-dashboard', 'Dashboard']
+];
+function renderRail() {
+  $('#rail').innerHTML = NAV.map(([icn, label, act, badge]) => `
+    <a href="#" class="rail-item relative w-full h-14 rounded-ctl flex flex-col items-center justify-center gap-1 transition-colors duration-fast
+      ${act ? '' : 'text-rail-text hover:bg-rail-hover hover:text-ondark'}" ${act ? 'aria-current="page"' : ''} data-nav="${label}">
+      ${ic(icn, 'w-5 h-5')}<span class="text-[10px] font-medium leading-none">${label}</span>
+      ${badge ? `<span class="absolute top-1.5 right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-brand text-onbrand text-[10px] font-bold grid place-items-center">${badge}</span>` : ''}
+    </a>`).join('');
+}
+
+/* ════════ Header: ngày chưa chốt ════════ */
+function pending() {
+  const p = [];
+  if (S.data.C05['2026-09-28'].status === 'open') p.push({ line: 'C05', date: '2026-09-28', n: issues(S.data.C05['2026-09-28']).length });
+  if (S.c06Open) p.push({ line: 'C06', date: '2026-09-28', n: null });
+  return p;
+}
+function renderPending() {
+  const p = pending();
+  $('#pending-wrap').classList.toggle('hidden', !p.length);
+  $('#pending-text').textContent = `${p.length} ngày chưa chốt`;
+  $('#menu-pending').innerHTML = `<p class="px-2 pt-1 pb-2 text-[12px] text-muted">Ngày đã qua giờ chốt nhưng chưa chốt</p>` + p.map(x => `
+    <button role="menuitem" data-go="${x.line}|${x.date}" class="w-full p-2 rounded-ctl flex items-center gap-3 hover:bg-sunken text-left">
+      <span class="w-10 h-10 rounded-ctl bg-amber-bg text-amber-ink grid place-items-center font-semibold text-[13px]">${x.line}</span>
+      <span class="flex-1"><span class="block text-[14px] font-medium">${wdLong(x.date)}, ${ddmmyyyy(x.date)}</span>
+      <span class="block text-[12px] text-muted">${x.n == null ? 'Chưa mở' : x.n ? `${x.n} việc cần xử lý` : 'Sẵn sàng chốt'}</span></span>
+      ${ic('chevron-right', 'w-4 h-4 text-muted')}</button>`).join('');
+}
+
+/* ════════ Chuyền + dải ngày ════════ */
+function dayMeta(line, iso) {
+  const d = S.data[line][iso];
+  if (!d) return { label: 'Chưa có dữ liệu', icon: 'minus', cls: 'text-muted' };
+  if (d.status === 'closed') return { label: 'Đã chốt', icon: 'circle-check', cls: 'text-ok-ink' };
+  if (d.status === 'locked') return { label: 'Đã khóa', icon: 'lock', cls: 'text-muted' };
+  if (d.status === 'off') return { label: 'Nghỉ', icon: 'moon', cls: 'text-muted' };
+  if (iso === NOW.date) return { label: 'Hôm nay', icon: 'radio', cls: 'text-info-ink' };
+  const n = issues(d).length + timeReqs(d).length;
+  return n ? { label: `${n} việc`, icon: 'circle-dot', cls: 'text-amber-ink' } : { label: 'Sẵn sàng chốt', icon: 'circle-check', cls: 'text-info-ink' };
+}
+function renderContext() {
+  $('#line-seg').innerHTML = ['C05', 'C06'].map(l => {
+    const has = pending().some(p => p.line === l);
+    return `<button role="radio" aria-checked="${S.line === l}" data-line="${l}" class="relative h-9 px-3.5 rounded-[6px] text-[13px] font-semibold transition-colors duration-fast
+      ${S.line === l ? 'bg-surface shadow-card text-ink' : 'text-muted hover:text-ink'}">${l}<span class="font-normal text-muted"> · Chuyền ${+l.slice(1)}</span>
+      ${has ? '<span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-bar"></span>' : ''}</button>`;
+  }).join('');
+  $('#days').innerHTML = DATES.map(iso => {
+    const m = dayMeta(S.line, iso), sel = iso === S.date;
+    return `<button role="radio" aria-checked="${sel}" data-date="${iso}" aria-label="${wdLong(iso)} ${ddmmyyyy(iso)} — ${m.label}"
+      class="h-12 pl-2 pr-3 rounded-ctl border flex items-center gap-2.5 transition-colors duration-fast
+      ${sel ? 'border-brand bg-brand-soft' : 'border-line hover:bg-sunken'}">
+      <span class="w-9 text-center leading-none"><span class="block text-[10px] font-semibold uppercase text-muted">${wdShort(iso)}</span><span class="block text-[18px] font-semibold num mt-0.5">${iso.slice(8)}</span></span>
+      <span class="text-left leading-tight"><span class="block text-[11px] text-muted num">${ddmm(iso)}</span>
+      <span class="flex items-center gap-1 text-[12px] font-semibold ${m.cls} whitespace-nowrap">${ic(m.icon, 'w-3.5 h-3.5')}${m.label}</span></span>
+    </button>`;
+  }).join('');
+  $('#date-native').value = S.date;
+  const d = day();
+  $('#ctx-note').innerHTML = d.rows.length ? `Số liệu dùng để <b class="text-ink font-semibold">tính lương</b><br>Cập nhật lúc ${NOW.time}` : '';
+}
+
+/* ════════ Bộ lọc ════════ */
+function applyFilters(rows) {
+  const q = S.q.trim().toLowerCase();
+  return rows.filter(r => {
+    if (S.filter === 'todo' && !(r.st === 'empty' || r.st === 'warn')) return false;
+    if (S.filter === 'adjusted' && r.st !== 'adjusted') return false;
+    if (S.filter === 'support' && !r.support) return false;
+    if (!q) return true;
+    return [r.nv, r.name, r.ten, r.cd, r.login?.nv, r.login?.name, 'trạm ' + r.tram].some(x => x && String(x).toLowerCase().includes(q));
+  });
+}
+function renderFilters() {
+  const d = day(), rows = d.rows;
+  const c = { all: rows.length, todo: issues(d).length, adjusted: rows.filter(r => r.st === 'adjusted').length, support: rows.filter(r => r.support).length };
+  const defs = [['all', 'Tất cả', ''], ['todo', 'Cần xử lý', 'circle-alert'], ['adjusted', 'Đã sửa', ''], ['support', 'Hỗ trợ', '']];
+  $('#filters').innerHTML = defs.map(([k, l, icn]) => `
+    <button data-filter="${k}" aria-pressed="${S.filter === k}" class="h-8 px-2.5 rounded-full text-[13px] font-medium flex items-center gap-1.5 whitespace-nowrap border transition-colors duration-fast
+      ${S.filter === k ? 'bg-ink text-ondark border-ink' : 'bg-surface border-line text-ink hover:bg-sunken'}">
+      ${icn ? ic(icn, 'w-3.5 h-3.5') : ''}${l}<span class="num text-[12px] ${S.filter === k ? 'opacity-80' : 'text-muted'}">${c[k]}</span></button>`).join('');
+  $$('.view-tab').forEach(b => {
+    const on = b.dataset.view === S.view;
+    b.setAttribute('aria-selected', on);
+    b.className = `view-tab h-8 px-3 rounded-[6px] text-[13px] font-medium flex items-center gap-1.5 transition-colors duration-fast ${on ? 'bg-surface shadow-card text-ink' : 'text-muted hover:text-ink'}`;
+  });
+  const qc = rows.find(r => r.qc);
+  $('#qc').innerHTML = qc && qc.sl != null ? `<span class="inline-flex items-center gap-1.5" data-tip="Số áo qua công đoạn hoàn thành (QC ★) · ${qc.mh}">${ic('package-check', 'w-4 h-4 text-ok-ink')}<b class="text-ink num text-[15px]">${fmt(qc.sl)}</b> áo hoàn thành</span>` : '';
+}
+
+/* ════════ Danh sách ════════ */
+const pill = (cls, icn, text, tip = '') => `<span class="inline-flex items-center gap-1 h-6 px-2 rounded-full text-[12px] font-semibold whitespace-nowrap ${cls}" ${tip ? `data-tip="${esc(tip)}" tabindex="-1"` : ''}>${icn ? ic(icn, 'w-3.5 h-3.5') : ''}${text}</span>`;
+const lastAdj = r => r.hist.find(h => h.reason && h.src !== 'offline');
+function statusPill(r) {
+  if (r.st === 'empty') return pill('bg-surface/70 text-amber-ink border border-amber-bar/40', 'circle-dashed', 'Chưa có số');
+  if (r.st === 'warn') return pill('bg-surface/70 text-alert-ink border border-alert-bar/40', 'triangle-alert', 'Cần xem lại', r.flag);
+  if (r.st === 'adjusted') { const h = lastAdj(r); return pill('bg-violet-bg text-violet-ink', 'pencil', 'Đã điều chỉnh', h ? `${h.from == null ? 'Nhập hộ' : fmt(h.from) + ' → ' + fmt(h.to)} · ${h.reason} · ${h.by} · ${h.t}` : ''); }
+  return `<span class="text-[12px] text-muted inline-flex items-center gap-1">${ic('check', 'w-3.5 h-3.5')}</span>`;
+}
+function meter(r, d) {
+  const m = minutes(r); if (m == null) return '<span class="text-muted">—</span>';
+  const tot = workerMinutes(d, r.nv), pct = Math.min(100, Math.round(m / SHIFT_MIN * 100));
+  const tip = `${fmt(r.sl)} × ${r.smv}s ÷ 60 = ${m} phút chuẩn` + (tot !== m ? ` · Cả ngày ${r.name}: ${tot} phút (${Math.round(tot / SHIFT_MIN * 100)}% ca 8 giờ)` : ` (${Math.round(m / SHIFT_MIN * 100)}% ca 8 giờ)`);
+  return `<div class="flex items-center gap-2" data-tip="${esc(tip)}">
+    <div class="flex-1 h-1.5 rounded-full bg-meter-track overflow-hidden"><div class="h-full rounded-full bg-meter" style="width:${pct}%"></div></div>
+    <span class="num text-[12px] text-muted w-9 text-right">${m}′</span></div>`;
+}
+function renderList() {
+  const d = day(), rows = applyFilters(d.rows);
+  if (!rows.length) return emptyBox('search-x', 'Không có dòng phù hợp', 'Thử bỏ bộ lọc hoặc từ khóa tìm kiếm.');
+  let prev = null;
+  return `<table class="tbl text-[14px]">
+    <colgroup><col style="width:60px"><col><col style="width:200px"><col style="width:92px"><col style="width:128px"><col style="width:52px"><col style="width:128px"></colgroup>
+    <thead><tr class="text-[11px] font-semibold uppercase tracking-wider text-muted">
+      <th class="text-center px-2">Trạm</th><th class="text-left px-3">Công đoạn</th><th class="text-left px-3">Công nhân</th>
+      <th class="text-right px-3">Số lượng</th><th class="text-left px-3"><span data-tip="Số lượng × SMV ÷ 60 — so với ca 480 phút" class="inline-flex items-center gap-1 cursor-help">Phút chuẩn ${ic('info', 'w-3 h-3')}</span></th>
+      <th class="text-center px-1"><span class="sr-only">Nguồn</span>${ic('import', 'w-3.5 h-3.5 inline')}</th><th class="text-left px-3">Trạng thái</th>
+    </tr></thead><tbody>
+    ${rows.map(r => {
+      const start = r.tram !== prev; prev = r.tram;
+      const empty = r.st === 'empty';
+      return `<tr data-row="${r.id}" tabindex="0" class="st-${r.st} ${start ? 'grp-start' : ''} ${S.sel === r.id ? 'is-sel' : ''}" aria-selected="${S.sel === r.id}">
+        <td class="text-center px-2">${start ? `<span class="text-[15px] font-semibold num">${r.tram}</span>` : '<span class="block mx-auto w-px h-5 bg-line-strong"></span>'}</td>
+        <td class="px-3 py-0.5">
+          <div class="flex items-center gap-1.5 min-w-0"><span class="font-medium truncate">${esc(r.ten)}</span>
+            ${r.qc ? '<span class="shrink-0 h-5 px-1.5 rounded bg-ok-bg text-ok-ink text-[11px] font-semibold inline-flex items-center gap-0.5">★ QC</span>' : ''}</div>
+          <div class="text-[12px] text-muted truncate"><span class="font-mono text-[11px]">${r.cd}</span> · SMV ${r.smv}s · <span class="font-mono text-[11px]">${r.mh}</span></div>
+        </td>
+        <td class="px-3 py-0.5">
+          ${empty
+            ? `<div class="italic text-muted truncate">${r.login ? esc(r.login.name) : 'Chưa ai đăng nhập'}</div><div class="text-[12px] text-muted truncate">${r.login ? `<span class="font-mono text-[11px]">${r.login.nv}</span> · đang đăng nhập trạm` : 'Trạm trống'}</div>`
+            : `<div class="flex items-center gap-1.5 min-w-0"><span class="truncate">${esc(r.name)}</span>${r.support ? `<span class="shrink-0 h-5 px-1.5 rounded bg-sky-bg text-sky-ink text-[11px] font-semibold inline-flex items-center gap-0.5" data-tip="Công nhân chuyền ${r.support} sang hỗ trợ">${ic('arrow-left-right', 'w-3 h-3')}${r.support}</span>` : ''}</div>
+               <div class="text-[12px] text-muted font-mono">${r.nv}</div>`}
+        </td>
+        <td class="px-3 text-right">${empty ? `<span class="text-[12px] font-semibold text-amber-ink">Chưa có</span>` : `<span class="num text-[16px] font-semibold ${r.st === 'adjusted' ? 'text-violet-ink' : ''}">${fmt(r.sl)}</span>`}</td>
+        <td class="px-3">${meter(r, d)}</td>
+        <td class="px-1 text-center">${r.src ? `<span class="inline-grid place-items-center w-7 h-7 rounded-ctl text-muted" data-tip="Nguồn: ${SRC[r.src][0]}">${ic(SRC[r.src][1], 'w-4 h-4')}</span>` : ''}</td>
+        <td class="px-3">${statusPill(r)}</td>
+      </tr>`;
+    }).join('')}
+    </tbody></table>`;
+}
+
+/* ════════ Sơ đồ chuyền ════════ */
+function renderMap() {
+  const d = day(), rows = applyFilters(d.rows);
+  if (!rows.length) return emptyBox('search-x', 'Không có trạm phù hợp', 'Thử bỏ bộ lọc hoặc từ khóa tìm kiếm.');
+  const groups = [];
+  rows.forEach(r => { const g = groups[groups.length - 1]; g && g.tram === r.tram ? g.rows.push(r) : groups.push({ tram: r.tram, mh: r.mh, rows: [r] }); });
+  const tone = st => ({ empty: 'border-amber-bar bg-amber-bg', warn: 'border-alert-bar bg-alert-bg', adjusted: 'border-violet-bar bg-surface', ok: 'border-line bg-surface' }[st]);
+  let lastMh = null;
+  return `<div class="p-3 grid gap-2.5" style="grid-template-columns: repeat(auto-fill, minmax(168px, 1fr))">
+    ${groups.map(g => {
+      const worst = ['warn', 'empty', 'adjusted', 'ok'].find(s => g.rows.some(r => r.st === s));
+      const w = g.rows[0], who = w.name || w.login?.name;
+      const sep = g.mh !== lastMh ? (lastMh = g.mh, `<div class="col-span-full flex items-center gap-2 text-[12px] font-semibold text-muted pt-1"><span class="font-mono">${g.mh}</span><span>${g.mh === 'PL-2641' ? 'Áo polo nam' : 'Quần short nữ · nối đuôi'}</span><span class="flex-1 h-px bg-line"></span></div>`) : '';
+      return sep + `<div class="rounded-card border-l-4 border ${tone(worst)} p-2.5 flex flex-col gap-1.5">
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] font-semibold text-muted uppercase">Trạm</span><span class="text-[18px] font-semibold num leading-none">${g.tram}</span>
+          <span class="ml-auto w-7 h-7 rounded-full ${w.name ? 'bg-brand-soft text-brand-ink' : 'bg-sunken text-muted border border-dashed border-line-strong'} grid place-items-center text-[11px] font-semibold" data-tip="${esc(who || 'Chưa ai đăng nhập')}">${who ? initials(who) : ic('user', 'w-3.5 h-3.5')}</span>
+        </div>
+        ${g.rows.map(r => `<button data-row="${r.id}" class="text-left rounded-ctl px-2 py-1.5 -mx-1 hover:bg-sunken/80 ${S.sel === r.id ? 'ring-2 ring-brand bg-brand-soft' : ''} transition-colors duration-fast">
+          <div class="flex items-center gap-2"><span class="text-[13px] font-medium truncate flex-1">${esc(r.ten)}</span>
+          ${r.st === 'empty' ? ic('circle-dashed', 'w-4 h-4 text-amber-ink') : r.st === 'warn' ? ic('triangle-alert', 'w-4 h-4 text-alert-ink') : `<span class="num text-[15px] font-semibold ${r.st === 'adjusted' ? 'text-violet-ink' : ''}">${fmt(r.sl)}</span>`}</div>
+          <div class="text-[11px] text-muted">${r.cd} · ${r.st === 'empty' ? 'chưa có số' : r.st === 'warn' ? fmt(r.sl) + ' · cần xem lại' : r.st === 'adjusted' ? 'đã điều chỉnh' : SRC[r.src][0]}${r.support ? ' · hỗ trợ ' + r.support : ''}</div>
+        </button>`).join('')}
+      </div>`;
+    }).join('')}</div>`;
+}
+const emptyBox = (icn, t, s = '') => `<div class="h-full min-h-[280px] grid place-items-center text-center p-8"><div class="flex flex-col items-center gap-3">
+  <span class="w-14 h-14 rounded-full bg-sunken grid place-items-center">${ic(icn, 'w-7 h-7 text-muted')}</span>
+  <p class="text-[15px] font-semibold">${t}</p>${s ? `<p class="text-[13px] text-muted max-w-sm">${s}</p>` : ''}</div></div>`;
+
+function renderData() {
+  const d = day();
+  let html;
+  if (d.status === 'nodata') html = emptyBox('database', `Chưa có dữ liệu mẫu cho chuyền ${S.line}`, 'Bản demo chỉ có số liệu chuyền C05. Chọn lại C05 để tiếp tục.');
+  else if (d.status === 'off') html = emptyBox('calendar-x', `Không có dữ liệu ngày ${ddmmyyyy(S.date)} (${wdLong(S.date)})`, 'Chuyền nghỉ — không có ca làm việc.');
+  else html = S.view === 'list' ? renderList() : renderMap();
+  $('#data').innerHTML = html;
+}
+
+/* ════════ Panel phải ════════ */
+function closeFooter(d) {
+  const iss = issues(d).length + timeReqs(d).length;
+  if (d.status === 'closed') return `<div class="rounded-card bg-ok-bg p-3 flex gap-3">
+      <span class="w-9 h-9 rounded-full bg-ok-bar text-ondark grid place-items-center shrink-0">${ic('check', 'w-5 h-5')}</span>
+      <div class="text-[13px] leading-snug"><div class="font-semibold text-ok-ink">Đã chốt ngày ${ddmmyyyy(S.date)}</div>
+      <div class="text-ink">${esc(d.closedBy)} · <span class="num">${d.closedAt}</span></div>
+      <div class="text-muted mt-1">Vẫn sửa được — bắt buộc ghi lý do.</div></div></div>`;
+  if (d.status === 'locked') return `<div class="rounded-card bg-sunken p-3 text-[13px] flex gap-2">${ic('lock', 'w-4 h-4 mt-0.5')}Kỳ lương đã khóa sổ — không sửa được.</div>`;
+  if (d.status !== 'open') return '';
+  if (notYet(S.date)) return `<button aria-disabled="true" class="w-full h-12 rounded-ctl bg-sunken border border-dashed border-line-strong text-muted text-[14px] font-semibold flex items-center justify-center gap-2 cursor-not-allowed">
+      ${ic('lock', 'w-4 h-4')}Mở chốt lúc 08:00 · ${ddmmyyyy(addDay(S.date))}</button>
+      <p class="text-[12px] text-muted mt-2 text-center">Công nhân vẫn đang nhập số cho ngày hôm nay.</p>`;
+  return `<button id="btn-close" class="w-full h-12 rounded-ctl bg-brand hover:bg-brand-hover text-onbrand text-[15px] font-semibold flex items-center justify-center gap-2 transition-colors duration-fast">
+      ${ic('circle-check', 'w-5 h-5')}Chốt ngày ${ddmm(S.date)}</button>
+    <p class="text-[12px] text-muted mt-2 text-center">${iss ? `Còn <b class="text-amber-ink">${iss} việc</b> — vẫn chốt được, sẽ có cảnh báo.` : 'Mọi dòng đã có số. Sẵn sàng chốt.'}</p>`;
+}
+
+function renderTriage() {
+  const d = day();
+  const p = $('#panel');
+  if (d.status === 'nodata' || d.status === 'off') {
+    p.innerHTML = `<div class="p-5">${emptyBox(d.status === 'off' ? 'moon' : 'database', d.status === 'off' ? 'Ngày nghỉ' : 'Chưa có dữ liệu', 'Không có việc cần xử lý.')}</div>`;
+    return icons();
+  }
+  const list = issues(d), tr = timeReqs(d), total = d.rows.length, filled = d.rows.filter(r => r.sl != null).length;
+  const pct = total ? Math.round(filled / total * 100) : 0;
+  const card = (r) => {
+    const empty = r.st === 'empty';
+    return `<button data-open="${r.id}" class="w-full text-left rounded-card border ${empty ? 'border-amber-bar/50 bg-amber-bg' : 'border-alert-bar/50 bg-alert-bg'} p-3 flex gap-3 hover:shadow-card hover:border-line-strong transition duration-fast group">
+      <span class="w-9 h-9 rounded-ctl bg-surface grid place-items-center shrink-0 ${empty ? 'text-amber-ink' : 'text-alert-ink'}">${ic(empty ? 'circle-dashed' : 'triangle-alert', 'w-[18px] h-[18px]')}</span>
+      <span class="flex-1 min-w-0">
+        <span class="flex items-center gap-1.5"><span class="text-[12px] font-semibold ${empty ? 'text-amber-ink' : 'text-alert-ink'}">Trạm ${r.tram}</span><span class="text-[12px] text-muted font-mono">${r.cd}</span></span>
+        <span class="flex items-center gap-2"><span class="text-[14px] font-semibold truncate">${esc(r.ten)}</span><span class="ml-auto shrink-0 text-[11px] font-semibold uppercase tracking-wide ${empty ? 'text-amber-ink' : 'text-alert-ink'}">${empty ? 'Nhập hộ' : 'Xem lại'}</span></span>
+        <span class="block text-[12px] text-ink/80 leading-snug mt-0.5">${empty ? (r.login ? `<b>${esc(r.login.name)}</b> đang đăng nhập trạm` : 'Chưa ai đăng nhập trạm') : `<b class="num">${fmt(r.sl)}</b> sp · ${esc(r.flag)}`}</span>
+      </span>
+      <span class="self-center text-muted group-hover:text-ink">${ic('chevron-right', 'w-5 h-5 group-hover:translate-x-0.5 transition-transform')}</span>
+    </button>`;
+  };
+  p.innerHTML = `
+    <div class="px-5 pt-4 pb-3 border-b border-line shrink-0">
+      <div class="flex items-center gap-2"><h2 class="text-[16px] font-semibold">Trước khi chốt</h2><span class="text-[13px] text-muted num">· ${S.line} · ${ddmmyyyy(S.date)}</span></div>
+      <div class="mt-3 flex items-end gap-3">
+        <div class="text-[30px] leading-none font-semibold num">${filled}<span class="text-[16px] text-muted font-medium">/${total}</span></div>
+        <div class="text-[12px] text-muted leading-tight pb-0.5">dòng đã có số<br>${list.length + tr.length ? `<b class="text-amber-ink">còn ${list.length + tr.length} việc cần xử lý</b>` : '<b class="text-ok-ink">không còn việc nào</b>'}</div>
+      </div>
+      <div class="mt-3 h-2 rounded-full bg-meter-track overflow-hidden flex" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Tỉ lệ dòng đã có số">
+        <div class="h-full bg-ok-bar" style="width:${pct}%"></div><div class="h-full bg-amber-bar" style="width:${100 - pct}%"></div>
+      </div>
+    </div>
+    <div class="flex-1 min-h-0 overflow-y-auto scroll px-4 py-4 flex flex-col gap-2.5">
+      ${list.length ? `<div class="text-[11px] font-semibold uppercase tracking-wider text-muted px-1">Sản lượng</div>${list.map(card).join('')}` : ''}
+      ${tr.length ? `<div class="text-[11px] font-semibold uppercase tracking-wider text-muted px-1 mt-2">Giờ làm</div>` + tr.map(t => `
+        <button data-time class="w-full text-left rounded-card border border-line bg-surface p-3 flex gap-3 hover:shadow-card hover:border-line-strong transition duration-fast group">
+          <span class="w-9 h-9 rounded-ctl bg-sunken grid place-items-center shrink-0 text-muted">${ic('clock', 'w-[18px] h-[18px]')}</span>
+          <span class="flex-1 min-w-0"><span class="block text-[12px] text-muted font-mono">${t.nv}</span><span class="block text-[14px] font-semibold">${esc(t.name)}</span>
+          <span class="block text-[12px] text-muted">Xin xác nhận <b class="text-ink num">${t.hours} giờ</b> ngày ${ddmm(S.date)}</span></span>
+          <span class="self-center text-[12px] font-semibold flex items-center gap-0.5">Duyệt${ic('chevron-right', 'w-4 h-4 group-hover:translate-x-0.5 transition-transform')}</span>
+        </button>`).join('') : ''}
+      ${!list.length && !tr.length ? `<div class="flex-1 grid place-items-center text-center"><div><span class="mx-auto w-14 h-14 rounded-full bg-ok-bg text-ok-ink grid place-items-center">${ic('check-check', 'w-7 h-7')}</span>
+        <p class="mt-3 font-semibold">Không còn việc cần xử lý</p><p class="text-[13px] text-muted mt-1">Bấm vào một dòng bất kỳ để xem lịch sử hoặc sửa số.</p></div></div>` : ''}
+    </div>
+    <div class="p-4 border-t border-line shrink-0">${closeFooter(d)}</div>`;
+  icons();
+}
+
+/* ─── Chi tiết bản ghi (inspector) ─── */
+function renderInspector(id) {
+  const d = day(), r = row(id); if (!r) return renderTriage();
+  const editable = d.status === 'open' || d.status === 'closed';
+  const mode = r.st === 'empty' ? 'proxy' : r.st === 'warn' ? 'warn' : 'edit';
+  const remaining = issues(d).length + timeReqs(d).length;
+  const srcPill = s => s ? `<span class="inline-flex items-center gap-1 h-5 px-1.5 rounded bg-sunken border border-line text-[11px] font-medium">${ic(SRC[s][1], 'w-3 h-3')}${SRC[s][0]}</span>` : '';
+  const who = r.name || r.login?.name;
+  const banner = r.st === 'warn' ? `<div class="rounded-ctl bg-alert-bg text-alert-ink p-3 text-[13px] flex gap-2">${ic('triangle-alert', 'w-4 h-4 mt-0.5')}<div><b>Cần xem lại:</b> ${esc(r.flag)}. Kiểm tra với công nhân trước khi xác nhận.</div></div>`
+    : r.st === 'empty' ? `<div class="rounded-ctl bg-amber-bg text-amber-ink p-3 text-[13px] flex gap-2">${ic('circle-dashed', 'w-4 h-4 mt-0.5')}<div>Trạm chưa có số ngày ${ddmm(S.date)}. ${r.login ? `<b>${esc(r.login.name)}</b> đang đăng nhập trạm — đã điền sẵn.` : 'Chưa ai đăng nhập trạm.'}</div></div>` : '';
+
+  const reasons = REASONS[mode];
+  const form = !editable ? '' : `
+    <form id="f" class="flex flex-col gap-3" novalidate>
+      ${mode === 'proxy' ? `
+        <div class="relative">
+          <label class="block text-[13px] font-medium mb-1" for="f-nv">Công nhân <span class="text-alert-ink">*</span></label>
+          <input id="f-nv" role="combobox" aria-expanded="false" aria-controls="f-list" aria-autocomplete="list" autocomplete="off" value="${r.login ? r.login.nv : ''}" placeholder="Gõ mã NV hoặc tên…"
+            class="w-full h-10 px-3 rounded-ctl border border-line-strong bg-surface font-mono text-[14px] uppercase">
+          <ul id="f-list" role="listbox" class="hidden absolute left-0 right-0 top-[66px] z-10 bg-surface border border-line rounded-card shadow-pop p-1 max-h-56 overflow-auto"></ul>
+          <p id="f-name" class="text-[12px] mt-1 ${r.login ? 'text-ink' : 'text-muted'}">${r.login ? esc(r.login.name) : 'Chọn từ danh sách gợi ý'}</p>
+        </div>` : ''}
+      <div>
+        <label class="block text-[13px] font-medium mb-1" for="f-qty">Số lượng${mode === 'proxy' ? ' <span class="text-alert-ink">*</span>' : ` <span class="text-muted font-normal">· hiện tại <b class="num text-ink">${fmt(r.sl)}</b></span>`}</label>
+        <div class="flex items-center gap-2">
+          <input id="f-qty" inputmode="numeric" autocomplete="off" value="${mode === 'proxy' ? '' : r.sl}" class="num flex-1 h-12 px-3 rounded-ctl border border-line-strong bg-surface text-[22px] font-semibold text-right">
+          <span class="text-[13px] text-muted w-6">sp</span>
+        </div>
+        <p id="f-diff" class="text-[12px] mt-1 min-h-[16px]"></p>
+      </div>
+      <fieldset>
+        <legend class="text-[13px] font-medium mb-1.5">Lý do <span class="text-alert-ink">*</span> <span class="text-muted font-normal">— lưu vào lịch sử, dùng khi đối chiếu lương</span></legend>
+        <div class="flex flex-wrap gap-1.5">${reasons.map((x, i) => `<label class="chip-radio cursor-pointer"><input type="radio" name="reason" value="${x}" class="sr-only">
+          <span class="inline-flex items-center h-8 px-3 rounded-full border border-line-strong text-[13px] font-medium hover:bg-sunken transition-colors duration-fast">${x}</span></label>`).join('')}</div>
+      </fieldset>
+      <div id="f-note-wrap" class="hidden">
+        <label class="block text-[13px] font-medium mb-1" for="f-note">Mô tả lý do <span class="text-alert-ink">*</span></label>
+        <textarea id="f-note" rows="2" class="w-full px-3 py-2 rounded-ctl border border-line-strong bg-surface text-[14px] resize-none" placeholder="VD: Công nhân chuyển công đoạn giữa ca"></textarea>
+      </div>
+      <p id="f-err" class="hidden text-[13px] text-alert-ink flex items-center gap-1.5" role="alert"></p>
+      <div class="flex gap-2">
+        <button type="button" data-back class="h-10 px-4 rounded-ctl border border-line-strong bg-surface hover:bg-sunken text-[14px] font-medium transition-colors duration-fast">Hủy</button>
+        <button type="submit" id="f-save" class="flex-1 h-10 rounded-ctl bg-brand hover:bg-brand-hover text-onbrand text-[14px] font-semibold flex items-center justify-center gap-2 transition-colors duration-fast">
+          ${ic('save', 'w-4 h-4')}${mode === 'proxy' ? 'Lưu nhập hộ' : mode === 'warn' ? 'Lưu xác nhận' : 'Lưu thay đổi'}</button>
+      </div>
+      ${remaining ? `<p class="text-[12px] text-muted -mt-1">Sau khi lưu sẽ tự chuyển sang việc tiếp theo.</p>` : ''}
+    </form>`;
+
+  $('#panel').innerHTML = `
+    <div class="h-12 px-3 flex items-center border-b border-line shrink-0">
+      <button data-back class="h-8 pl-1.5 pr-2.5 rounded-ctl flex items-center gap-1 text-[13px] font-medium hover:bg-sunken">${ic('arrow-left', 'w-4 h-4')}Việc cần làm${remaining ? ` <span class="ml-1 h-5 min-w-[20px] px-1.5 rounded-full bg-amber-bg text-amber-ink text-[11px] font-bold grid place-items-center num">${remaining}</span>` : ''}</button>
+      <span class="ml-auto text-[12px] text-muted"><kbd class="font-mono px-1 border border-line rounded">Esc</kbd></span>
+    </div>
+    <div class="flex-1 min-h-0 overflow-y-auto scroll p-5 flex flex-col gap-4 slide-in">
+      <div>
+        <div class="text-[12px] text-muted"><span class="font-semibold text-ink">Trạm ${r.tram}</span> · <span class="font-mono">${r.cd}</span> · <span class="font-mono">${r.mh}</span> · SMV ${r.smv}s</div>
+        <h2 class="text-[18px] font-semibold mt-0.5">${esc(r.ten)}</h2>
+        <div class="mt-3 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full ${who ? 'bg-brand-soft text-brand-ink' : 'bg-sunken text-muted'} grid place-items-center text-[13px] font-semibold">${who ? initials(who) : ic('user', 'w-4 h-4')}</span>
+          <div class="leading-tight"><div class="font-medium">${who ? esc(who) : 'Chưa ai đăng nhập'}${r.support ? ` <span class="ml-1 h-5 px-1.5 rounded bg-sky-bg text-sky-ink text-[11px] font-semibold inline-flex items-center">Hỗ trợ từ ${r.support}</span>` : ''}</div>
+          <div class="text-[12px] text-muted font-mono">${r.nv || r.login?.nv || '—'}${r.st === 'empty' && r.login ? ' <span class="font-sans">· đang đăng nhập</span>' : ''}</div></div>
+          ${r.sl != null ? `<div class="ml-auto text-right leading-tight"><div class="text-[22px] font-semibold num">${fmt(r.sl)}</div><div class="text-[11px] text-muted">${minutes(r)} phút chuẩn</div></div>` : ''}
+        </div>
+      </div>
+      ${banner}
+      ${form}
+      <section>
+        <h3 class="text-[13px] font-semibold mb-2 flex items-center gap-1.5">${ic('history', 'w-4 h-4 text-muted')}Lịch sử thay đổi</h3>
+        ${r.hist.length ? `<ol class="tl">${r.hist.map((h, i) => `<li class="relative pl-6 pb-4">
+          <span class="absolute left-0 top-1 w-[11px] h-[11px] rounded-full border-2 ${i === 0 ? 'border-brand bg-brand-soft' : 'border-line-strong bg-surface'}"></span>
+          <div class="flex items-center gap-2"><span class="num text-[15px] font-semibold">${h.from == null ? fmt(h.to) : `${fmt(h.from)} <span class="text-muted">→</span> ${fmt(h.to)}`}</span>${srcPill(h.src)}<span class="ml-auto text-[12px] text-muted num">${h.t}</span></div>
+          <div class="text-[13px] mt-0.5">${esc(h.by)}${h.reason ? ` <span class="text-muted">—</span> ${esc(h.reason)}` : ''}</div></li>`).join('')}</ol>`
+          : '<p class="text-[13px] text-muted">Chưa có bản ghi nào.</p>'}
+      </section>
+    </div>`;
+  icons();
+  if (editable) wireForm(r, mode);
+}
+
+function parseQty(v) {
+  v = String(v).trim();
+  if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, '');
+  if (!/^\d+$/.test(v)) return null;
+  const n = +v; return n <= 99999 ? n : null;
+}
+function wireForm(r, mode) {
+  const f = $('#f'), qty = $('#f-qty'), diff = $('#f-diff'), err = $('#f-err'), noteWrap = $('#f-note-wrap'), note = $('#f-note');
+  const showErr = (m, el) => { err.innerHTML = ic('circle-alert', 'w-4 h-4') + esc(m); err.classList.remove('hidden'); icons(); el?.focus(); el?.classList.add('border-alert-bar'); };
+  const clear = () => { err.classList.add('hidden'); $$('.border-alert-bar', f).forEach(x => x.classList.remove('border-alert-bar')); };
+  const upd = () => {
+    clear();
+    const n = parseQty(qty.value);
+    if (qty.value.trim() && n == null) { diff.className = 'text-[12px] mt-1 min-h-[16px] text-alert-ink'; diff.textContent = 'Số lượng phải là số nguyên từ 0 đến 99.999'; return; }
+    if (mode === 'proxy' || n == null || n === r.sl) { diff.textContent = ''; return; }
+    const dlt = n - r.sl;
+    diff.className = 'text-[12px] mt-1 min-h-[16px] font-medium ' + (dlt < 0 ? 'text-alert-ink' : 'text-ok-ink');
+    diff.innerHTML = `${fmt(r.sl)} → ${fmt(n)} (${dlt > 0 ? '+' : '−'}${fmt(Math.abs(dlt))})${dlt < 0 ? ' · Số mới nhỏ hơn số cũ' : ''}`;
+  };
+  qty.addEventListener('input', upd);
+  f.addEventListener('change', e => { if (e.target.name === 'reason') { noteWrap.classList.toggle('hidden', e.target.value !== 'Khác'); clear(); if (e.target.value === 'Khác') note.focus(); } });
+
+  if (mode === 'proxy') {
+    const nv = $('#f-nv'), list = $('#f-list'), name = $('#f-name');
+    let hi = -1, m = [];
+    const close = () => { list.classList.add('hidden'); nv.setAttribute('aria-expanded', 'false'); hi = -1; };
+    const pick = e => { nv.value = e.nv; name.className = 'text-[12px] mt-1 text-ink'; name.textContent = e.name; close(); qty.focus(); };
+    const draw = () => {
+      const q = nv.value.trim().toUpperCase();
+      m = q ? EMP.filter(e => e.nv.startsWith(q) || e.name.toUpperCase().includes(q)).slice(0, 6) : [];
+      if (!m.length) return close();
+      list.innerHTML = m.map((e, i) => `<li role="option" id="fo${i}" aria-selected="${i === hi}" data-i="${i}" class="h-10 px-2 flex items-center gap-2.5 rounded-ctl cursor-pointer ${i === hi ? 'bg-brand-soft' : 'hover:bg-sunken'}">
+        <span class="w-7 h-7 rounded-full bg-sunken grid place-items-center text-[11px] font-semibold">${initials(e.name)}</span><span class="text-[14px]">${esc(e.name)}</span><span class="ml-auto font-mono text-[12px] text-muted">${e.nv}</span></li>`).join('');
+      list.classList.remove('hidden'); nv.setAttribute('aria-expanded', 'true'); nv.setAttribute('aria-activedescendant', hi >= 0 ? 'fo' + hi : '');
+    };
+    nv.addEventListener('input', () => { hi = -1; draw(); const ex = EMP.find(e => e.nv === nv.value.trim().toUpperCase()); name.className = 'text-[12px] mt-1 ' + (ex ? 'text-ink' : 'text-muted'); name.textContent = ex ? ex.name : 'Chọn từ danh sách gợi ý'; });
+    nv.addEventListener('keydown', e => {
+      if (list.classList.contains('hidden')) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); hi = (hi + 1) % m.length; draw(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); hi = (hi - 1 + m.length) % m.length; draw(); }
+      else if (e.key === 'Enter' && hi >= 0) { e.preventDefault(); pick(m[hi]); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+    });
+    list.addEventListener('mousedown', e => { const li = e.target.closest('[data-i]'); if (li) { e.preventDefault(); pick(m[+li.dataset.i]); } });
+    nv.addEventListener('blur', () => setTimeout(close, 120));
+  }
+
+  f.addEventListener('submit', e => {
+    e.preventDefault(); clear();
+    let emp = null;
+    if (mode === 'proxy') { emp = EMP.find(x => x.nv === $('#f-nv').value.trim().toUpperCase()); if (!emp) return showErr('Chọn công nhân từ danh sách gợi ý.', $('#f-nv')); }
+    const n = parseQty(qty.value);
+    if (n == null) return showErr('Số lượng phải là số nguyên từ 0 đến 99.999', qty);
+    const rs = f.reason.value;
+    if (mode === 'edit' && n === r.sl) return showErr('Số lượng chưa thay đổi.', qty);
+    if (mode === 'warn' && n === r.sl && rs && rs !== 'Đã kiểm tra, số đúng' && rs !== 'Khác') return showErr('Số chưa đổi — chọn “Đã kiểm tra, số đúng” nếu giữ nguyên.', qty);
+    if (!rs) return showErr('Chọn lý do trước khi lưu.', f.querySelector('input[name=reason]'));
+    if (rs === 'Khác' && !note.value.trim()) return showErr('Mô tả lý do khi chọn “Khác”.', note);
+    const reason = rs === 'Khác' ? note.value.trim() : rs;
+    if (mode === 'proxy') {
+      r.hist.unshift({ t: stamp(), from: null, to: n, src: 'proxy', by: USER, reason });
+      Object.assign(r, { nv: emp.nv, name: emp.name, sl: n, src: 'proxy', st: 'adjusted', login: null });
+    } else {
+      r.hist.unshift({ t: stamp(), from: r.sl, to: n, src: 'web', by: USER, reason });
+      Object.assign(r, { sl: n, src: n === r.sl ? r.src : 'web', st: 'adjusted', flag: null });
+    }
+    const next = issues(day())[0];
+    toast(`Đã lưu · Trạm ${r.tram}${next ? ` — tiếp: Trạm ${next.tram}` : ''}`);
+    select(next ? next.id : null);
+  });
+  (mode === 'proxy' && !r.login ? $('#f-nv') : qty).focus();
+  qty.select?.();
+}
+
+/* ════════ Điều phối ════════ */
+function renderPanel() { S.sel ? renderInspector(S.sel) : renderTriage(); }
+function render() { renderPending(); renderContext(); renderFilters(); renderData(); renderPanel(); icons(); }
+function select(id, focusRow = false) {
+  S.sel = id; renderData(); renderPanel(); renderFilters(); renderContext(); renderPending(); icons();
+  if (id) $(`#data [data-row="${id}"]`)?.scrollIntoView({ block: 'nearest' });
+  if (focusRow && id) $(`#data [data-row="${id}"]`)?.focus();
+}
+function goto(line, date) { S.line = line; S.date = date; S.sel = null; S.filter = 'all'; render(); }
+
+/* ════════ Chốt ngày ════════ */
+let lastFocus = null;
+function openClose() {
+  const d = day(), list = issues(d), tr = timeReqs(d), empty = list.filter(r => r.st === 'empty').length, warn = list.length - empty;
+  const n = list.length + tr.length;
+  lastFocus = document.activeElement;
+  $('#modal').innerHTML = `
+    <div class="p-6">
+      <div class="flex items-start gap-3">
+        <span class="w-10 h-10 rounded-full ${n ? 'bg-amber-bg text-amber-ink' : 'bg-ok-bg text-ok-ink'} grid place-items-center shrink-0">${ic(n ? 'triangle-alert' : 'circle-check', 'w-5 h-5')}</span>
+        <div><h2 id="modal-title" class="text-[18px] font-semibold">Chốt ngày ${ddmmyyyy(S.date)} – ${S.line}?</h2>
+        <p class="text-[14px] text-muted mt-1">Sau khi chốt, công nhân không nhập được số của ngày này. Tổ trưởng vẫn sửa được (bắt buộc lý do).</p></div>
+      </div>
+      ${n ? `<ul class="mt-4 rounded-card border border-line divide-y divide-line">
+        ${empty ? `<li class="px-3 py-2.5 flex items-center gap-2.5 text-[14px]">${ic('circle-dashed', 'w-4 h-4 text-amber-ink')}<span>Còn <b class="num">${empty}</b> ô chưa có số</span><button data-fix="empty" class="ml-auto text-[13px] font-semibold text-brand-ink hover:underline">Xử lý ngay</button></li>` : ''}
+        ${warn ? `<li class="px-3 py-2.5 flex items-center gap-2.5 text-[14px]">${ic('triangle-alert', 'w-4 h-4 text-alert-ink')}<span>Còn <b class="num">${warn}</b> ô cần xem lại</span><button data-fix="warn" class="ml-auto text-[13px] font-semibold text-brand-ink hover:underline">Xử lý ngay</button></li>` : ''}
+        ${tr.length ? `<li class="px-3 py-2.5 flex items-center gap-2.5 text-[14px]">${ic('clock', 'w-4 h-4 text-muted')}<span>Còn <b class="num">${tr.length}</b> yêu cầu giờ chờ duyệt</span></li>` : ''}
+      </ul>
+      <label class="mt-4 flex items-start gap-2.5 text-[14px] cursor-pointer"><input id="ack" type="checkbox" class="mt-0.5 w-4 h-4 accent-[var(--ink)]">
+        <span>Tôi đã kiểm tra và vẫn muốn chốt khi còn <b>${n} việc</b> chưa xử lý.</span></label>` : ''}
+    </div>
+    <div class="px-6 pb-6 flex justify-end gap-2">
+      <button id="m-cancel" class="h-10 px-4 rounded-ctl border border-line-strong bg-surface hover:bg-sunken text-[14px] font-medium">Để sau</button>
+      <button id="m-ok" class="h-10 px-4 rounded-ctl bg-brand hover:bg-brand-hover text-onbrand text-[14px] font-semibold flex items-center gap-2 disabled:bg-sunken disabled:text-muted disabled:cursor-not-allowed" ${n ? 'disabled' : ''}>${ic('circle-check', 'w-4 h-4')}${n ? 'Vẫn chốt ngày' : 'Chốt ngày'}</button>
+    </div>`;
+  icons();
+  $('#modal-wrap').classList.add('open');
+  $('#ack')?.addEventListener('change', e => $('#m-ok').disabled = !e.target.checked);
+  $('#m-cancel').onclick = () => closeModal();
+  $('#m-ok').onclick = () => {
+    Object.assign(d, { status: 'closed', closedBy: USER, closedAt: `${NOW.time} ${ddmmyyyy(NOW.date)}` });
+    closeModal(false); S.sel = null; render(); toast(`Đã chốt ngày ${ddmmyyyy(S.date)} – ${S.line}`);
+  };
+  $$('[data-fix]', $('#modal')).forEach(b => b.onclick = () => { const t = issues(d).find(r => r.st === b.dataset.fix); closeModal(false); if (t) select(t.id); });
+  setTimeout(() => ($('#ack') || $('#m-ok')).focus(), 30);
+}
+function closeModal(restore = true) { $('#modal-wrap').classList.remove('open'); if (restore) lastFocus?.focus(); }
+$('#modal-wrap').addEventListener('mousedown', e => { if (e.target.id === 'modal-wrap') closeModal(); });
+$('#modal-wrap').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.stopPropagation(); closeModal(); }
+  if (e.key === 'Tab') { const f = $$('button:not([disabled]),input', $('#modal')); const i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); } }
+});
+
+/* ════════ Toast & tooltip ════════ */
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'h-11 pl-3 pr-4 rounded-full bg-rail text-ondark text-[13px] font-medium flex items-center gap-2 shadow-pop slide-in';
+  t.innerHTML = `<span class="w-6 h-6 rounded-full bg-ok-bar grid place-items-center">${ic('check', 'w-3.5 h-3.5')}</span>${esc(msg)}`;
+  $('#toasts').appendChild(t); icons(); setTimeout(() => t.remove(), 3000);
+}
+const tip = $('#tip');
+function showTip(el) {
+  tip.textContent = el.dataset.tip; tip.classList.remove('hidden');
+  const a = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(Math.max(8, a.left + a.width / 2 - w / 2), innerWidth - w - 8) + 'px';
+  tip.style.top = (a.top - h - 6 < 8 ? a.bottom + 6 : a.top - h - 6) + 'px';
+}
+const hideTip = () => tip.classList.add('hidden');
+document.addEventListener('mouseover', e => { const el = e.target.closest('[data-tip]'); el ? showTip(el) : hideTip(); });
+document.addEventListener('scroll', hideTip, true);
+
+/* ════════ Sự kiện ════════ */
+function toggleMenu(btn, menu, force) { const open = force ?? menu.classList.contains('hidden'); menu.classList.toggle('hidden', !open); btn.setAttribute('aria-expanded', String(open)); if (open) menu.querySelector('[role=menuitem]')?.focus(); }
+$('#btn-pending').onclick = e => { e.stopPropagation(); toggleMenu($('#btn-pending'), $('#menu-pending')); toggleMenu($('#btn-user'), $('#menu-user'), false); };
+$('#btn-user').onclick = e => { e.stopPropagation(); toggleMenu($('#btn-user'), $('#menu-user')); toggleMenu($('#btn-pending'), $('#menu-pending'), false); };
+$('#btn-cal').onclick = () => { try { $('#date-native').showPicker(); } catch { $('#date-native').click(); } };
+$('#date-native').onchange = e => DATES.includes(e.target.value) && goto(S.line, e.target.value);
+$('#search').addEventListener('input', e => { S.q = e.target.value; renderData(); icons(); });
+$('#btn-shortcuts').onclick = () => toast('Phím tắt: / tìm · ↑↓ chọn dòng · Enter mở · N việc tiếp theo · Esc đóng');
+
+document.addEventListener('click', e => {
+  const t = e.target;
+  if (!t.closest('#menu-pending,#btn-pending')) toggleMenu($('#btn-pending'), $('#menu-pending'), false);
+  if (!t.closest('#menu-user,#btn-user')) toggleMenu($('#btn-user'), $('#menu-user'), false);
+  let el;
+  if ((el = t.closest('[data-go]'))) { const [l, d] = el.dataset.go.split('|'); toggleMenu($('#btn-pending'), $('#menu-pending'), false); return goto(l, d); }
+  if ((el = t.closest('[data-line]'))) return goto(el.dataset.line, S.date);
+  if ((el = t.closest('[data-date]'))) return goto(S.line, el.dataset.date);
+  if ((el = t.closest('[data-view]'))) { S.view = el.dataset.view; renderFilters(); renderData(); return icons(); }
+  if ((el = t.closest('[data-filter]'))) { S.filter = el.dataset.filter; renderFilters(); renderData(); return icons(); }
+  if ((el = t.closest('#data [data-row]'))) return select(el.dataset.row);
+  if ((el = t.closest('[data-open]'))) return select(el.dataset.open);
+  if (t.closest('[data-back]')) { const id = S.sel; select(null); return id && $(`#data [data-row="${id}"]`)?.focus(); }
+  if (t.closest('#btn-close')) return openClose();
+  if (t.closest('[data-time]')) { S.timeDone = true; toast('Đã duyệt 10,5 giờ · Bùi Thị Hạnh (demo)'); return render(); }
+  if ((el = t.closest('[data-nav]'))) { e.preventDefault(); if (!el.hasAttribute('aria-current')) toast(`“${el.dataset.nav}” — ngoài phạm vi demo`); return; }
+  if ((el = t.closest('[data-demo]'))) { toggleMenu($('#btn-user'), $('#menu-user'), false); return toast(`${el.dataset.demo} — ngoài phạm vi demo`); }
+});
+
+document.addEventListener('keydown', e => {
+  const typing = e.target.matches('input,textarea,select');
+  if (e.key === 'Escape') {
+    if (!$('#menu-pending').classList.contains('hidden') || !$('#menu-user').classList.contains('hidden')) { toggleMenu($('#btn-pending'), $('#menu-pending'), false); toggleMenu($('#btn-user'), $('#menu-user'), false); return; }
+    if (S.sel) { const id = S.sel; select(null); $(`#data [data-row="${id}"]`)?.focus(); return; }
+    if (e.target.id === 'search' && S.q) { e.target.value = ''; S.q = ''; renderData(); icons(); }
+    return;
+  }
+  if (typing) return;
+  if (e.key === '/') { e.preventDefault(); $('#search').focus(); return; }
+  if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey) { const n = issues(day())[0]; if (n) select(n.id); return; }
+  const tr = e.target.closest?.('#data [data-row]');
+  if (tr && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    e.preventDefault(); const all = $$('#data [data-row]'); const i = all.indexOf(tr);
+    all[Math.max(0, Math.min(all.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))]?.focus();
+  }
+  if (tr && e.key === 'Enter' && tr.tagName === 'TR') { e.preventDefault(); select(tr.dataset.row); }
+  if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target.closest('[role=menu]')) {
+    e.preventDefault(); const items = $$('[role=menuitem]', e.target.closest('[role=menu]')); const i = items.indexOf(e.target);
+    items[(i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+  }
+});
+
+renderRail();
+render();
+</script>
+</body>
+</html>
