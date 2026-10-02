@@ -79,6 +79,7 @@ export class AuditService {
   async ghi(tx: Tx, b: BanGhiAudit, nguCanh: NguCanhAudit = this.nguCanh()): Promise<void> {
     await tx.auditLog.create({
       data: {
+        luc: this.clock.now(), // nguồn giờ duy nhất của server [D5]
         loaiNguoiThucHien: nguCanh.loaiNguoiThucHien,
         nguoiThucHienId: nguCanh.nguoiThucHienId,
         hanhDong: b.hanhDong,

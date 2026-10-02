@@ -16,6 +16,8 @@ const zMoiTruong = z.object({
   DB_POOL_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   APP_VERSION: z.string().default('0.0.0-dev'),
+  /** Cloudflare Turnstile [D23]. Dev/test để trống → bỏ qua xác minh; production BẮT BUỘC có */
+  TURNSTILE_SECRET: z.string().optional(),
 });
 
 export type MoiTruong = z.infer<typeof zMoiTruong>;

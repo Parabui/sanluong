@@ -4,6 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // PWA công nhân — phục vụ ở gốc "/" [TDD 2.2, 14.2]
 export default defineConfig({
+  // Đọc .env ở gốc monorepo — Vite chỉ lộ biến VITE_* ra trình duyệt
+  envDir: '../..',
   plugins: [
     react(),
     VitePWA({

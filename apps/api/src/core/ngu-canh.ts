@@ -29,6 +29,8 @@ export interface VsnClsStore extends ClsStore {
   nguCanhAudit?: NguCanhAudit;
   phamVi?: PhamVi;
   taiKhoan?: TaiKhoanPhien;
+  /** Thiết bị app công nhân (cookie vsn_tb) — route @CongNhan() */
+  thietBi?: { id: string };
   /** "GET /api/chuyen/:id/tram" — dùng cho audit từ chối truy cập */
   route?: string;
 }

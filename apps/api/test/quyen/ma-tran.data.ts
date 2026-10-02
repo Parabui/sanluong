@@ -34,7 +34,7 @@ export const MA_TRAN_PRD: Record<ChucNang, VaiTro[]> = {
   SO_DO_TRAM_XEM: [SA, TT], //           TDD 10.1 — F17 [D26]
 };
 
-export type KhaiBaoRoute = 'CONG_KHAI' | 'DA_DANG_NHAP' | ChucNang[];
+export type KhaiBaoRoute = 'CONG_KHAI' | 'DA_DANG_NHAP' | 'CONG_NHAN' | ChucNang[];
 
 /**
  * MỌI route của API và quyền khai báo trên nó. Thêm route mới mà không thêm vào đây → test đỏ
@@ -46,6 +46,14 @@ export const ROUTE: Record<string, KhaiBaoRoute> = {
   'POST /api/auth/dang-xuat': 'DA_DANG_NHAP',
   'POST /api/auth/doi-mat-khau': 'DA_DANG_NHAP',
   'GET /api/auth/toi': 'DA_DANG_NHAP',
+  // App công nhân — cookie thiết bị, không phiên Web [D6]
+  'GET /api/cn/khoi-dong': 'CONG_KHAI',
+  'GET /api/cn/cay-tram': 'CONG_KHAI',
+  'GET /api/cn/tram/:id': 'CONG_KHAI',
+  'POST /api/cn/phien-tram': 'CONG_KHAI', // + Turnstile + giới hạn sai theo thiết bị [D23]
+  'DELETE /api/cn/phien-tram/:id': 'CONG_NHAN',
+  'GET /api/cn/form': 'CONG_NHAN',
+  'PUT /api/cn/san-luong': 'CONG_NHAN',
   'GET /api/xuong': ['DANH_MUC_XUONG_CHUYEN', 'NHAN_VIEN_QUAN_LY', 'TAI_KHOAN_QUAN_LY', 'SO_DO_GAN'],
   'POST /api/xuong': ['DANH_MUC_XUONG_CHUYEN'],
   'PATCH /api/xuong/:id': ['DANH_MUC_XUONG_CHUYEN'],

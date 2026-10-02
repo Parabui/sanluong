@@ -15,3 +15,4 @@ export * from './schema/import.js';
 export * from './schema/tai-khoan.js';
 export * from './schema/ma-hang.js';
 export * from './schema/so-do.js';
+export * from './schema/cong-nhan.js';

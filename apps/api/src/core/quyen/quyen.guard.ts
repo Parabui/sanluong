@@ -8,13 +8,14 @@ import { layIp } from '../http/ip.js';
 import { LoiNghiepVu } from '../loi/loi-nghiep-vu.js';
 import type { VsnClsStore } from '../ngu-canh.js';
 import { PhienWebService } from '../phien/phien-web.service.js';
+import { ThietBiService } from '../phien/thiet-bi.service.js';
 import { PhamViService } from './pham-vi.service.js';
-import { KHOA_CONG_KHAI, KHOA_DA_DANG_NHAP, KHOA_QUYEN } from './quyen.decorator.js';
+import { KHOA_CONG_KHAI, KHOA_CONG_NHAN, KHOA_DA_DANG_NHAP, KHOA_QUYEN } from './quyen.decorator.js';
 import { QuyenService } from './quyen.service.js';
 
 /**
  * Guard toàn cục — MẶC ĐỊNH TỪ CHỐI [D8] [TDD 10.1]:
- *  1. @CongKhai() → cho qua
+ *  1. @CongKhai() → cho qua · @CongNhan() → cookie thiết bị vsn_tb hợp lệ (app công nhân) → cho qua
  *  2. Nạp phiên `vsn_sid` → không có: 401 CHUA_DANG_NHAP · hết hạn: 401 PHIEN_HET_HAN
  *     → đặt NguCanhAudit, PhamVi (đọc lại từ DB mỗi request), TaiKhoan vào CLS
  *  3. @DaDangNhap() → cho qua
@@ -31,11 +32,29 @@ export class QuyenGuard implements CanActivate {
     private readonly quyen: QuyenService,
     private readonly phamVi: PhamViService,
     private readonly audit: AuditService,
+    private readonly thietBi: ThietBiService,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const dich = [ctx.getHandler(), ctx.getClass()];
     if (this.reflector.getAllAndOverride<boolean>(KHOA_CONG_KHAI, dich)) return true;
+
+    // App công nhân: cookie thiết bị thay cho phiên Web [D6]. Người thực hiện (NV) do service đặt theo phiên trạm.
+    if (this.reflector.getAllAndOverride<boolean>(KHOA_CONG_NHAN, dich)) {
+      const req = ctx.switchToHttp().getRequest<Request>();
+      const tb = await this.thietBi.xacThuc(req);
+      if (!tb) throw new LoiNghiepVu('CHUA_DANG_NHAP_TRAM');
+      this.cls.set('thietBi', tb);
+      this.cls.set('route', `${req.method} ${(req.route as { path?: string } | undefined)?.path ?? req.path}`);
+      this.cls.set('nguCanhAudit', {
+        loaiNguoiThucHien: 'NHAN_VIEN',
+        nguoiThucHienId: null,
+        thietBiId: tb.id,
+        ip: layIp(req),
+        traceId: this.cls.getId() ?? '',
+      });
+      return true;
+    }
 
     const chucNang = this.reflector.getAllAndOverride<ChucNang[] | undefined>(KHOA_QUYEN, dich);
     const chiCanDangNhap = this.reflector.getAllAndOverride<boolean>(KHOA_DA_DANG_NHAP, dich);

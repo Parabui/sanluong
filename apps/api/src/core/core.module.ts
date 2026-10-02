@@ -7,6 +7,7 @@ import { ClockService } from './clock/clock.service.js';
 import { LoiFilter } from './loi/loi.filter.js';
 import { docMoiTruong, MOI_TRUONG } from './moi-truong.js';
 import { PhienWebService } from './phien/phien-web.service.js';
+import { ThietBiService } from './phien/thiet-bi.service.js';
 import { PrismaService } from './prisma/prisma.service.js';
 import { ClientHeaderGuard } from './quyen/client-header.guard.js';
 import { KiemTraRouteService } from './quyen/kiem-tra-route.service.js';
@@ -22,6 +23,7 @@ const DICH_VU = [
   QuyenService,
   PhamViService,
   PhienWebService,
+  ThietBiService,
   KiemTraRouteService,
 ];
 

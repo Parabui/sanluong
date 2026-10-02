@@ -2,7 +2,7 @@ import { Injectable, type OnApplicationBootstrap, RequestMethod } from '@nestjs/
 import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants.js';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import type { ChucNang } from '@vsn/shared';
-import { KHOA_CONG_KHAI, KHOA_DA_DANG_NHAP, KHOA_QUYEN } from './quyen.decorator.js';
+import { KHOA_CONG_KHAI, KHOA_CONG_NHAN, KHOA_DA_DANG_NHAP, KHOA_QUYEN } from './quyen.decorator.js';
 
 /** Một route và yêu cầu quyền khai báo trên nó */
 export interface RouteQuyen {
@@ -10,7 +10,7 @@ export interface RouteQuyen {
   route: string;
   /** Tên handler, ví dụ "DanhMucController.suaChuyen" */
   handler: string;
-  quyen: 'CONG_KHAI' | 'DA_DANG_NHAP' | ChucNang[] | null;
+  quyen: 'CONG_KHAI' | 'DA_DANG_NHAP' | 'CONG_NHAN' | ChucNang[] | null;
 }
 
 const ghepDuongDan = (...p: string[]) =>
@@ -31,7 +31,7 @@ export class KiemTraRouteService implements OnApplicationBootstrap {
   onApplicationBootstrap(): void {
     const thieu = this.danhSach().filter((r) => r.quyen === null);
     if (thieu.length) {
-      throw new Error(`[D8] Route thiếu @Quyen(...) hoặc @CongKhai(): ${thieu.map((r) => r.handler).join(', ')}`);
+      throw new Error(`[D8] Route thiếu @Quyen(...) / @CongKhai() / @DaDangNhap() / @CongNhan(): ${thieu.map((r) => r.handler).join(', ')}`);
     }
   }
 
@@ -53,7 +53,9 @@ export class KiemTraRouteService implements OnApplicationBootstrap {
           handler: `${metatype.name}.${ten}`,
           quyen: this.reflector.getAllAndOverride<boolean>(KHOA_CONG_KHAI, dich)
             ? 'CONG_KHAI'
-            : this.reflector.getAllAndOverride<boolean>(KHOA_DA_DANG_NHAP, dich)
+            : this.reflector.getAllAndOverride<boolean>(KHOA_CONG_NHAN, dich)
+              ? 'CONG_NHAN'
+              : this.reflector.getAllAndOverride<boolean>(KHOA_DA_DANG_NHAP, dich)
               ? 'DA_DANG_NHAP'
               : quyen?.length
                 ? quyen

@@ -50,6 +50,10 @@ export const LOI = {
   NGAY_SMV_DA_KHOA: { http: 422, message: 'Ngày áp dụng rơi vào tháng đã khóa sổ.' },
   CONG_DOAN_KHONG_HOP_LE: { http: 422, message: 'Công đoạn không thuộc mã hàng hoặc đã ngưng.' },
   TRAM_KHONG_HOP_LE: { http: 422, message: 'Trạm không thuộc chuyền hoặc không nhập qua app.' },
+  TRAM_KHONG_HOAT_DONG: { http: 422, message: 'Trạm không còn hoạt động.' },
+  QR_KHONG_HOP_LE: { http: 404, message: 'Mã QR không hợp lệ.' },
+  CHUA_DANG_NHAP_TRAM: { http: 401, message: 'Chưa đăng nhập trạm — chọn trạm và nhập mã NV.' },
+  TURNSTILE_SAI: { http: 403, message: 'Không xác minh được thiết bị — tải lại trang rồi thử lại.' },
   SUPERADMIN_CUOI_CUNG: { http: 422, message: 'Phải luôn còn ít nhất 1 Superadmin đang hoạt động.' },
   CHI_SUPERADMIN: { http: 403, message: 'Chỉ Superadmin được thực hiện thao tác này.' },
   // Import Excel [TDD 19]

@@ -17,10 +17,12 @@ Các tài liệu nằm trong repo — đọc khi cần, không phải mỗi lầ
 2. Ngày làm việc là chuỗi 'YYYY-MM-DD'. KHÔNG dùng new Date()/Date.now() trong apps/api/src/modules — dùng ClockService.
    KHÔNG dùng toISOString().slice(0,10). Frontend không tự tính "hôm nay".
 3. Mọi route API phải có @Quyen(ChucNang.X) hoặc @CongKhai() (hoặc @DaDangNhap() cho route chỉ cần phiên Web:
-   /auth/toi, đổi mật khẩu, đăng xuất). Mọi hàm repository/báo cáo nhận PhamVi.
+   /auth/toi, đổi mật khẩu, đăng xuất; @CongNhan() cho route app công nhân cần cookie thiết bị vsn_tb).
+   Mọi hàm repository/báo cáo nhận PhamVi.
    Route mới phải thêm vào apps/api/test/quyen/ma-tran.data.ts (test ma trận quyền sẽ đỏ nếu thiếu).
 4. Mọi thao tác ghi sản lượng đi qua GhiSanLuongService. Không ghi bảng san_luong ở chỗ khác.
-5. Công thức (phút SMV, giờ làm hiệu lực, % hiệu suất NV và chuyền) chỉ lấy từ view v_san_luong_chi_tiet / v_nv_ngay / v_nv_chuyen_ngay.
+5. Công thức (phút SMV, giờ làm hiệu lực, % hiệu suất NV và chuyền) chỉ lấy từ view v_san_luong_chi_tiet / v_nv_ngay / v_nv_chuyen_ngay
+   (giờ làm hiệu lực 1 NV/ngày: hàm SQL gio_lam_hieu_luc(nv, d)).
 6. Thao tác ghi phải ghi audit trong cùng transaction (audit.ghi(tx, …)).
 7. SQL tay: chỉ dùng tagged template có tham số. Không nối chuỗi.
 8. Migration chỉ THÊM. Xóa/đổi tên cột phải qua 2 lần deploy.

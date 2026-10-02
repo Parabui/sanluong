@@ -86,6 +86,14 @@ describe('Ma trận', () => {
     await goi('GET /api/auth/toi').expect(401);
   });
 
+  it('[D6] route app công nhân cần cookie thiết bị — phiên Web không thay được', async () => {
+    for (const [route, kb] of Object.entries(ROUTE)) {
+      if (kb !== 'CONG_NHAN') continue;
+      expect((await goi(route)).body.code, route).toBe('CHUA_DANG_NHAP_TRAM');
+      expect((await goi(route, cookie.SUPERADMIN)).body.code, route).toBe('CHUA_DANG_NHAP_TRAM');
+    }
+  });
+
   it('[F8] Superadmin tắt một chức năng của vai trò → có hiệu lực ngay ở request kế tiếp', async () => {
     await goi('POST /api/xuong', cookie.IE).expect(403);
     await voiQuyen('IE', 'DANH_MUC_XUONG_CHUYEN', true, async () => {
