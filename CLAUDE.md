@@ -16,7 +16,9 @@ Các tài liệu nằm trong repo — đọc khi cần, không phải mỗi lầ
 1. Schema/validation chỉ viết trong packages/shared (Zod). Không viết lại ở api hay frontend.
 2. Ngày làm việc là chuỗi 'YYYY-MM-DD'. KHÔNG dùng new Date()/Date.now() trong apps/api/src/modules — dùng ClockService.
    KHÔNG dùng toISOString().slice(0,10). Frontend không tự tính "hôm nay".
-3. Mọi route API phải có @Quyen(ChucNang.X) hoặc @CongKhai(). Mọi hàm repository/báo cáo nhận PhamVi.
+3. Mọi route API phải có @Quyen(ChucNang.X) hoặc @CongKhai() (hoặc @DaDangNhap() cho route chỉ cần phiên Web:
+   /auth/toi, đổi mật khẩu, đăng xuất). Mọi hàm repository/báo cáo nhận PhamVi.
+   Route mới phải thêm vào apps/api/test/quyen/ma-tran.data.ts (test ma trận quyền sẽ đỏ nếu thiếu).
 4. Mọi thao tác ghi sản lượng đi qua GhiSanLuongService. Không ghi bảng san_luong ở chỗ khác.
 5. Công thức (phút SMV, giờ làm hiệu lực, % hiệu suất NV và chuyền) chỉ lấy từ view v_san_luong_chi_tiet / v_nv_ngay / v_nv_chuyen_ngay.
 6. Thao tác ghi phải ghi audit trong cùng transaction (audit.ghi(tx, …)).

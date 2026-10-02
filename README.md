@@ -33,7 +33,7 @@ pnpm dev                    # shared (watch) + api :4000 + web :5173 + worker :5
 - Web quản lý: http://localhost:5173/quanly/ · App công nhân: http://localhost:5174/
 - Vite proxy `/api` → `localhost:4000`.
 - Cổng 5432 đã bị chiếm → đặt `VSN_PG_PORT` trong `.env` (vd. `5433`) và sửa cổng trong `DATABASE_URL`, `MIGRATE_DATABASE_URL`.
-- Lần đầu: `pnpm --filter @vsn/api db:migrate` để tạo bảng.
+- Lần đầu: `pnpm --filter @vsn/api db:migrate` để tạo bảng, rồi `pnpm --filter @vsn/api db:seed` để nạp ma trận quyền mặc định (PRD F8), cấu hình mặc định và tạo **Superadmin đầu tiên** từ `VSN_SUPERADMIN_TEN` / `VSN_SUPERADMIN_MAT_KHAU_TAM` trong `.env` (bắt buộc đổi mật khẩu ở lần đăng nhập đầu). Seed chạy lại nhiều lần vẫn an toàn — chỉ thêm phần còn thiếu.
 
 ## Cơ sở dữ liệu
 

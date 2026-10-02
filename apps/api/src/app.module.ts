@@ -6,6 +6,8 @@ import { LoggerModule } from 'nestjs-pino';
 import { CoreModule } from './core/core.module.js';
 import { docMoiTruong } from './core/moi-truong.js';
 import { layTraceId } from './core/trace-id.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { DanhMucModule } from './modules/danh-muc/danh-muc.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 
 @Module({
@@ -40,6 +42,8 @@ import { HealthModule } from './modules/health/health.module.js';
     ScheduleModule.forRoot(),
     CoreModule,
     HealthModule,
+    AuthModule,
+    DanhMucModule,
   ],
 })
 export class AppModule {}

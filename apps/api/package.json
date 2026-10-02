@@ -18,7 +18,8 @@
     "test:watch": "vitest",
     "test:int": "vitest run --config vitest.int.config.ts",
     "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "nest build && node dist/seed/main.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.0",
@@ -28,6 +29,7 @@
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@vsn/shared": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "nestjs-cls": "^7.0.1",
     "nestjs-pino": "^5.2.1",

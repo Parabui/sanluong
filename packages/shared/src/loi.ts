@@ -9,9 +9,12 @@ export const LOI = {
   // 401
   CHUA_DANG_NHAP: { http: 401, message: 'Vui lòng đăng nhập.' },
   PHIEN_HET_HAN: { http: 401, message: 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.' },
+  SAI_DANG_NHAP: { http: 401, message: 'Tên đăng nhập hoặc mật khẩu không đúng.' },
   // 403
   KHONG_CO_QUYEN: { http: 403, message: 'Không có quyền truy cập.' },
   THIEU_HEADER_CLIENT: { http: 403, message: 'Yêu cầu không hợp lệ.' },
+  TAI_KHOAN_VO_HIEU: { http: 403, message: 'Tài khoản đã bị vô hiệu hóa. Liên hệ Superadmin.' },
+  PHAI_DOI_MAT_KHAU: { http: 403, message: 'Bạn phải đổi mật khẩu trước khi tiếp tục.' },
   // 404
   KHONG_TIM_THAY: { http: 404, message: 'Không tìm thấy dữ liệu.' },
   // 409
@@ -23,6 +26,9 @@ export const LOI = {
   O_DA_DIEU_CHINH: { http: 409, message: 'Ô này đã được tổ trưởng điều chỉnh.' },
   DU_LIEU_DA_THAY_DOI: { http: 409, message: 'Dữ liệu đã bị người khác thay đổi, vui lòng tải lại.' },
   DA_DUOC_CHOT: { http: 409, message: 'Ngày này đã được chốt trước đó.' },
+  TRUNG_MA: { http: 409, message: 'Mã này đã tồn tại.' },
+  /** Thao tác có cảnh báo — gửi lại kèm `xacNhan: true` để tiếp tục. `chiTiet` mô tả cảnh báo */
+  CAN_XAC_NHAN: { http: 409, message: 'Thao tác cần được xác nhận.' },
   // 422
   NGAY_KHONG_MO_NHAP: { http: 422, message: 'Ngày này không còn mở để nhập.' },
   CONG_DOAN_KHONG_THUOC_SO_DO: { http: 422, message: 'Công đoạn không thuộc sơ đồ của trạm trong ngày này.' },
@@ -31,6 +37,14 @@ export const LOI = {
   NV_DA_CO_SAN_LUONG: { http: 422, message: 'Nhân viên đã có sản lượng — chỉ được Ngưng.' },
   MA_NV_KHONG_HOP_LE: { http: 422, message: 'Mã nhân viên không đúng.' },
   TRAM_KHONG_DOI_CHUYEN: { http: 422, message: 'Trạm không được đổi chuyền — hãy ngưng trạm cũ và tạo trạm mới.' },
+  MAT_KHAU_HIEN_TAI_SAI: { http: 422, message: 'Mật khẩu hiện tại không đúng.' },
+  CON_CHUYEN_HOAT_DONG: { http: 422, message: 'Xưởng còn chuyền đang hoạt động — ngưng các chuyền trước.' },
+  CON_NHAN_VIEN_HOAT_DONG: { http: 422, message: 'Chuyền còn nhân viên đang hoạt động — chuyển nhân viên sang chuyền khác trước.' },
+  CON_CONG_DOAN_GAN: { http: 422, message: 'Trạm đang có công đoạn gán — gỡ công đoạn khỏi trạm trước.' },
+  PHAI_GAN_PHAM_VI: { http: 422, message: 'Tài khoản phải được gắn ít nhất 1 chuyền/xưởng.' },
+  /** Kích hoạt / thêm con khi xưởng hoặc chuyền chứa nó đang ngưng */
+  CAP_TREN_DANG_NGUNG: { http: 422, message: 'Đơn vị cấp trên đang ngưng — kích hoạt lại trước.' },
+  VONG_NGOAI_KHONG_NHAP_APP: { http: 422, message: 'Nhóm vòng ngoài không nhập sản lượng qua app.' },
   // 429
   QUA_SO_LAN_SAI: { http: 429, message: 'Nhập sai quá nhiều lần, vui lòng thử lại sau.' },
   QUA_SO_LAN_CHUYEN_THIET_BI: { http: 429, message: 'Đã chuyển thiết bị quá 3 lần hôm nay – báo tổ trưởng.' },

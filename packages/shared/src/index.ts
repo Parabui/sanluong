@@ -7,3 +7,6 @@ export * from './ngay-lam-viec.js';
 export * from './pham-vi.js';
 export * from './schema/co-ban.js';
 export * from './schema/health.js';
+export * from './schema/auth.js';
+export * from './schema/danh-muc.js';
+export * from './cau-hinh.js';

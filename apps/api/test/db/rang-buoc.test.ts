@@ -458,7 +458,9 @@ describe('Audit & hệ thống', () => {
   });
 
   it('[F8] quyền Quản lý tài khoản của Superadmin không tắt được', async () => {
-    const sql = `INSERT INTO quyen_vai_tro (vai_tro, chuc_nang, bat_tat) VALUES ($1, $2, $3)`;
+    // Upsert: bảng có thể đã được seed bởi test API chạy trước trong cùng container
+    const sql = `INSERT INTO quyen_vai_tro (vai_tro, chuc_nang, bat_tat) VALUES ($1, $2, $3)
+                 ON CONFLICT (vai_tro, chuc_nang) DO UPDATE SET bat_tat = EXCLUDED.bat_tat`;
     await kyVongLoi(ctx.db, sql, ['SUPERADMIN', 'TAI_KHOAN_QUAN_LY', false], SQLSTATE.VI_PHAM_CHECK);
     await ctx.db.query(sql, ['SUPERADMIN', 'TAI_KHOAN_QUAN_LY', true]);
     await ctx.db.query(sql, ['SUPERADMIN', 'BAO_CAO_XEM', false]);

@@ -63,7 +63,9 @@ export default async function setup(project: TestProject): Promise<() => Promise
   } catch (e) {
     await container.stop();
     const out = (e as { stdout?: Buffer }).stdout?.toString() ?? '';
-    throw new Error(`schema.prisma lệch với migration — chạy \`pnpm --filter @vsn/api db:migrate\`:\n${out}`);
+    throw new Error(`schema.prisma lệch với migration — chạy \`pnpm --filter @vsn/api db:migrate\`:\n${out}`, {
+      cause: e,
+    });
   }
 
   project.provide('urlDb', {

@@ -4,6 +4,7 @@ import type { Request, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
 import type { z } from 'zod';
 import { layTraceId } from '../trace-id.js';
+import { maLoiTuTrigger } from './loi-db.js';
 import { LoiNghiepVu } from './loi-nghiep-vu.js';
 
 const MA_THEO_HTTP: Record<number, MaLoi> = {
@@ -55,6 +56,12 @@ export class LoiFilter implements ExceptionFilter {
           chiTiet,
         },
       };
+    }
+
+    // Trigger nghiệp vụ của DB (hàng rào cuối) — vd. THANG_DA_KHOA, TRAM_KHONG_DOI_CHUYEN
+    const maDb = maLoiTuTrigger(loi);
+    if (maDb) {
+      return { status: LOI[maDb].http, body: { code: maDb, message: LOI[maDb].message, traceId } };
     }
 
     if (loi instanceof HttpException) {
