@@ -24,7 +24,8 @@ class SuaChuyenDto extends createZodDto(zSuaChuyen) {}
 class SuaTramDto extends createZodDto(zSuaTram) {}
 
 /** Màn khác cần đọc danh sách xưởng / chuyền để chọn */
-const DOC_DANH_MUC = ['DANH_MUC_XUONG_CHUYEN', 'NHAN_VIEN_QUAN_LY', 'TAI_KHOAN_QUAN_LY', 'SO_DO_GAN'] as const;
+// Đọc danh mục (lọc theo phạm vi): các màn quản lý + bộ lọc của Báo cáo
+const DOC_DANH_MUC = ['DANH_MUC_XUONG_CHUYEN', 'NHAN_VIEN_QUAN_LY', 'TAI_KHOAN_QUAN_LY', 'SO_DO_GAN', 'BAO_CAO_XEM'] as const;
 
 const Id = () => Param('id', new ZodValidationPipe(zUuid));
 

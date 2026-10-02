@@ -35,6 +35,7 @@ export const LOI = {
   NGAY_KHONG_MO_NHAP: { http: 422, message: 'Ngày này không còn mở để nhập.' },
   /** Khóa Mã hàng × Tháng khi còn (chuyền, ngày) chưa chốt — `chiTiet` là danh sách ngày [F10] */
   CON_NGAY_CHUA_CHOT: { http: 422, message: 'Còn ngày chưa chốt — tổ trưởng phải chốt ngày trước khi khóa.' },
+  KHONG_CO_DU_LIEU: { http: 422, message: 'Không có dữ liệu.' },
   NV_KHONG_HOAT_DONG: { http: 422, message: 'Nhân viên không còn hoạt động.' },
   CONG_DOAN_KHONG_THUOC_SO_DO: { http: 422, message: 'Công đoạn không thuộc sơ đồ của trạm trong ngày này.' },
   CHUA_TOI_GIO_MO_CHOT: { http: 422, message: 'Chưa tới giờ được chốt ngày.' },

@@ -25,3 +25,14 @@ describe('Số giờ [F6]', () => {
     expect(dinhDangSoGio(null)).toBe('—');
   });
 });
+
+describe('Khoảng báo cáo tối đa 3 tháng [F5]', () => {
+  it('trongBaThang', async () => {
+    const { trongBaThang, zLocBaoCao, LOI_KHOANG_3_THANG } = await import('./schema/bao-cao.js');
+    expect(trongBaThang('2026-01-15', '2026-04-14')).toBe(true);
+    expect(trongBaThang('2026-01-15', '2026-04-15')).toBe(false);
+    expect(trongBaThang('2026-11-30', '2027-02-27')).toBe(true);
+    const kq = zLocBaoCao.safeParse({ tu: '2026-01-01', den: '2026-05-01' });
+    expect(kq.error?.issues[0]?.message).toBe(LOI_KHOANG_3_THANG);
+  });
+});

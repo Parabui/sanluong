@@ -29,7 +29,7 @@ export class MaHangController {
   constructor(private readonly maHang: MaHangService) {}
 
   @Get('ma-hang')
-  @Quyen('MA_HANG_QUAN_LY', 'SO_DO_GAN')
+  @Quyen('MA_HANG_QUAN_LY', 'SO_DO_GAN', 'BAO_CAO_XEM') // Báo cáo: lọc theo mã hàng
   ds(): Promise<MaHang[]> {
     return this.maHang.ds();
   }

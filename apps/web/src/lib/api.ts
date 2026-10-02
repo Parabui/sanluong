@@ -1,5 +1,5 @@
 import { QueryCache, QueryClient } from '@tanstack/react-query';
-import { LoiApi, taoApiClient, type TaiKhoanToi, zTaiKhoanToi } from '@vsn/shared';
+import { HEADER_CLIENT, laMaLoi, LoiApi, taoApiClient, type TaiKhoanToi, zTaiKhoanToi } from '@vsn/shared';
 
 export const api = taoApiClient('web');
 
@@ -35,3 +35,22 @@ export const layTaiKhoanToi = ({ signal }: { signal?: AbortSignal }): Promise<Ta
 
 /** Thông báo lỗi tiếng Việt từ API (message do server trả, lấy từ @vsn/shared/loi) */
 export const thongBaoLoi = (e: unknown) => (e instanceof Error ? e.message : 'Có lỗi xảy ra, vui lòng thử lại.');
+
+/**
+ * Tải file từ API (vd. Excel báo cáo): gửi kèm header X-VSN-Client [D6] nên không dùng được thẻ <a href> trực tiếp.
+ * Lỗi (JSON) → ném LoiApi với message tiếng Việt từ server.
+ */
+export async function taiFile(duongDan: string): Promise<void> {
+  const res = await fetch(`/api${duongDan}`, { credentials: 'same-origin', headers: { [HEADER_CLIENT]: 'web' } });
+  if (!res.ok) {
+    const loi = (await res.json().catch(() => ({}))) as { code?: string; message?: string };
+    throw new LoiApi(res.status, laMaLoi(loi.code) ? loi.code : 'LOI_HE_THONG', loi.message ?? 'Có lỗi xảy ra, vui lòng thử lại.');
+  }
+  const ten = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? 'bao-cao.xlsx';
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = ten;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

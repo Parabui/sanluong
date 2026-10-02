@@ -7,6 +7,7 @@ import { CoreModule } from './core/core.module.js';
 import { docMoiTruong } from './core/moi-truong.js';
 import { layTraceId } from './core/trace-id.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { BaoCaoModule } from './modules/bao-cao/bao-cao.module.js';
 import { CongNhanModule } from './modules/cong-nhan/cong-nhan.module.js';
 import { GioLamModule } from './modules/gio-lam/gio-lam.module.js';
 import { KhoaThangModule } from './modules/khoa-thang/khoa-thang.module.js';
@@ -61,6 +62,7 @@ import { TaiKhoanModule } from './modules/tai-khoan/tai-khoan.module.js';
     SoDoModule,
     SanLuongModule,
     CongNhanModule,
+    BaoCaoModule,
     GioLamModule,
     KhoaThangModule,
     SoDoTramModule,

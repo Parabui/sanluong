@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
 import { YeuCauDangNhap } from './lib/xac-thuc';
 import { MAN_HINH_TV, MAN_HINH_WEB, type ManHinh } from './man-hinh';
+import { BaoCaoPage } from './routes/bao-cao';
 import { ChuyenTramPage } from './routes/danh-muc/chuyen-tram';
 import { MaHangPage } from './routes/danh-muc/ma-hang';
 import { BangSanLuongPage } from './routes/san-xuat/bang-san-luong';
@@ -23,6 +24,7 @@ const DA_LAM: Record<string, ReactElement> = {
   'danh-muc/nhan-vien': <NhanVienPage />,
   'danh-muc/ma-hang': <MaHangPage />,
   'san-xuat/bang-san-luong': <BangSanLuongPage />,
+  'bao-cao': <BaoCaoPage />,
   'san-xuat/so-do-chuyen': <SoDoChuyenPage />,
   'san-xuat/duyet-gio': <DuyetGioPage />,
   'san-xuat/so-do-tram': <SoDoTramPage />,
