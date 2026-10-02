@@ -5,3 +5,7 @@ packages:
 allowBuilds:
   '@prisma/engines': true
   prisma: true
+  # Phụ thuộc của testcontainers — bản native tùy chọn, không cần build
+  cpu-features: false
+  ssh2: false
+  protobufjs: false

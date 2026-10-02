@@ -8,7 +8,7 @@ import { MOI_TRUONG, type MoiTruong } from '../moi-truong.js';
  * Pool: tối đa DB_POOL_MAX (20) kết nối, chờ tối đa DB_POOL_TIMEOUT_MS [D25].
  *
  * ⏳ TDD 6.2: chuyển đổi DateTime @db.Date ↔ chuỗi 'YYYY-MM-DD' đặt ở MỘT chỗ —
- *    client extension tại đây, thêm cùng lúc với schema đầy đủ.
+ *    client extension tại đây, thêm cùng service đầu tiên đọc/ghi cột ngày (tuần 2).
  */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleDestroy {

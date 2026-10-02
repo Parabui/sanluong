@@ -16,8 +16,8 @@
     "test": "pnpm --recursive test",
     "test:int": "pnpm --filter @vsn/api test:int",
     "e2e": "echo \"Playwright: chưa thiết lập (tuần 12)\" && exit 1",
-    "db:up": "docker compose -f infra/compose.yml up -d postgres",
-    "db:down": "docker compose -f infra/compose.yml down"
+    "db:up": "docker compose --env-file .env -f infra/compose.yml up -d postgres",
+    "db:down": "docker compose --env-file .env -f infra/compose.yml down"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
