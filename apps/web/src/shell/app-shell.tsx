@@ -1,7 +1,7 @@
 /**
  * Khung ứng dụng Web — chép từ ui-demo/src/components/shell/app-shell.tsx (sidebar 232px, header 56px, breadcrumb,
  * ô tìm kiếm "/", trạng thái kết nối, menu tài khoản). Khác demo: menu lọc theo ChucNang thật của tài khoản,
- * bỏ bộ chuyển vai trò demo và các số liệu giả (badge, "còn X ngày chưa chốt" — thêm khi có F10).
+ * bỏ bộ chuyển vai trò demo và các số liệu giả (badge). "Còn X ngày chưa chốt" lấy từ GET /api/chot-ngay/chua-chot [F10].
  */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { TEN_VAI_TRO, zKhongNoiDung } from '@vsn/shared';
@@ -11,7 +11,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 import { api } from '../lib/api';
 import { useMediaQuery, useOnline } from '../lib/hooks';
-import { useToi } from '../lib/xac-thuc';
+import { coChucNang, useToi } from '../lib/xac-thuc';
+import { NgayChuaChot } from './ngay-chua-chot';
 import { duocXem, NAV, timNav } from '../nav';
 import { ShellContext } from './shell-context';
 
@@ -134,6 +135,8 @@ export function AppShell() {
               <span className={cn('w-2 h-2 rounded-full', online ? 'bg-success' : 'bg-danger')} />
               {online ? 'Đã kết nối' : 'Mất kết nối'}
             </div>
+
+            {coChucNang(tk, 'CHOT_NGAY') && <NgayChuaChot />}
 
             <span className="w-px h-6 bg-line" aria-hidden="true" />
 

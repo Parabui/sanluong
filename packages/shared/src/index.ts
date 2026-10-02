@@ -17,3 +17,4 @@ export * from './schema/ma-hang.js';
 export * from './schema/so-do.js';
 export * from './schema/cong-nhan.js';
 export * from './schema/gio-lam.js';
+export * from './schema/bang-san-luong.js';

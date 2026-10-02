@@ -9,6 +9,8 @@ import { layTraceId } from './core/trace-id.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CongNhanModule } from './modules/cong-nhan/cong-nhan.module.js';
 import { GioLamModule } from './modules/gio-lam/gio-lam.module.js';
+import { KhoaThangModule } from './modules/khoa-thang/khoa-thang.module.js';
+import { SoDoTramModule } from './modules/so-do-tram/so-do-tram.module.js';
 import { DanhMucModule } from './modules/danh-muc/danh-muc.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { ImportModule } from './modules/import/import.module.js';
@@ -60,6 +62,8 @@ import { TaiKhoanModule } from './modules/tai-khoan/tai-khoan.module.js';
     SanLuongModule,
     CongNhanModule,
     GioLamModule,
+    KhoaThangModule,
+    SoDoTramModule,
   ],
 })
 export class AppModule {}

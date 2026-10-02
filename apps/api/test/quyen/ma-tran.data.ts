@@ -90,6 +90,21 @@ export const ROUTE: Record<string, KhaiBaoRoute> = {
   'PUT /api/so-do': ['SO_DO_GAN'],
   'POST /api/so-do/ket-thuc-ma-hang': ['SO_DO_GAN'],
   'POST /api/so-do/sao-chep': ['SO_DO_GAN'],
+  // F10, F19 Bảng sản lượng ngày · chốt ngày · khóa tháng
+  'GET /api/bang-san-luong': ['SAN_LUONG_SUA', 'CHOT_NGAY'],
+  'GET /api/bang-san-luong/ngay': ['SAN_LUONG_SUA', 'CHOT_NGAY'],
+  'GET /api/bang-san-luong/nhan-vien': ['SAN_LUONG_SUA'],
+  'PUT /api/bang-san-luong/o': ['SAN_LUONG_SUA'],
+  'POST /api/bang-san-luong/nhap-ho': ['SAN_LUONG_SUA'],
+  'POST /api/chot-ngay': ['CHOT_NGAY'],
+  'GET /api/chot-ngay/chua-chot': ['CHOT_NGAY'],
+  'GET /api/khoa-thang': ['KHOA_THANG'],
+  'POST /api/khoa-thang/khoa': ['KHOA_THANG'],
+  'POST /api/khoa-thang/khoa-tat-ca': ['KHOA_THANG'],
+  'POST /api/khoa-thang/mo-khoa': ['KHOA_THANG'],
+  // F17 sơ đồ trạm trực tiếp [D26]
+  'GET /api/so-do-tram': ['SO_DO_TRAM_XEM'],
+  'POST /api/so-do-tram/dang-xuat-ho': ['SO_DO_TRAM_XEM'],
   // F6 giờ làm
   'GET /api/gio-lam/cho-duyet': ['GIO_LAM_DUYET'],
   'GET /api/gio-lam/nhan-vien': ['GIO_LAM_DUYET'],
