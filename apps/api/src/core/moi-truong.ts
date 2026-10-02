@@ -22,7 +22,9 @@ const zMoiTruong = z.object({
   UPTIME_TOKEN: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(16, 'UPTIME_TOKEN tối thiểu 16 ký tự').optional()),
   /** Sentry DSN của API [TDD 18]; trống → không gửi lỗi */
   SENTRY_DSN: z.preprocess((v) => (v === '' ? undefined : v), z.string().optional()),
-});
+  /** Chỉ E2E trên http://localhost đặt "false" (xem core/phien/cookie.ts); production bắt buộc Secure */
+  COOKIE_SECURE: z.enum(['true', 'false']).default('true'),
+}).refine((e) => e.NODE_ENV !== 'production' || e.COOKIE_SECURE === 'true', { message: 'Production không được tắt cookie Secure', path: ['COOKIE_SECURE'] });
 
 export type MoiTruong = z.infer<typeof zMoiTruong>;
 

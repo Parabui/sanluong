@@ -53,6 +53,11 @@ export default tseslint.config(
     },
   },
 
+  // ── k6 (runtime riêng của k6, không phải Node) ──
+  {
+    files: ['tools/k6/**/*.js'],
+    languageOptions: { globals: { __ENV: 'readonly', __VU: 'readonly', __ITER: 'readonly' } },
+  },
   // ── Frontend ──
   {
     files: ['apps/worker/src/**/*.{ts,tsx}', 'apps/web/src/**/*.{ts,tsx}', 'packages/ui/src/**/*.{ts,tsx}'],

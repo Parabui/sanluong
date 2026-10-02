@@ -63,6 +63,39 @@ describe('v_san_luong_chi_tiet', () => {
   });
 });
 
+describe('view = hàm gốc (giờ làm hiệu lực, chuyền gốc)', () => {
+  it('[D18] giờ làm / chuyền gốc trong v_nv_ngay và v_nv_chuyen_ngay khớp từng dòng với gio_lam_hieu_luc() / chuyen_goc_ngay()', async () => {
+    // View tính bằng LATERAL (nhanh, đẩy điều kiện ngày xuống) — phải cho đúng kết quả như hàm dùng ở form / giờ làm
+    const k = await khungCoGio(ctx.db);
+    const k2 = await khungCoGio(ctx.db);
+    await datChuyenGoc(ctx.db, k.nhanVienId, '2026-09-09', k2.chuyenId); // đổi chuyền gốc giữa tuần → đổi xưởng → đổi giờ mặc định
+    await taoGioMacDinh(ctx.db, k2.xuongId, { loaiNgay: 'T2_T6', soGio: 7.5, tuNgay: '2026-09-10' });
+    const tk = await taoTaiKhoan(ctx.db);
+    await ctx.db.query(
+      `INSERT INTO gio_lam (nhan_vien_id, ngay_lam_viec, so_gio, nguon, nguoi_thuc_hien_id) VALUES ($1, '2026-09-11', 10.5, 'YEU_CAU_DUYET', $2)`,
+      [k.nhanVienId, tk],
+    );
+    for (let i = 0; i < 8; i++) {
+      const ngay = congNgay(CN, i);
+      await taoSanLuong(ctx.db, { ngay, tramId: k.tramId, congDoanId: k.congDoanId, nhanVienId: k.nhanVienId, soLuong: 100 + i });
+      await taoSanLuong(ctx.db, { ngay, tramId: k2.tramId, congDoanId: k2.congDoanId, nhanVienId: k.nhanVienId, soLuong: 50 });
+    }
+    const lech = await ctx.db.query(
+      `SELECT 'nv_ngay' AS v, ngay_lam_viec::text FROM v_nv_ngay WHERE nhan_vien_id = $1
+         AND (gio_lam IS DISTINCT FROM gio_lam_hieu_luc(nhan_vien_id, ngay_lam_viec) OR chuyen_goc_id IS DISTINCT FROM chuyen_goc_ngay(nhan_vien_id, ngay_lam_viec))
+       UNION ALL
+       SELECT 'nv_chuyen_ngay', ngay_lam_viec::text FROM v_nv_chuyen_ngay WHERE nhan_vien_id = $1
+         AND gio_lam IS DISTINCT FROM gio_lam_hieu_luc(nhan_vien_id, ngay_lam_viec)`,
+      [k.nhanVienId],
+    );
+    expect(lech.rows).toEqual([]);
+    const gio = await ctx.db.query(`SELECT ngay_lam_viec::text AS d, gio_lam FROM v_nv_ngay WHERE nhan_vien_id = $1 ORDER BY 1`, [k.nhanVienId]);
+    expect(gio.rows.map((r) => [r.d, r.gio_lam == null ? null : Number(r.gio_lam)])).toEqual([
+      ['2026-09-06', null], ['2026-09-07', 9], ['2026-09-08', 9], ['2026-09-09', 9], ['2026-09-10', 7.5], ['2026-09-11', 10.5], ['2026-09-12', 8], ['2026-09-13', null],
+    ]);
+  });
+});
+
 describe('v_nv_ngay', () => {
   it('[F5] phút SMV cộng mọi công đoạn; % hiệu suất theo giờ mặc định, giờ đã duyệt thay thế giờ mặc định', async () => {
     const k = await khungCoGio(ctx.db);

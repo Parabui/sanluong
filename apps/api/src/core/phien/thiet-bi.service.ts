@@ -4,11 +4,12 @@ import { COOKIE_THIET_BI } from '@vsn/shared';
 import type { CookieOptions, Request, Response } from 'express';
 import { ClockService } from '../clock/clock.service.js';
 import { PrismaService, type Tx } from '../prisma/prisma.service.js';
+import { COOKIE_SECURE } from './cookie.js';
 import { bamToken } from './phien-web.service.js';
 
 /** Cập nhật lanCuoi tối đa 1 lần / 5 phút [TDD 9.1] */
 const CHU_KY_LAN_CUOI_MS = 5 * 60_000;
-const COOKIE: CookieOptions = { httpOnly: true, secure: true, sameSite: 'strict', path: '/api', maxAge: 400 * 24 * 3_600_000 };
+const COOKIE: CookieOptions = { httpOnly: true, secure: COOKIE_SECURE, sameSite: 'strict', path: '/api', maxAge: 400 * 24 * 3_600_000 };
 
 /**
  * Cookie thiết bị `vsn_tb` của app công nhân [D6] [TDD 9.1]: 32 byte ngẫu nhiên, DB chỉ giữ SHA-256.

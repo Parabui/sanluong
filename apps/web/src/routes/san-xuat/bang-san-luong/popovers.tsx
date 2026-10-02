@@ -42,11 +42,12 @@ export function Popover({ anchor, label, onCancel, children }: { anchor: HTMLEle
     return () => { sc?.removeEventListener('scroll', place); removeEventListener('resize', place); };
   }, [anchor]);
 
-  // bấm ra ngoài → hủy
+  // bấm ra ngoài → hủy. Dùng composedPath (chụp lúc phát sự kiện): bấm gợi ý NV làm danh sách gỡ khỏi DOM
+  // TRƯỚC khi listener này chạy → contains(target) sai và popover tự đóng.
   useEffect(() => {
     const h = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (ref.current && !ref.current.contains(t) && !anchor.contains(t)) onCancel();
+      const path = e.composedPath();
+      if (ref.current && !path.includes(ref.current) && !path.includes(anchor)) onCancel();
     };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);

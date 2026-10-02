@@ -6,6 +6,7 @@ import { CauHinhService } from '../cau-hinh/cau-hinh.service.js';
 import { ClockService } from '../clock/clock.service.js';
 import { layIp } from '../http/ip.js';
 import { LoiNghiepVu } from '../loi/loi-nghiep-vu.js';
+import { COOKIE_SECURE } from './cookie.js';
 import type { TaiKhoanPhien } from '../ngu-canh.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -16,7 +17,7 @@ export const HET_HAN_TOI_DA_MS = 12 * GIO;
 /** Gia hạn `lanCuoi` tối đa 1 lần / phút — tránh ghi DB ở mọi request */
 const CHU_KY_GIA_HAN_MS = 60 * 1000;
 
-const COOKIE: CookieOptions = { httpOnly: true, secure: true, sameSite: 'strict', path: '/api' };
+const COOKIE: CookieOptions = { httpOnly: true, secure: COOKIE_SECURE, sameSite: 'strict', path: '/api' };
 
 export const bamToken = (token: string) => createHash('sha256').update(token).digest('hex');
 

@@ -1,0 +1,46 @@
+# ════════════════════════════════════════════════════════════════
+# CSDL THỬ cho đo hiệu năng (k6) và E2E (Playwright) — tách khỏi DB dev, xóa được bất cứ lúc nào [TDD 13.3, 16.1]
+#   pnpm thu:db:up / pnpm thu:db:down (xóa luôn dữ liệu)
+# Mật khẩu dưới đây CHỈ dùng cho DB thử trên máy (bind 127.0.0.1), không phải secret production.
+# ════════════════════════════════════════════════════════════════
+name: vsn-sanluong-thu
+
+x-pg: &pg
+  image: postgres:17
+  environment:
+    POSTGRES_DB: vsn_sanluong
+    POSTGRES_PASSWORD: thu-postgres
+    VSN_APP_PASSWORD: thu-app
+    VSN_MIGRATE_PASSWORD: thu-migrate
+    VSN_BACKUP_PASSWORD: thu-backup
+    TZ: Asia/Ho_Chi_Minh
+    PGTZ: Asia/Ho_Chi_Minh
+  volumes:
+    - ./postgres/init:/docker-entrypoint-initdb.d:ro
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U postgres -d vsn_sanluong"]
+    interval: 3s
+    timeout: 3s
+    retries: 20
+
+services:
+  # 12 tháng dữ liệu (seed:perf) — cấu hình gần production: pool 20 kết nối của API [D25]
+  postgres-perf:
+    <<: *pg
+    ports:
+      - "127.0.0.1:5434:5432"
+    command: ["postgres", "-c", "max_connections=100", "-c", "shared_buffers=512MB", "-c", "work_mem=16MB"]
+    volumes:
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+      - pgperf:/var/lib/postgresql/data
+
+  # E2E: dữ liệu nhỏ, tạo lại mỗi lần chạy (tmpfs)
+  postgres-e2e:
+    <<: *pg
+    ports:
+      - "127.0.0.1:5435:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+
+volumes:
+  pgperf:

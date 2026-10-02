@@ -26,3 +26,9 @@ Thumbs.db
 *.xlsx
 _kiem-tra-may/ket-qua*.txt
 infra/backup/khoa/*.asc
+
+# Playwright / k6 — kết quả chạy trên máy
+test-results/
+playwright-report/
+blob-report/
+tools/k6/ket-qua-*.json

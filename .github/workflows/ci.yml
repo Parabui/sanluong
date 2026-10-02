@@ -35,3 +35,32 @@ jobs:
       - run: pnpm --filter @vsn/worker check:bundle
       - run: pnpm audit --prod
         continue-on-error: true # chỉ cảnh báo [TDD 19]
+
+  # E2E [TDD 16.1]: chỉ chạy trên nhánh main (và chạy tay trước deploy: pnpm e2e)
+  e2e:
+    if: github.ref == 'refs/heads/main'
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TZ: Asia/Ho_Chi_Minh
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium webkit
+      # dựng DB E2E (docker compose infra/compose.thu.yml) → migrate → seed → API 4200 + vite worker/web
+      - run: pnpm e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

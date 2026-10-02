@@ -125,7 +125,9 @@ export class BaoCaoService {
       FROM r
       JOIN nhan_vien nv ON nv.id = r.nhan_vien_id
       JOIN chuyen c ON c.id = r.chuyen_tram_snapshot
+      -- Khoảng ngày lặp lại trên vế view → PostgreSQL đẩy xuống (điều kiện khoảng không tự lan qua phép JOIN)
       JOIN v_nv_ngay n ON n.nhan_vien_id = r.nhan_vien_id AND n.ngay_lam_viec = r.ngay_lam_viec
+        AND n.ngay_lam_viec BETWEEN ${loc.tu}::date AND ${loc.den}::date
       LEFT JOIN chuyen cg ON cg.id = n.chuyen_goc_id
       ORDER BY nv.ma_nv, r.ngay_lam_viec, c.ma
       ${this.gioiHan(trang)}`;
@@ -192,6 +194,7 @@ export class BaoCaoService {
              bool_or(n.hieu_suat_tam_tinh AND gio_lam_bi_khoa(a.nhan_vien_id, a.ngay_lam_viec)) AS tam_tinh
       FROM a JOIN chuyen c ON c.id = a.chuyen_tram_snapshot
       JOIN v_nv_ngay n ON n.nhan_vien_id = a.nhan_vien_id AND n.ngay_lam_viec = a.ngay_lam_viec
+        AND n.ngay_lam_viec BETWEEN ${loc.tu}::date AND ${loc.den}::date
       LEFT JOIN h ON h.chuyen_tram_snapshot = c.id
       GROUP BY c.id, c.ma, c.ten`;
     const ds = await this.prisma.$queryRaw<{ id: string; ma: string; ten: string; hoan_thanh: Dec; san_luong: Dec; phut_smv: Dec; phut_lam: Dec; hieu_suat: Dec; so_nv: number; tam_tinh: boolean }[]>`

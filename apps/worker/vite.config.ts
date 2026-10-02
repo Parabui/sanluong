@@ -43,7 +43,8 @@ export default defineConfig({
   server: {
     port: 5174,
     strictPort: true,
-    proxy: { '/api': 'http://localhost:4000' },
+    // E2E chạy API ở cổng khác (VSN_API_PROXY) — mặc định API dev
+    proxy: { '/api': process.env['VSN_API_PROXY'] ?? 'http://localhost:4000' },
   },
   build: {
     // iOS Safari 15+ [D14]
