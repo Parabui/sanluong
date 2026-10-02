@@ -1,0 +1,7 @@
+# Copy thành /srv/vsn/dozzle/users.yml trên server (quyền 600). Mật khẩu lưu dạng bcrypt:
+#   docker run --rm amir20/dozzle generate <ten> --password '<mat-khau>' --email it@vsn-dn.com --name "IT"
+users:
+  it:
+    email: it@vsn-dn.com
+    name: IT
+    password: $2a$11$THAY_BANG_HASH_BCRYPT

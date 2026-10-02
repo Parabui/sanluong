@@ -12,6 +12,7 @@
     "check:bundle": "node scripts/kiem-tra-bundle.js"
   },
   "dependencies": {
+    "@sentry/react": "^11.2.0",
     "@tanstack/react-query": "^5.104.0",
     "@vsn/shared": "workspace:*",
     "@vsn/ui": "workspace:*",

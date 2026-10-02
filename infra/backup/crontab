@@ -1,0 +1,5 @@
+# Giờ theo TZ=Asia/Ho_Chi_Minh của container [TDD 15.1]
+# Backup hằng ngày 02:00 → /backups + cloud (rclone) → ping Uptime Kuma (push monitor, quá 26 giờ không ping thì báo IT)
+0 2 * * * /usr/local/bin/backup.sh >> /proc/1/fd/1 2>&1
+# Ổ đĩa ≥ 80% → push monitor báo down [TDD 18]
+*/5 * * * * /usr/local/bin/kiem-tra-dia.sh >> /proc/1/fd/1 2>&1

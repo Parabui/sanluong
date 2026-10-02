@@ -1,0 +1,38 @@
+# Dependabot [TDD 19]: cập nhật phụ thuộc hằng tuần, gộp bản vá nhỏ để đỡ nhiều PR
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Asia/Ho_Chi_Minh
+    open-pull-requests-limit: 5
+    groups:
+      ban-va:
+        update-types: [patch, minor]
+    ignore:
+      # Phiên bản chốt có chủ đích (xem memory dự án / TDD 5): nâng major phải làm thủ công
+      - dependency-name: "@nestjs/*"
+        update-types: [version-update:semver-major]
+      - dependency-name: prisma
+        update-types: [version-update:semver-major]
+      - dependency-name: "@prisma/*"
+        update-types: [version-update:semver-major]
+      - dependency-name: react-router
+        update-types: [version-update:semver-major]
+      - dependency-name: "@tanstack/react-table"
+        update-types: [version-update:semver-major]
+      - dependency-name: tailwindcss
+        update-types: [version-update:semver-major]
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+  - package-ecosystem: docker
+    directories: [/infra/caddy, /infra/backup]
+    schedule:
+      interval: monthly

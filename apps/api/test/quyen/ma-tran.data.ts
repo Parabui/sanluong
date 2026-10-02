@@ -42,6 +42,12 @@ export type KhaiBaoRoute = 'CONG_KHAI' | 'DA_DANG_NHAP' | 'CONG_NHAN' | ChucNang
  */
 export const ROUTE: Record<string, KhaiBaoRoute> = {
   'GET /api/health': 'CONG_KHAI',
+  'GET /api/health/chi-tiet': 'CONG_KHAI', // token Uptime Kuma hoặc Superadmin — kiểm trong controller [D24]
+  // Hệ thống (Superadmin)
+  'GET /api/audit-log': ['AUDIT_XEM'],
+  'GET /api/audit-log/xuat': ['AUDIT_XEM'],
+  'GET /api/cau-hinh': ['CAU_HINH'],
+  'PUT /api/cau-hinh': ['CAU_HINH'],
   'POST /api/auth/dang-nhap': 'CONG_KHAI',
   'POST /api/auth/dang-xuat': 'DA_DANG_NHAP',
   'POST /api/auth/doi-mat-khau': 'DA_DANG_NHAP',

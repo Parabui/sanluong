@@ -3,6 +3,7 @@ import { LOI, type MaLoi, type PhanHoiLoi } from '@vsn/shared';
 import type { Request, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
 import type { z } from 'zod';
+import { baoLoi } from '../sentry.js';
 import { layTraceId } from '../trace-id.js';
 import { maLoiTuTrigger } from './loi-db.js';
 import { LoiNghiepVu } from './loi-nghiep-vu.js';
@@ -31,7 +32,10 @@ export class LoiFilter implements ExceptionFilter {
     const traceId = layTraceId(req);
 
     const { status, body } = this.chuyenDoi(loi, traceId);
-    if (status >= 500) this.logger.error({ err: loi, traceId }, 'Lỗi hệ thống');
+    if (status >= 500) {
+      this.logger.error({ err: loi, traceId }, 'Lỗi hệ thống');
+      baoLoi(loi, { traceId, route: req.route ? `${req.method} ${req.baseUrl}${(req.route as { path: string }).path}` : req.method });
+    }
     res.status(status).json(body);
   }
 

@@ -10,6 +10,7 @@ import { DuyetGioPage } from './routes/san-xuat/duyet-gio';
 import { SoDoTramPage } from './routes/san-xuat/so-do-tram';
 import { KhoaSoPage } from './routes/luong/khoa-so';
 import { SoDoChuyenPage } from './routes/san-xuat/so-do-chuyen';
+import { AuditLogPage } from './routes/he-thong/audit-log';
 import { CaiDatPage } from './routes/he-thong/cai-dat';
 import { NhanVienPage } from './routes/danh-muc/nhan-vien';
 import { TaiKhoanPage } from './routes/he-thong/tai-khoan';
@@ -30,6 +31,7 @@ const DA_LAM: Record<string, ReactElement> = {
   'san-xuat/so-do-tram': <SoDoTramPage />,
   'luong/khoa-so': <KhoaSoPage />,
   'he-thong/cai-dat': <CaiDatPage />,
+  'he-thong/audit-log': <AuditLogPage />,
   'he-thong/tai-khoan': <TaiKhoanPage />,
 };
 

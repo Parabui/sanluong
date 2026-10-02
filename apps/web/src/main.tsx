@@ -9,6 +9,9 @@ import { RouterProvider } from 'react-router/dom';
 import { datKhiHetPhien, queryClient } from './lib/api';
 import { duongDanDangNhap } from './lib/xac-thuc';
 import { router } from './router';
+import { khoiTaoSentry } from './lib/sentry';
+
+khoiTaoSentry(__APP_VERSION__);
 
 // Phiên hết hạn / bị thu hồi giữa chừng → về đăng nhập, sau đó quay lại đúng trang cũ [PRD ⑦]
 datKhiHetPhien(() => {

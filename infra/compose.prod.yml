@@ -2,7 +2,7 @@
 # PRODUCTION (và chạy thử bản production trên máy dev) [TDD 2.1, 17.2]
 #   docker compose -f infra/compose.prod.yml --env-file .env up -d
 # Image do GitHub Actions build, đẩy lên GHCR private (release.yml — ⏳).
-# ⏳ Chưa có: container `backup` (tuần 11), `dozzle` (tuần 11), deploy.sh (tuần 13).
+# Có: backup (tuần 11), dozzle (tuần 11). ⏳ Chưa có: deploy.sh (tuần 13).
 # ════════════════════════════════════════════════════════════════
 name: vsn-sanluong
 
@@ -37,6 +37,9 @@ services:
       DB_POOL_TIMEOUT_MS: ${DB_POOL_TIMEOUT_MS:-10000}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       APP_VERSION: ${VSN_TAG}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      UPTIME_TOKEN: ${UPTIME_TOKEN:-}
     mem_limit: 2g # [D24]
     logging: *logging
 
@@ -59,6 +62,46 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    logging: *logging
+
+  # Backup 02:00 → mã hóa bằng PUBLIC key → /srv/vsn/backups + cloud (rclone) → ping Uptime Kuma [TDD 15.1] [D24]
+  # Diễn tập khôi phục: docker compose -f infra/compose.prod.yml run --rm -v <thư mục private key>:/khoa:ro backup restore-test.sh
+  backup:
+    build: ./backup
+    image: vsn-backup:${VSN_TAG}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Ho_Chi_Minh
+      PGHOST: postgres
+      PGDATABASE: vsn_sanluong
+      PGUSER: vsn_backup
+      PGPASSWORD: ${VSN_BACKUP_PASSWORD}
+      BACKUP_GIU: "30"
+      RCLONE_DICH: ${RCLONE_DICH:-}
+      UPTIME_BACKUP_PUSH_URL: ${UPTIME_BACKUP_PUSH_URL:-}
+      UPTIME_DISK_PUSH_URL: ${UPTIME_DISK_PUSH_URL:-}
+    volumes:
+      - /srv/vsn/backups:/backups
+      - ./backup/khoa/backup.pub.asc:/keys/backup.pub.asc:ro # CHỈ public key — private key không nằm trên server
+      - /srv/vsn/rclone:/config/rclone # rclone.conf (quyền 600)
+    logging: *logging
+
+  # Xem log container — chỉ bind 127.0.0.1, bật xác thực, truy cập qua SSH tunnel [D24] [TDD 18]
+  #   ssh -L 9999:127.0.0.1:9999 <server>  →  http://localhost:9999
+  dozzle:
+    image: amir20/dozzle:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9999:8080"
+    environment:
+      DOZZLE_AUTH_PROVIDER: simple
+      DOZZLE_NO_ANALYTICS: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /srv/vsn/dozzle:/data:ro # users.yml (xem infra/dozzle/users.example.yml)
     logging: *logging
 
   cloudflared:

@@ -5,6 +5,8 @@ import { defaultClientConditions, defineConfig } from 'vite';
 // Web quản lý + TV — phục vụ dưới /quanly/ [TDD 2.2]
 export default defineConfig({
   base: '/quanly/',
+  // Đọc .env ở gốc monorepo — Vite chỉ lộ biến VITE_* ra trình duyệt
+  envDir: '../..',
   plugins: [react()],
   // Phiên bản hiển thị ở chân trang [TDD 17.4]
   define: { __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version) },

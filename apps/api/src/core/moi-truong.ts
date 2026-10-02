@@ -18,6 +18,10 @@ const zMoiTruong = z.object({
   APP_VERSION: z.string().default('0.0.0-dev'),
   /** Cloudflare Turnstile [D23]. Dev/test để trống → bỏ qua xác minh; production BẮT BUỘC có */
   TURNSTILE_SECRET: z.string().optional(),
+  /** Token cho Uptime Kuma gọi /api/health/chi-tiet (header X-Uptime-Token) [D24]; trống → chỉ Superadmin xem được */
+  UPTIME_TOKEN: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(16, 'UPTIME_TOKEN tối thiểu 16 ký tự').optional()),
+  /** Sentry DSN của API [TDD 18]; trống → không gửi lỗi */
+  SENTRY_DSN: z.preprocess((v) => (v === '' ? undefined : v), z.string().optional()),
 });
 
 export type MoiTruong = z.infer<typeof zMoiTruong>;

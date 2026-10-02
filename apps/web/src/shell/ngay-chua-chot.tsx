@@ -3,7 +3,7 @@
  * Tổ trưởng quên chốt → hệ thống không tự chốt, chỉ nhắc ở đây.
  */
 import { useQuery } from '@tanstack/react-query';
-import { dinhDangNgay, thuIso, zNgayChuaChot } from '@vsn/shared';
+import { dinhDangNgay, HEADER_POLLING, thuIso, zNgayChuaChot } from '@vsn/shared';
 import { Menu, MenuItem, MenuLabel } from '@vsn/ui';
 import { CalendarClock, TriangleAlert } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -16,7 +16,8 @@ export function NgayChuaChot() {
   const navigate = useNavigate();
   const q = useQuery({
     queryKey: ['chot-ngay', 'chua-chot'],
-    queryFn: ({ signal }) => api.goi('/chot-ngay/chua-chot', { schema: z.array(zNgayChuaChot), signal }),
+    // Polling: không gia hạn phiên Web [D24]
+    queryFn: ({ signal }) => api.goi('/chot-ngay/chua-chot', { schema: z.array(zNgayChuaChot), signal, headers: { [HEADER_POLLING]: '1' } }),
     refetchInterval: 5 * 60_000,
   });
   const ds = q.data ?? [];

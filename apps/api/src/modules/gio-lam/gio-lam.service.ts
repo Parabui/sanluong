@@ -129,6 +129,8 @@ export class GioLamService {
   async guiYeuCau(nhanVienId: string | null, ngayMo: NgayLamViec[], ngay: NgayLamViec, soGio: number): Promise<void> {
     if (!nhanVienId) throw new LoiNghiepVu('CHUA_DANG_NHAP_TRAM');
     if (!ngayMo.includes(ngay)) throw new LoiNghiepVu('NGAY_KHONG_MO_NHAP');
+    // Người thực hiện = NV của phiên (guard chỉ biết thiết bị) — như GHI_SAN_LUONG
+    const nguCanh = { ...this.audit.nguCanh(), nguoiThucHienId: nhanVienId };
     try {
       await this.audit.giaoDich(async (tx) => {
         await this.khoaGio(tx, nhanVienId, ngay);
@@ -142,8 +144,8 @@ export class GioLamService {
           hanhDong: 'GUI_YEU_CAU_GIO', doiTuong: 'yeu_cau_gio', doiTuongId: moi.id,
           cu: cu[0] ? { soGio: so(cu[0].so_gio), thayYeuCau: cu[0].id } : undefined,
           moi: { nhanVienId, ngay, soGio },
-        });
-      });
+        }, nguCanh);
+      }, nguCanh);
     } catch (e) {
       // Hai lần gửi đồng thời cùng NV × ngày → ux_yeu_cau_gio_cho
       if (laLoiTrung(e)) throw new LoiNghiepVu('DU_LIEU_DA_THAY_DOI', { message: 'Yêu cầu vừa được gửi từ nơi khác — tải lại để xem.' });

@@ -1,11 +1,12 @@
 /**
  * Dữ liệu "trực tiếp" [TDD 14.5] [D11]: TanStack Query `refetchInterval`, tab ẩn thì dừng.
- * Gửi `phienBan` của lần trước — server trả { khongDoi: true } nếu chưa đổi → giữ nguyên dữ liệu cũ (không vẽ lại).
+ * Gửi header X-VSN-Polling: 1 → polling KHÔNG gia hạn phiên Web [D24]. Gửi `phienBan` của lần trước — server trả { khongDoi: true } nếu chưa đổi → giữ nguyên dữ liệu cũ (không vẽ lại).
  * Sau này đổi sang SSE chỉ sửa bên trong hook.
  */
 import { useQuery } from '@tanstack/react-query';
 import { useRef } from 'react';
 import type { z } from 'zod';
+import { HEADER_POLLING } from '@vsn/shared';
 import { api } from './api';
 
 type CoPhienBan = { khongDoi: false; phienBan: string };
@@ -25,7 +26,7 @@ export function useDuLieuTrucTiep<S extends z.ZodType<{ khongDoi: true } | CoPhi
     queryFn: async ({ signal }) => {
       const truoc = cu.current?.duongDan === duongDan ? cu.current.data : null;
       const noi = duongDan.includes('?') ? '&' : '?';
-      const kq = await api.goi(truoc ? `${duongDan}${noi}phienBan=${encodeURIComponent(truoc.phienBan)}` : duongDan, { schema, signal });
+      const kq = await api.goi(truoc ? `${duongDan}${noi}phienBan=${encodeURIComponent(truoc.phienBan)}` : duongDan, { schema, signal, headers: { [HEADER_POLLING]: '1' } });
       if (kq.khongDoi && truoc) return truoc;
       if (kq.khongDoi) throw new Error('Không có dữ liệu trước đó');
       const moi = kq as Extract<z.infer<S>, CoPhienBan>;

@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { BaoCaoModule } from './modules/bao-cao/bao-cao.module.js';
 import { CongNhanModule } from './modules/cong-nhan/cong-nhan.module.js';
 import { GioLamModule } from './modules/gio-lam/gio-lam.module.js';
+import { HeThongModule } from './modules/he-thong/he-thong.module.js';
 import { KhoaThangModule } from './modules/khoa-thang/khoa-thang.module.js';
 import { SoDoTramModule } from './modules/so-do-tram/so-do-tram.module.js';
 import { DanhMucModule } from './modules/danh-muc/danh-muc.module.js';
@@ -64,6 +65,7 @@ import { TaiKhoanModule } from './modules/tai-khoan/tai-khoan.module.js';
     CongNhanModule,
     BaoCaoModule,
     GioLamModule,
+    HeThongModule,
     KhoaThangModule,
     SoDoTramModule,
   ],
