@@ -162,7 +162,7 @@
 - ✅ Mã NV được chuẩn hóa (trim, viết hoa) trước khi so khớp; giữ nguyên số 0 đầu `[R 3.4]`
 - ✅ Mã NV đã tồn tại → cập nhật, không tạo bản trùng
 - ✅ Dòng lỗi không được ghi; dòng hợp lệ vẫn ghi; có danh sách lỗi (số dòng + lý do)
-- ✅ Đổi chuyền của NV chỉ ảnh hưởng bản ghi sản lượng mới; bản ghi cũ giữ chuyền gốc đã snapshot `[R 3.7]`
+- ✅ Đổi chuyền của NV có hiệu lực từ ngày sửa (hệ thống tự lưu lịch sử chuyền gốc); các ngày trước giữ nguyên chuyền gốc cũ trong báo cáo và duyệt giờ `[R 3.7]` `[D18]`
 - ✅ Nhân viên ngưng hoạt động không đăng nhập được trạm; sản lượng cũ vẫn giữ trong báo cáo
 - ✅ **Xóa hẳn chỉ cho NV chưa có bản ghi sản lượng nào** (dùng khi import nhầm). NV đã có sản lượng → nút Xóa bị ẩn, chỉ được Ngưng `[R 5.6]`
 - ❌ Đồng bộ tự động với phần mềm nhân sự
@@ -393,7 +393,8 @@
 - ✅ Sai mật khẩu 5 lần → khóa 15 phút
 - ✅ Superadmin đặt lại mật khẩu; người dùng phải đổi ở lần đăng nhập sau
 - ✅ Tài khoản vô hiệu hóa không đăng nhập được; lịch sử giữ nguyên
-- ✅ Phiên Web hết hạn sau 8 giờ không thao tác; tài khoản TV không hết hạn nhưng **Superadmin thu hồi được phiên TV** (bắt buộc đăng nhập lại) `[R 5.12]`
+- ✅ Phiên Web hết hạn sau 8 giờ không thao tác và **tối đa 12 giờ** kể từ lúc đăng nhập; màn hình tự làm mới (polling) không tính là thao tác `[D24]`
+- ✅ Tài khoản TV không hết hạn nhưng **chỉ dùng được từ mạng nhà máy** (IP public của nhà máy, cấu hình trong Cài đặt) và chỉ xem dashboard; **Superadmin thu hồi được phiên TV** (bắt buộc đăng nhập lại) `[R 5.12]` `[D24]`
 - ✅ Mọi thay đổi phân quyền và phạm vi lưu lịch sử
 - ❌ Đăng nhập Windows/AD, xác thực 2 lớp
 
@@ -572,7 +573,7 @@
 - ✅ Chế độ TV (1920×1080): toàn màn hình; **số chính ≥ 72px, nhãn ≥ 32px, tương phản ≥ 7:1** (đọc được từ 5 m) `[R 2.6]`
 - ✅ Chế độ TV chạy liên tục 12 giờ: **RAM của tab tăng < 30%, không trắng màn hình**; trang tự tải lại lúc 05:00 hằng ngày `[R 2.7]`
 - ✅ Hiển thị đủ các khối (kể cả Bottom 5)
-- ✅ Tài khoản TV riêng: chỉ xem dashboard, phiên không hết hạn, Superadmin thu hồi được
+- ✅ Tài khoản TV riêng: chỉ xem dashboard, phiên không hết hạn, chỉ dùng được từ mạng nhà máy, Superadmin thu hồi được `[D24]`
 - ✅ Mở dashboard < 3 giây
 - ❌ Cảnh báo đẩy, dự báo sản lượng
 
@@ -1098,11 +1099,12 @@
 | Mã | Mục | Thay đổi |
 |---|---|---|
 | D17 | ①b, ⑩ | Trạm không đổi chuyền (`Tram.chuyenId` bất biến) |
-| D18 | ①b, F1 R2, R5, ⑩ | Chuyền gốc NV theo ngày (bảng `NhanVienChuyenGoc`, hiệu lực từ ngày HR sửa); bỏ snapshot chuyền gốc trong bản ghi sản lượng |
+| D18 | ①b, F1 R2, R5, F2, ⑩ | Chuyền gốc NV theo ngày (bảng `NhanVienChuyenGoc`, hiệu lực từ ngày HR sửa); bỏ snapshot chuyền gốc trong bản ghi sản lượng |
 | D19 | ⑩ | `RequestDaXuLy` khóa theo (thiết bị, requestId); Thử lại dùng lại mã khi số chưa đổi |
 | D20 | F5, F15 | F15 bỏ cột Giờ làm; % hiệu suất "tạm tính" khi ngày còn mã hàng chưa khóa |
 | D21 | ①b, F1, ⑩ | Phiên đi theo người (tự chuyển khi cùng mã NV); quét QR trong app; hướng dẫn khi mở bằng Zalo; R 1.3 chỉ ở mức best effort |
 | D22 | ①b, F1 R1, ⑨ | Ngày mở nhập: hôm nay + ngày làm việc liền trước nếu chưa chốt (thay cho 3 ngày) |
 | D23 | F1, F10, ⑥, ⑨ | Bù đắp rủi ro không PIN: Turnstile, cờ "nhiều thiết bị", thông báo chuyển phiên, ≤ 3 lần chuyển/ngày; giới hạn sai theo thiết bị |
+| D24 | F7, F8 | Phiên Web tối đa 12 giờ, polling không gia hạn phiên; phiên TV chỉ hợp lệ từ IP nhà máy |
 | D25 | ⑥ | Kịch bản tải "tan ca" 525 người; concurrency theo thực tế tan ca cùng giờ |
 | D26 | F1, F10, F17 | Bỏ nút "Đăng xuất người đang giữ" của công nhân; **F17 (sơ đồ trạm + đăng xuất hộ) lên MUST**; NV nhập ở trạm cũ trước khi rời; không có Bỏ chốt |
