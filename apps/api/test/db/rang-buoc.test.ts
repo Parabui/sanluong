@@ -448,7 +448,8 @@ describe('Audit & hệ thống', () => {
     await ctx.db.query(`UPDATE san_luong SET so_luong = 11 WHERE id = $1`, [id]);
     const { rows } = await ctx.db.query(
       `SELECT db_user, doi_tuong, doi_tuong_id, du_lieu_cu IS NULL AS khong_cu
-       FROM audit_log WHERE loai_nguoi_thuc_hien = 'DB_TRUC_TIEP' AND doi_tuong_id = $1 ORDER BY id`,
+       FROM audit_log WHERE loai_nguoi_thuc_hien = 'DB_TRUC_TIEP' AND doi_tuong_id = $1
+       ORDER BY du_lieu_cu IS NOT NULL`, // INSERT trước UPDATE — 2 dòng cùng mili-giây nên id (UUID v7) không giữ thứ tự
       [id],
     );
     expect(rows).toEqual([
