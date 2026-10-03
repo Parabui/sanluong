@@ -9,3 +9,7 @@ allowBuilds:
   cpu-features: false
   ssh2: false
   protobufjs: false
+# Vá bảo mật trong phụ thuộc gián tiếp [TDD 19] — cùng major với bản gốc, gỡ khi gói cha đã tự nâng
+overrides:
+  # prisma CLI → mysql2 (GHSA high: hạ cấp plugin xác thực). Hệ thống dùng PostgreSQL, vá để audit sạch
+  mysql2: ^3.23.1

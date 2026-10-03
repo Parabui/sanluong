@@ -15,12 +15,12 @@
     "typecheck": "pnpm build:shared && pnpm --recursive typecheck",
     "test": "pnpm --recursive test",
     "test:int": "pnpm --filter @vsn/api test:int",
-    "e2e": "pnpm --filter @vsn/api build && playwright test",
+    "e2e": "pnpm --filter \"@vsn/api...\" build && playwright test",
     "db:up": "docker compose --env-file .env -f infra/compose.yml up -d postgres",
     "db:down": "docker compose --env-file .env -f infra/compose.yml down",
     "thu:db:up": "docker compose -f infra/compose.thu.yml up -d --wait",
     "thu:db:down": "docker compose -f infra/compose.thu.yml down -v",
-    "seed:perf": "pnpm --filter @vsn/api build && node tools/thu/chay.mjs perf",
+    "seed:perf": "pnpm --filter \"@vsn/api...\" build && node tools/thu/chay.mjs perf",
     "perf:api": "node tools/thu/chay.mjs api perf 4100"
   },
   "devDependencies": {
