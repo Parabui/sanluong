@@ -32,3 +32,7 @@ test-results/
 playwright-report/
 blob-report/
 tools/k6/ket-qua-*.json
+
+# File cài đặt tải về (không thuộc repo)
+*.msi
+*.exe

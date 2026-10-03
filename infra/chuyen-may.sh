@@ -92,7 +92,7 @@ if [[ "$LENH" == "xuat" ]]; then
   dem_bang > "$TAM/so-dong.txt"
   cp -p "$ENV_FILE" "$TAM/.env"
   cp -rp infra "$TAM/infra"
-  rm -rf "$TAM/infra/backup/khoa/"*.key.asc 2>/dev/null || true # phòng ai lỡ để private key trong repo
+  rm -rf "$TAM/infra/backup/khoa/"*.priv.asc "$TAM/infra/backup/khoa/"*.key.asc 2>/dev/null || true # phòng ai lỡ để private key trong repo
   for d in rclone dozzle; do [[ -d "$DU_LIEU/$d" ]] && cp -rp "$DU_LIEU/$d" "$TAM/du-lieu/$d"; done
   [[ -f docs/RUNBOOK.md ]] && { mkdir -p "$TAM/docs"; cp -p docs/RUNBOOK.md "$TAM/docs/"; }
 
