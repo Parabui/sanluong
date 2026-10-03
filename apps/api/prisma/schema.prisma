@@ -1,13 +1,13 @@
 // ════════════════════════════════════════════════════════════════
 // VSN Sản Lượng — Prisma schema
 // Nguồn: PRD mục ⑩ + TDD mục 6.1 (bảng bổ sung) · Quy ước: TDD 6.2
-//   - id: UUID · tên camelCase, DB snake_case qua @map / @@map
+//   - id: UUID v7 do DB sinh (hàm uuid_v7() trong migration) → cả Prisma lẫn SQL tay đều dùng được
+//   - tên camelCase, DB snake_case qua @map / @@map
 //   - ngày làm việc: DateTime @db.Date · thời điểm: DateTime @db.Timestamptz(3)
 //   - bảng nghiệp vụ có `version Int @default(0)` (optimistic lock)
+//   - updated_at do trigger dat_updated_at() đặt (đúng cả khi ghi bằng SQL tay)
 // Ràng buộc nâng cao (partial unique, CHECK, exclusion, trigger, view) viết bằng SQL tay
-// NGAY TRONG thư mục migration (TDD 6.3, 6.6, 17.3).
-//
-// ⏳ Model sẽ được thêm ở bước tiếp theo (tuần 1 — "Prisma schema đầy đủ").
+// NGAY TRONG thư mục migration (TDD 6.3, 6.6, 17.3) — xem chú thích "[SQL]" ở từng model.
 // ════════════════════════════════════════════════════════════════
 
 generator client {
@@ -19,4 +19,727 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ── Enum ──────────────────────────────────────────────────────────
+
+enum TrangThai {
+  HOAT_DONG
+  NGUNG
+
+  @@map("trang_thai")
+}
+
+enum LoaiChuyen {
+  CHUYEN_MAY
+  VONG_NGOAI
+
+  @@map("loai_chuyen")
+}
+
+/// Khớp `VAI_TRO` trong @vsn/shared/chuc-nang (có test đối chiếu)
+enum VaiTro {
+  SUPERADMIN
+  QUAN_LY_XUONG
+  TO_TRUONG
+  IE
+  IT_HR
+  KE_HOACH
+  BAN_GIAM_DOC
+  TV
+
+  @@map("vai_tro")
+}
+
+/// Khớp `CHUC_NANG` trong @vsn/shared/chuc-nang (có test đối chiếu)
+enum ChucNang {
+  TAI_KHOAN_QUAN_LY
+  DANH_MUC_XUONG_CHUYEN
+  NHAN_VIEN_QUAN_LY
+  MA_HANG_QUAN_LY
+  SO_DO_GAN
+  GIO_MAC_DINH_CAI
+  GIO_LAM_DUYET
+  SAN_LUONG_SUA
+  CHOT_NGAY
+  KHOA_THANG
+  BAO_CAO_XEM
+  DASHBOARD_XEM
+  KE_HOACH_QUAN_LY
+  XUAT_LUONG
+  CAU_HINH
+  AUDIT_XEM
+  SO_DO_TRAM_XEM
+
+  @@map("chuc_nang")
+}
+
+enum NguonSanLuong {
+  APP
+  OFFLINE
+  NHAP_HO
+  SUA_WEB
+
+  @@map("nguon_san_luong")
+}
+
+enum LyDoDongPhien {
+  TU_DANG_XUAT
+  DANG_XUAT_HO
+  CHUYEN_THIET_BI
+
+  @@map("ly_do_dong_phien")
+}
+
+enum LoaiNgay {
+  T2_T6
+  T7
+  CN
+
+  @@map("loai_ngay")
+}
+
+enum NguonGio {
+  YEU_CAU_DUYET
+  TO_TRUONG_SUA
+
+  @@map("nguon_gio")
+}
+
+enum TrangThaiYeuCauGio {
+  CHO
+  DUYET
+  TU_CHOI
+
+  @@map("trang_thai_yeu_cau_gio")
+}
+
+enum TrangThaiKhoa {
+  KHOA
+  MO
+
+  @@map("trang_thai_khoa")
+}
+
+enum LoaiPhien {
+  WEB
+  TV
+
+  @@map("loai_phien")
+}
+
+enum LoaiNguoiThucHien {
+  TAI_KHOAN
+  NHAN_VIEN
+  HE_THONG
+  DB_TRUC_TIEP
+
+  @@map("loai_nguoi_thuc_hien")
+}
+
+/// Chủ thể gửi request ghi: thiết bị (app công nhân) hoặc tài khoản Web [D19]
+enum LoaiChuThe {
+  THIET_BI
+  TAI_KHOAN
+
+  @@map("loai_chu_the")
+}
+
+enum LoaiImport {
+  NHAN_VIEN
+  MA_HANG
+  KE_HOACH
+
+  @@map("loai_import")
+}
+
+// ── Danh mục ──────────────────────────────────────────────────────
+
+model Xuong {
+  id        String    @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  ma        String    @unique
+  ten       String
+  trangThai TrangThai @default(HOAT_DONG) @map("trang_thai")
+  version   Int       @default(0)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  chuyen        Chuyen[]
+  gioMacDinh    GioMacDinh[]
+  taiKhoanXuong TaiKhoanXuong[]
+
+  @@map("xuong")
+}
+
+model Chuyen {
+  id          String     @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  ma          String     @unique
+  ten         String
+  loai        LoaiChuyen
+  xuongId     String     @map("xuong_id") @db.Uuid
+  trangThai   TrangThai  @default(HOAT_DONG) @map("trang_thai")
+  /// Optimistic lock riêng cho sơ đồ gán công đoạn (F4) [TDD 8.7]
+  versionSoDo Int        @default(0) @map("version_so_do")
+  version     Int        @default(0)
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  xuong             Xuong               @relation(fields: [xuongId], references: [id])
+  tram              Tram[]
+  nhanVien          NhanVien[]
+  nhanVienChuyenGoc NhanVienChuyenGoc[]
+  chuyenMaHang      ChuyenMaHang[]
+  sanLuong          SanLuong[]
+  chotNgay          ChotNgay[]
+  keHoach           KeHoach[]
+  taiKhoanChuyen    TaiKhoanChuyen[]
+
+  @@index([xuongId])
+  @@map("chuyen")
+}
+
+/// [SQL] trigger tg_tram_chuyen_bat_bien: chuyen_id bất biến [D17]
+model Tram {
+  /// Mã định danh cố định, dùng cho QR (F9, F12)
+  id         String    @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  chuyenId   String    @map("chuyen_id") @db.Uuid
+  soTram     Int       @map("so_tram")
+  nhapQuaApp Boolean   @default(false) @map("nhap_qua_app")
+  trangThai  TrangThai @default(HOAT_DONG) @map("trang_thai")
+  version    Int       @default(0)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  chuyen      Chuyen        @relation(fields: [chuyenId], references: [id])
+  ganCongDoan GanCongDoan[]
+  phienTram   PhienTram[]
+  sanLuong    SanLuong[]
+
+  @@unique([chuyenId, soTram])
+  @@map("tram")
+}
+
+/// [SQL] CHECK ma_nv đã chuẩn hóa (trim + viết hoa) · trigger tg_nv_chuyen_goc ghi lịch sử chuyền gốc [D18]
+model NhanVien {
+  id         String    @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  maNV       String    @unique @map("ma_nv")
+  hoTen      String    @map("ho_ten")
+  /// Chuyền gốc HIỆN TẠI. Ngày cũ → chuyen_goc_ngay(nv, d), không đọc cột này [D18]
+  chuyenId   String    @map("chuyen_id") @db.Uuid
+  bacTayNghe String?   @map("bac_tay_nghe")
+  trangThai  TrangThai @default(HOAT_DONG) @map("trang_thai")
+  version    Int       @default(0)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  chuyen            Chuyen              @relation(fields: [chuyenId], references: [id])
+  nhanVienChuyenGoc NhanVienChuyenGoc[]
+  phienTram         PhienTram[]
+  sanLuong          SanLuong[]
+  gioLam            GioLam[]
+  yeuCauGio         YeuCauGio[]
+
+  @@index([chuyenId])
+  @@map("nhan_vien")
+}
+
+/// Lịch sử chuyền gốc theo ngày — CHỈ do trigger ghi, không ghi từ ứng dụng [D18]
+model NhanVienChuyenGoc {
+  nhanVienId String   @map("nhan_vien_id") @db.Uuid
+  tuNgay     DateTime @map("tu_ngay") @db.Date
+  chuyenId   String   @map("chuyen_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  nhanVien NhanVien @relation(fields: [nhanVienId], references: [id], onDelete: Cascade)
+  chuyen   Chuyen   @relation(fields: [chuyenId], references: [id])
+
+  @@id([nhanVienId, tuNgay])
+  @@map("nhan_vien_chuyen_goc")
+}
+
+/// [SQL] CHECK so_luong_don_hang > 0
+model MaHang {
+  id             String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  ma             String   @unique
+  ten            String
+  khachHang      String?  @map("khach_hang")
+  soLuongDonHang Int      @map("so_luong_don_hang")
+  version        Int      @default(0)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  congDoan     CongDoan[]
+  chuyenMaHang ChuyenMaHang[]
+  khoaThang    KhoaThang[]
+  keHoach      KeHoach[]
+
+  @@map("ma_hang")
+}
+
+/// [SQL] partial UNIQUE ux_cong_doan_hoan_thanh: tối đa 1 công đoạn hoàn thành / mã hàng
+model CongDoan {
+  id                  String    @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  maHangId            String    @map("ma_hang_id") @db.Uuid
+  ma                  String
+  ten                 String
+  laCongDoanHoanThanh Boolean   @default(false) @map("la_cong_doan_hoan_thanh")
+  trangThai           TrangThai @default(HOAT_DONG) @map("trang_thai")
+  version             Int       @default(0)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  maHang      MaHang        @relation(fields: [maHangId], references: [id])
+  smvLichSu   SmvLichSu[]
+  ganCongDoan GanCongDoan[]
+  sanLuong    SanLuong[]
+
+  @@unique([maHangId, ma])
+  @@map("cong_doan")
+}
+
+/// SMV theo ngày hiệu lực [R 5.5] · [SQL] CHECK smv > 0
+model SmvLichSu {
+  id           String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  congDoanId   String   @map("cong_doan_id") @db.Uuid
+  /// Giây / 1 sản phẩm
+  smv          Decimal  @db.Decimal(10, 3)
+  apDungTuNgay DateTime @map("ap_dung_tu_ngay") @db.Date
+  nguoiTaoId   String   @map("nguoi_tao_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  congDoan CongDoan @relation(fields: [congDoanId], references: [id])
+  nguoiTao TaiKhoan @relation("SmvNguoiTao", fields: [nguoiTaoId], references: [id])
+
+  @@unique([congDoanId, apDungTuNgay])
+  @@map("smv_lich_su")
+}
+
+// ── Sơ đồ & phiên ─────────────────────────────────────────────────
+
+/// [SQL] trigger tg_chuyen_ma_hang_toi_da_2: tối đa 2 mã hàng đang chạy / chuyền
+///       partial UNIQUE: một mã hàng chỉ 1 dòng đang chạy trên một chuyền
+model ChuyenMaHang {
+  id        String    @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  chuyenId  String    @map("chuyen_id") @db.Uuid
+  maHangId  String    @map("ma_hang_id") @db.Uuid
+  batDau    DateTime  @map("bat_dau") @db.Timestamptz(3)
+  ketThuc   DateTime? @map("ket_thuc") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  chuyen Chuyen @relation(fields: [chuyenId], references: [id])
+  maHang MaHang @relation(fields: [maHangId], references: [id])
+
+  @@index([chuyenId])
+  @@index([maHangId])
+  @@map("chuyen_ma_hang")
+}
+
+/// Lịch sử gán theo hiệu lực [R 3.6] · không xóa dòng, gỡ = đặt hieu_luc_den
+/// [SQL] EXCLUDE ex_gan_khong_chong · CHECK hieu_luc_den ≥ hieu_luc_tu
+model GanCongDoan {
+  id         String    @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  tramId     String    @map("tram_id") @db.Uuid
+  congDoanId String    @map("cong_doan_id") @db.Uuid
+  hieuLucTu  DateTime  @map("hieu_luc_tu") @db.Timestamptz(3)
+  hieuLucDen DateTime? @map("hieu_luc_den") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  tram     Tram     @relation(fields: [tramId], references: [id])
+  congDoan CongDoan @relation(fields: [congDoanId], references: [id])
+
+  @@index([tramId, hieuLucTu, hieuLucDen])
+  @@index([congDoanId])
+  @@map("gan_cong_doan")
+}
+
+/// Cookie thiết bị `vsn_tb` — chỉ tạo khi đăng nhập trạm thành công [D6] [D21]
+model ThietBi {
+  id        String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  /// SHA-256 của token, không lưu token gốc
+  tokenHash String   @unique @map("token_hash")
+  userAgent String?  @map("user_agent")
+  taoLuc    DateTime @default(now()) @map("tao_luc") @db.Timestamptz(3)
+  lanCuoi   DateTime @default(now()) @map("lan_cuoi") @db.Timestamptz(3)
+
+  phienTram PhienTram[]
+  sanLuong  SanLuong[]
+
+  @@map("thiet_bi")
+}
+
+/// [SQL] partial UNIQUE ux_phien_tram_dang_hoat_dong [R 1] · EXCLUDE ex_thiet_bi_mot_nv_mot_ngay [R 1.3]
+///       CHECK (dang_xuat_luc IS NULL) = (ly_do_dong IS NULL)
+model PhienTram {
+  id            String         @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  tramId        String         @map("tram_id") @db.Uuid
+  nhanVienId    String         @map("nhan_vien_id") @db.Uuid
+  ngayLamViec   DateTime       @map("ngay_lam_viec") @db.Date
+  thietBiId     String         @map("thiet_bi_id") @db.Uuid
+  dangNhapLuc   DateTime       @default(now()) @map("dang_nhap_luc") @db.Timestamptz(3)
+  dangXuatLuc   DateTime?      @map("dang_xuat_luc") @db.Timestamptz(3)
+  /// Tài khoản tổ trưởng khi đăng xuất hộ; NULL khi tự đăng xuất / chuyển thiết bị
+  dangXuatBoiId String?        @map("dang_xuat_boi_id") @db.Uuid
+  lyDoDong      LyDoDongPhien? @map("ly_do_dong")
+  lyDo          String?        @map("ly_do")
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  tram        Tram      @relation(fields: [tramId], references: [id])
+  nhanVien    NhanVien  @relation(fields: [nhanVienId], references: [id])
+  thietBi     ThietBi   @relation(fields: [thietBiId], references: [id])
+  dangXuatBoi TaiKhoan? @relation("PhienTramDangXuatBoi", fields: [dangXuatBoiId], references: [id])
+
+  @@index([thietBiId, ngayLamViec])
+  @@index([nhanVienId, ngayLamViec])
+  @@map("phien_tram")
+}
+
+// ── Sản lượng & giờ làm ───────────────────────────────────────────
+
+/// Bản ghi sản lượng — CHỈ ghi qua GhiSanLuongService [CLAUDE.md #4]
+/// [SQL] UNIQUE ux_san_luong_key [R 1.1] · CHECK ck_so_luong 0–99.999
+///       CHECK người cập nhật khớp nguồn · CHECK đã điều chỉnh ⇒ nguồn Web
+///       trigger tg_san_luong_bao_ve: snapshot chuyền khớp trạm và bất biến · chặn ghi tháng đã khóa ·
+///       chặn app ghi ngày đã chốt / Ô đã điều chỉnh · trigger lưới an toàn [D9]
+model SanLuong {
+  id                   String        @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  ngayLamViec          DateTime      @map("ngay_lam_viec") @db.Date
+  tramId               String        @map("tram_id") @db.Uuid
+  congDoanId           String        @map("cong_doan_id") @db.Uuid
+  nhanVienId           String        @map("nhan_vien_id") @db.Uuid
+  soLuong              Int           @map("so_luong")
+  /// SMV hiệu lực tại ngày làm việc; NULL nếu công đoạn chưa có SMV. Chỉ đổi qua luồng TDD 8.6
+  smvSnapshot          Decimal?      @map("smv_snapshot") @db.Decimal(10, 3)
+  /// = tram.chuyen_id lúc tạo, không bao giờ đổi [D17]
+  chuyenTramSnapshot   String        @map("chuyen_tram_snapshot") @db.Uuid
+  nguon                NguonSanLuong
+  /// Ô đã điều chỉnh: tổ trưởng sửa / nhập hộ → app không ghi đè được [R 5.4]
+  daDieuChinh          Boolean       @default(false) @map("da_dieu_chinh")
+  /// Cờ ⚠: bản ghi đến sau khi công đoạn đã gỡ khỏi trạm / NV đã ngưng [R 3.10]
+  canhBao              Boolean       @default(false) @map("canh_bao")
+  /// Tài khoản Web khi nguồn là NHAP_HO / SUA_WEB; NULL khi nguồn là app (người nhập = nhanVienId)
+  capNhatBoiTaiKhoanId String?       @map("cap_nhat_boi_tai_khoan_id") @db.Uuid
+  capNhatLucServer     DateTime      @default(now()) @map("cap_nhat_luc_server") @db.Timestamptz(3)
+  capNhatLucThietBi    DateTime?     @map("cap_nhat_luc_thiet_bi") @db.Timestamptz(3)
+  /// Bộ đếm tăng dần của thiết bị — chỉ so khi cùng thiet_bi_id [D7] [D16]
+  thuTuThietBi         BigInt?       @map("thu_tu_thiet_bi")
+  thietBiId            String?       @map("thiet_bi_id") @db.Uuid
+  version              Int           @default(0)
+  createdAt            DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  tram               Tram             @relation(fields: [tramId], references: [id])
+  congDoan           CongDoan         @relation(fields: [congDoanId], references: [id])
+  nhanVien           NhanVien         @relation(fields: [nhanVienId], references: [id])
+  chuyen             Chuyen           @relation(fields: [chuyenTramSnapshot], references: [id])
+  thietBi            ThietBi?         @relation(fields: [thietBiId], references: [id])
+  capNhatBoiTaiKhoan TaiKhoan?        @relation("SanLuongCapNhatBoi", fields: [capNhatBoiTaiKhoanId], references: [id])
+  lichSu             SanLuongLichSu[]
+
+  @@unique([ngayLamViec, tramId, congDoanId, nhanVienId], map: "ux_san_luong_key")
+  @@index([ngayLamViec, chuyenTramSnapshot])
+  @@index([nhanVienId, ngayLamViec])
+  @@index([congDoanId, ngayLamViec])
+  @@map("san_luong")
+}
+
+/// Lịch sử từng lần ghi — CHỈ THÊM [D9] (trigger + quyền chặn UPDATE/DELETE/TRUNCATE)
+model SanLuongLichSu {
+  id                String            @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  sanLuongId        String            @map("san_luong_id") @db.Uuid
+  soCu              Int?              @map("so_cu")
+  soMoi             Int               @map("so_moi")
+  nguon             NguonSanLuong
+  lyDo              String?           @map("ly_do")
+  loaiNguoiThucHien LoaiNguoiThucHien @map("loai_nguoi_thuc_hien")
+  /// id tài khoản hoặc nhân viên tùy loaiNguoiThucHien
+  nguoiThucHienId   String            @map("nguoi_thuc_hien_id") @db.Uuid
+  lucServer         DateTime          @default(now()) @map("luc_server") @db.Timestamptz(3)
+  lucThietBi        DateTime?         @map("luc_thiet_bi") @db.Timestamptz(3)
+  thietBiId         String?           @map("thiet_bi_id") @db.Uuid
+  requestId         String?           @map("request_id") @db.Uuid
+
+  sanLuong SanLuong @relation(fields: [sanLuongId], references: [id])
+
+  @@index([sanLuongId, lucServer])
+  @@map("san_luong_lich_su")
+}
+
+/// [SQL] CHECK so_gio NULL hoặc trong (0, 16]
+model GioMacDinh {
+  id           String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  xuongId      String   @map("xuong_id") @db.Uuid
+  loaiNgay     LoaiNgay @map("loai_ngay")
+  /// NULL = ngày không có giờ mặc định (vd. Chủ nhật)
+  soGio        Decimal? @map("so_gio") @db.Decimal(4, 2)
+  apDungTuNgay DateTime @map("ap_dung_tu_ngay") @db.Date
+  nguoiTaoId   String?  @map("nguoi_tao_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  xuong    Xuong     @relation(fields: [xuongId], references: [id])
+  nguoiTao TaiKhoan? @relation("GioMacDinhNguoiTao", fields: [nguoiTaoId], references: [id])
+
+  @@unique([xuongId, loaiNgay, apDungTuNgay])
+  @@map("gio_mac_dinh")
+}
+
+/// Không có dòng → dùng giờ mặc định · [SQL] CHECK ck_so_gio · trigger chặn sửa khi đã khóa [R 5.7] · lưới an toàn [D9]
+model GioLam {
+  id              String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  nhanVienId      String   @map("nhan_vien_id") @db.Uuid
+  ngayLamViec     DateTime @map("ngay_lam_viec") @db.Date
+  soGio           Decimal  @map("so_gio") @db.Decimal(4, 2)
+  nguon           NguonGio
+  lyDo            String?  @map("ly_do")
+  nguoiThucHienId String   @map("nguoi_thuc_hien_id") @db.Uuid
+  version         Int      @default(0)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  nhanVien      NhanVien @relation(fields: [nhanVienId], references: [id])
+  nguoiThucHien TaiKhoan @relation("GioLamNguoiThucHien", fields: [nguoiThucHienId], references: [id])
+
+  @@unique([nhanVienId, ngayLamViec])
+  @@map("gio_lam")
+}
+
+/// [SQL] CHECK ck_so_gio_yc · partial UNIQUE ux_yeu_cau_gio_cho (tối đa 1 yêu cầu CHO / NV × ngày)
+model YeuCauGio {
+  id           String             @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  nhanVienId   String             @map("nhan_vien_id") @db.Uuid
+  ngayLamViec  DateTime           @map("ngay_lam_viec") @db.Date
+  soGio        Decimal            @map("so_gio") @db.Decimal(4, 2)
+  trangThai    TrangThaiYeuCauGio @default(CHO) @map("trang_thai")
+  lyDoTuChoi   String?            @map("ly_do_tu_choi")
+  nguoiDuyetId String?            @map("nguoi_duyet_id") @db.Uuid
+  duyetLuc     DateTime?          @map("duyet_luc") @db.Timestamptz(3)
+  version      Int                @default(0)
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  nhanVien   NhanVien  @relation(fields: [nhanVienId], references: [id])
+  nguoiDuyet TaiKhoan? @relation("YeuCauGioNguoiDuyet", fields: [nguoiDuyetId], references: [id])
+
+  @@index([nhanVienId, ngayLamViec])
+  @@map("yeu_cau_gio")
+}
+
+/// Chốt ngày theo chuyền × ngày. Không có Bỏ chốt [D26]
+model ChotNgay {
+  id          String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  chuyenId    String   @map("chuyen_id") @db.Uuid
+  ngayLamViec DateTime @map("ngay_lam_viec") @db.Date
+  chotBoiId   String   @map("chot_boi_id") @db.Uuid
+  chotLuc     DateTime @default(now()) @map("chot_luc") @db.Timestamptz(3)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  chuyen  Chuyen   @relation(fields: [chuyenId], references: [id])
+  chotBoi TaiKhoan @relation("ChotNgayChotBoi", fields: [chotBoiId], references: [id])
+
+  @@unique([chuyenId, ngayLamViec])
+  @@map("chot_ngay")
+}
+
+/// Khóa mã hàng × tháng. Mở khóa = đổi trang_thai sang MO (lịch sử ở AuditLog) · [SQL] CHECK thang 'YYYY-MM'
+model KhoaThang {
+  id              String        @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  maHangId        String        @map("ma_hang_id") @db.Uuid
+  /// 'YYYY-MM'
+  thang           String
+  trangThai       TrangThaiKhoa @map("trang_thai")
+  nguoiThucHienId String        @map("nguoi_thuc_hien_id") @db.Uuid
+  lyDo            String?       @map("ly_do")
+  version         Int           @default(0)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  maHang        MaHang   @relation(fields: [maHangId], references: [id])
+  nguoiThucHien TaiKhoan @relation("KhoaThangNguoiThucHien", fields: [nguoiThucHienId], references: [id])
+
+  @@unique([maHangId, thang])
+  @@map("khoa_thang")
+}
+
+/// [SQL] CHECK so_luong > 0
+model KeHoach {
+  id        String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  ngay      DateTime @db.Date
+  chuyenId  String   @map("chuyen_id") @db.Uuid
+  maHangId  String   @map("ma_hang_id") @db.Uuid
+  soLuong   Int      @map("so_luong")
+  version   Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  chuyen Chuyen @relation(fields: [chuyenId], references: [id])
+  maHang MaHang @relation(fields: [maHangId], references: [id])
+
+  @@unique([ngay, chuyenId, maHangId])
+  @@map("ke_hoach")
+}
+
+// ── Tài khoản & hệ thống ──────────────────────────────────────────
+
+model TaiKhoan {
+  id             String    @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  tenDangNhap    String    @unique @map("ten_dang_nhap")
+  hoTen          String    @map("ho_ten")
+  matKhauHash    String    @map("mat_khau_hash")
+  vaiTro         VaiTro    @map("vai_tro")
+  trangThai      TrangThai @default(HOAT_DONG) @map("trang_thai")
+  phaiDoiMatKhau Boolean   @default(true) @map("phai_doi_mat_khau")
+  soLanSai       Int       @default(0) @map("so_lan_sai")
+  khoaDen        DateTime? @map("khoa_den") @db.Timestamptz(3)
+  version        Int       @default(0)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  phienDangNhap  PhienDangNhap[]
+  taiKhoanChuyen TaiKhoanChuyen[]
+  taiKhoanXuong  TaiKhoanXuong[]
+
+  smvTao            SmvLichSu[]       @relation("SmvNguoiTao")
+  phienTramDangXuat PhienTram[]       @relation("PhienTramDangXuatBoi")
+  sanLuongCapNhat   SanLuong[]        @relation("SanLuongCapNhatBoi")
+  gioMacDinhTao     GioMacDinh[]      @relation("GioMacDinhNguoiTao")
+  gioLamThucHien    GioLam[]          @relation("GioLamNguoiThucHien")
+  yeuCauGioDuyet    YeuCauGio[]       @relation("YeuCauGioNguoiDuyet")
+  chotNgay          ChotNgay[]        @relation("ChotNgayChotBoi")
+  khoaThangThucHien KhoaThang[]       @relation("KhoaThangNguoiThucHien")
+  lichSuXuatLuong   LichSuXuatLuong[]
+  importTam         ImportTam[]
+
+  @@map("tai_khoan")
+}
+
+/// Phiên Web/TV lưu ở server; thu hồi = xóa dòng [D6]
+model PhienDangNhap {
+  id         String    @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  tokenHash  String    @unique @map("token_hash")
+  taiKhoanId String    @map("tai_khoan_id") @db.Uuid
+  loai       LoaiPhien
+  taoLuc     DateTime  @default(now()) @map("tao_luc") @db.Timestamptz(3)
+  lanCuoi    DateTime  @default(now()) @map("lan_cuoi") @db.Timestamptz(3)
+  ip         String?
+  userAgent  String?   @map("user_agent")
+
+  taiKhoan TaiKhoan @relation(fields: [taiKhoanId], references: [id], onDelete: Cascade)
+
+  @@index([taiKhoanId])
+  @@map("phien_dang_nhap")
+}
+
+/// Phạm vi Tổ trưởng (≥ 1 chuyền — kiểm ở service)
+model TaiKhoanChuyen {
+  taiKhoanId String @map("tai_khoan_id") @db.Uuid
+  chuyenId   String @map("chuyen_id") @db.Uuid
+
+  taiKhoan TaiKhoan @relation(fields: [taiKhoanId], references: [id], onDelete: Cascade)
+  chuyen   Chuyen   @relation(fields: [chuyenId], references: [id])
+
+  @@id([taiKhoanId, chuyenId])
+  @@index([chuyenId])
+  @@map("tai_khoan_chuyen")
+}
+
+/// Phạm vi Quản lý xưởng (≥ 1 xưởng — kiểm ở service)
+model TaiKhoanXuong {
+  taiKhoanId String @map("tai_khoan_id") @db.Uuid
+  xuongId    String @map("xuong_id") @db.Uuid
+
+  taiKhoan TaiKhoan @relation(fields: [taiKhoanId], references: [id], onDelete: Cascade)
+  xuong    Xuong    @relation(fields: [xuongId], references: [id])
+
+  @@id([taiKhoanId, xuongId])
+  @@index([xuongId])
+  @@map("tai_khoan_xuong")
+}
+
+/// Ma trận quyền theo vai trò · [SQL] CHECK quyền Quản lý tài khoản của Superadmin không tắt được
+model QuyenVaiTro {
+  vaiTro    VaiTro   @map("vai_tro")
+  chucNang  ChucNang @map("chuc_nang")
+  batTat    Boolean  @map("bat_tat")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@id([vaiTro, chucNang])
+  @@map("quyen_vai_tro")
+}
+
+/// Ví dụ: gioMoChotNgay = "08:00", chuKyLamMoiDashboard = 5, soNgayNhapLui = 1, ipNhaMay = [...]
+model CauHinh {
+  khoa      String   @id
+  giaTri    Json     @map("gia_tri")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("cau_hinh")
+}
+
+/// CHỈ THÊM [D9]
+model LichSuXuatLuong {
+  id          String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  thang       String
+  nguoiXuatId String   @map("nguoi_xuat_id") @db.Uuid
+  luc         DateTime @default(now()) @db.Timestamptz(3)
+  soDong      Int      @map("so_dong")
+
+  nguoiXuat TaiKhoan @relation(fields: [nguoiXuatId], references: [id])
+
+  @@map("lich_su_xuat_luong")
+}
+
+/// Chống bấm Lưu nhiều lần [D7] [D19]. chuTheId = thiết bị (app) hoặc tài khoản (Web).
+/// ketQua NULL = đang xử lý. Dọn sau 7 ngày (job 03:00)
+model RequestDaXuLy {
+  chuTheId   String     @map("chu_the_id") @db.Uuid
+  requestId  String     @map("request_id") @db.Uuid
+  loaiChuThe LoaiChuThe @map("loai_chu_the")
+  ketQua     Json?      @map("ket_qua")
+  luc        DateTime   @default(now()) @db.Timestamptz(3)
+
+  @@id([chuTheId, requestId])
+  @@index([luc])
+  @@map("request_da_xu_ly")
+}
+
+/// Import 2 bước: xem trước → xác nhận. Hết hạn sau 30 phút
+model ImportTam {
+  id         String     @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  loai       LoaiImport
+  nguoiTaoId String     @map("nguoi_tao_id") @db.Uuid
+  duLieu     Json       @map("du_lieu")
+  hetHanLuc  DateTime   @map("het_han_luc") @db.Timestamptz(3)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  nguoiTao TaiKhoan @relation(fields: [nguoiTaoId], references: [id])
+
+  @@index([hetHanLuc])
+  @@map("import_tam")
+}
+
+/// CHỈ THÊM [D9] — trigger chặn UPDATE/DELETE/TRUNCATE (kể cả chủ bảng); vsn_app chỉ có SELECT/INSERT
+model AuditLog {
+  id                String            @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  luc               DateTime          @default(now()) @db.Timestamptz(3)
+  loaiNguoiThucHien LoaiNguoiThucHien @map("loai_nguoi_thuc_hien")
+  nguoiThucHienId   String?           @map("nguoi_thuc_hien_id") @db.Uuid
+  /// Tài khoản DB (current_user) — dùng cho dòng DB_TRUC_TIEP
+  dbUser            String?           @map("db_user")
+  /// Danh mục ở TDD 12.3 (DANG_NHAP_TRAM, GHI_SAN_LUONG, CHOT_NGAY…)
+  hanhDong          String            @map("hanh_dong")
+  doiTuong          String            @map("doi_tuong")
+  doiTuongId        String?           @map("doi_tuong_id")
+  duLieuCu          Json?             @map("du_lieu_cu")
+  duLieuMoi         Json?             @map("du_lieu_moi")
+  lyDo              String?           @map("ly_do")
+  ip                String?
+  thietBiId         String?           @map("thiet_bi_id") @db.Uuid
+  traceId           String?           @map("trace_id")
+
+  @@index([luc(sort: Desc)])
+  @@index([doiTuong, doiTuongId])
+  @@map("audit_log")
 }

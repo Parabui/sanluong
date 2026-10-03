@@ -25,3 +25,10 @@ Thumbs.db
 # Dữ liệu nội bộ / kết quả chạy trên máy — không đưa lên repo
 *.xlsx
 _kiem-tra-may/ket-qua*.txt
+infra/backup/khoa/*.asc
+
+# Playwright / k6 — kết quả chạy trên máy
+test-results/
+playwright-report/
+blob-report/
+tools/k6/ket-qua-*.json

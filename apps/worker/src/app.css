@@ -1,0 +1,22 @@
+/* App công nhân — chép phần "phone-app / sheet / veil" của ui-demo/globals.css, chạy toàn màn hình điện thoại thật */
+.app-root {
+  position: fixed; inset: 0; display: flex; flex-direction: column;
+  /* clip: trình duyệt không tự cuộn khung khi focus phần tử ở mép (sheet đang đóng) — Safari < 16 lùi về hidden */
+  overflow: hidden; overflow: clip;
+  font-size: var(--fs-base); line-height: 1.5; background: rgb(var(--bg));
+}
+.app-root button, .app-root [role="tab"] { touch-action: manipulation; }
+@media (min-width: 600px) {
+  /* Mở trên máy tính: giữ bề rộng điện thoại cho dễ đọc */
+  .app-root { max-width: 480px; margin: 0 auto; box-shadow: 0 0 0 1px rgb(var(--border)); }
+}
+.veil { position: absolute; inset: 0; background: var(--overlay); opacity: 0; pointer-events: none; transition: opacity 180ms; z-index: 40; }
+.veil.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 50; background: rgb(var(--surface));
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0; max-height: 88%; display: flex; flex-direction: column;
+  transform: translateY(100%); visibility: hidden;
+  transition: transform 220ms cubic-bezier(.2, .8, .2, 1), visibility 0s 220ms;
+}
+/* Sheet đóng: ẩn hẳn sau hiệu ứng để không nhận focus / Tab */
+.sheet.open { transform: none; visibility: visible; transition: transform 220ms cubic-bezier(.2, .8, .2, 1); }

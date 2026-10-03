@@ -20,6 +20,17 @@ export class LoiApi extends Error {
     super(message);
     this.name = 'LoiApi';
   }
+
+  /** Lỗi hệ thống (5xx): 8 ký tự đầu traceId để người dùng đọc cho IT — tra `docker compose logs api | grep -i <mã>` [TDD 18] */
+  get maTraCuu(): string | undefined {
+    return this.status >= 500 && this.traceId ? this.traceId.slice(0, 8).toUpperCase() : undefined;
+  }
+}
+
+/** Câu báo lỗi cho người dùng: message tiếng Việt từ server (loi.ts), lỗi hệ thống kèm "mã lỗi" để báo IT */
+export function noiDungLoi(e: unknown, macDinh: string = LOI.LOI_HE_THONG.message): string {
+  if (e instanceof LoiApi) return e.maTraCuu ? `${e.message} (mã lỗi ${e.maTraCuu})` : e.message;
+  return e instanceof Error && e.message ? e.message : macDinh;
 }
 
 export interface TuyChonGoi<S extends z.ZodType> {
@@ -32,6 +43,8 @@ export interface TuyChonGoi<S extends z.ZodType> {
 
 export function taoApiClient(client: LoaiClient, goc = '/api') {
   async function goi<S extends z.ZodType>(duongDan: string, tc: TuyChonGoi<S>): Promise<z.infer<S>> {
+    // FormData (upload file): để trình duyệt tự đặt Content-Type multipart kèm boundary
+    const laForm = typeof FormData !== 'undefined' && tc.body instanceof FormData;
     let res: Response;
     try {
       res = await fetch(goc + duongDan, {
@@ -40,10 +53,10 @@ export function taoApiClient(client: LoaiClient, goc = '/api') {
         signal: tc.signal,
         headers: {
           [HEADER_CLIENT]: client,
-          ...(tc.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+          ...(tc.body !== undefined && !laForm ? { 'Content-Type': 'application/json' } : {}),
           ...tc.headers,
         },
-        body: tc.body !== undefined ? JSON.stringify(tc.body) : undefined,
+        body: laForm ? (tc.body as FormData) : tc.body !== undefined ? JSON.stringify(tc.body) : undefined,
       });
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') throw e;

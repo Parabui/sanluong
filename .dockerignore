@@ -16,3 +16,9 @@ docs
 *.xlsx
 *.md
 !apps/**/README.md
+test-results
+playwright-report
+blob-report
+tools/k6
+infra/backup/khoa
+.github

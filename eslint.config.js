@@ -53,6 +53,11 @@ export default tseslint.config(
     },
   },
 
+  // ── k6 (runtime riêng của k6, không phải Node) ──
+  {
+    files: ['tools/k6/**/*.js'],
+    languageOptions: { globals: { __ENV: 'readonly', __VU: 'readonly', __ITER: 'readonly' } },
+  },
   // ── Frontend ──
   {
     files: ['apps/worker/src/**/*.{ts,tsx}', 'apps/web/src/**/*.{ts,tsx}', 'packages/ui/src/**/*.{ts,tsx}'],
@@ -71,7 +76,7 @@ export default tseslint.config(
           patterns: [
             { group: ['recharts', 'recharts/*'], message: 'apps/worker không được nạp Recharts.' },
             { group: ['@dnd-kit/*'], message: 'apps/worker không được nạp dnd-kit.' },
-            { group: ['@tanstack/react-table'], message: 'apps/worker không được nạp TanStack Table.' },
+            { group: ['@tanstack/react-table', '@vsn/ui/data-table'], message: 'apps/worker không được nạp TanStack Table.' },
           ],
         },
       ],

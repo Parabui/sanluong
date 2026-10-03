@@ -5,9 +5,11 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
 import { cauHinhApp } from './cau-hinh-app.js';
 import { docMoiTruong, napEnvDev } from './core/moi-truong.js';
+import { khoiTaoSentry } from './core/sentry.js';
 
 napEnvDev();
 const env = docMoiTruong();
+khoiTaoSentry(env);
 
 const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
 app.useLogger(app.get(Logger));

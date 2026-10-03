@@ -1,12 +1,26 @@
-import { createBrowserRouter, Navigate } from 'react-router';
+import { createBrowserRouter } from 'react-router';
 import { MAN_HINH_WORKER } from './man-hinh';
+import { ChonTramPage } from './routes/chon-tram';
+import { CuaToiNgayPage, CuaToiPage } from './routes/cua-toi';
+import { DangNhapPage } from './routes/dang-nhap';
+import { GioLamPage } from './routes/gio-lam';
+import { KhoiDongPage } from './routes/khoi-dong';
+import { NhapPage } from './routes/nhap';
 import { TrangTam } from './routes/trang-tam';
+
+const DA_LAM: Record<string, React.ReactNode> = {
+  'chon-tram': <ChonTramPage />,
+  'dang-nhap/:tramId': <DangNhapPage />,
+  nhap: <NhapPage />,
+  'gio-lam': <GioLamPage />,
+  'cua-toi': <CuaToiPage />,
+  'cua-toi/:ngay': <CuaToiNgayPage />,
+};
 
 /** React Router v7 — library mode [D12] */
 export const router = createBrowserRouter([
-  // Điều hướng ban đầu (hướng dẫn / chọn trạm / nhập) sẽ dựa vào GET /api/cn/khoi-dong — làm ở F1
-  { index: true, element: <Navigate to="/chon-tram" replace /> },
-  ...MAN_HINH_WORKER.map((m) => ({ path: m.duongDan, element: <TrangTam manHinh={m} /> })),
+  { index: true, element: <KhoiDongPage /> },
+  ...MAN_HINH_WORKER.map((m) => ({ path: m.duongDan, element: DA_LAM[m.duongDan] ?? <TrangTam manHinh={m} /> })),
   {
     path: '*',
     element: <TrangTam manHinh={{ duongDan: '*', tieuDe: 'Không tìm thấy trang', tinhNang: '—', demo: '—' }} />,

@@ -5,11 +5,28 @@
 #   /tv        → 302 /quanly/tv
 #   /*         → worker/dist (PWA, SPA)
 # HTTPS do Cloudflare đảm nhận; Caddy chỉ nhận kết nối từ cloudflared trong mạng Docker.
-# ⏳ Tuần 11: Content-Security-Policy (self + Sentry) theo checklist bảo mật TDD 19.
+# Header bảo mật theo checklist TDD 19:
+#   CSP chỉ cho phép `self` + Sentry (*.ingest.sentry.io); app công nhân thêm Cloudflare Turnstile (script + iframe).
+#   style-src cần 'unsafe-inline' cho thuộc tính style của React. Permissions-Policy: camera chỉ cho app công nhân (quét QR).
 # ════════════════════════════════════════════════════════════════
 {
 	admin off
 	auto_https off
+}
+
+# File tĩnh của SPA: /assets/* có hash → cache 1 năm, file THIẾU trả 404 (không trả index.html — tab đang mở bản cũ
+# tải chunk đã bị xóa sau deploy phải nhận lỗi rõ ràng chứ không phải HTML). Còn lại: no-cache, rơi về index.html.
+(tinh) {
+	@asset path /assets/*
+	handle @asset {
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+	handle {
+		header Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
 }
 
 :80 {
@@ -18,10 +35,13 @@
 	header {
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
 		-Server
 	}
 
 	handle /api/* {
+		# API chỉ trả JSON / file — không cho chạy gì
+		header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
 		reverse_proxy api:4000
 	}
 
@@ -30,24 +50,16 @@
 
 	handle_path /quanly/* {
 		root * /srv/web
-		@coHash path /assets/*
-		@khongHash not path /assets/*
-		header @coHash Cache-Control "public, max-age=31536000, immutable"
-		header @khongHash Cache-Control "no-cache"
 		header Permissions-Policy "camera=(), microphone=(), geolocation=()"
-		try_files {path} /index.html
-		file_server
+		header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		import tinh
 	}
 
 	handle {
 		root * /srv/worker
-		@coHash path /assets/*
-		@khongHash not path /assets/*
-		header @coHash Cache-Control "public, max-age=31536000, immutable"
-		header @khongHash Cache-Control "no-cache"
 		# Camera chỉ cho app công nhân (quét QR trạm)
 		header Permissions-Policy "camera=(self), microphone=(), geolocation=()"
-		try_files {path} /index.html
-		file_server
+		header Content-Security-Policy "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		import tinh
 	}
 }

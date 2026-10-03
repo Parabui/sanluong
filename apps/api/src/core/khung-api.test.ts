@@ -75,6 +75,7 @@ describe('Khung API', () => {
       .expect(400);
     expect(res.body).toMatchObject({ code: 'DU_LIEU_KHONG_HOP_LE', field: 'soLuong' });
     expect(res.body.chiTiet[0].message).toBe('Số lượng không được âm');
+    expect(res.body.message).toBe('Số lượng không được âm');
   });
 
   it('[D8] route có @Quyen nhưng chưa đăng nhập → 401 CHUA_DANG_NHAP', async () => {

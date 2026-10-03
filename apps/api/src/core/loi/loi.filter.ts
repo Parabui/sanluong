@@ -3,7 +3,9 @@ import { LOI, type MaLoi, type PhanHoiLoi } from '@vsn/shared';
 import type { Request, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
 import type { z } from 'zod';
+import { baoLoi } from '../sentry.js';
 import { layTraceId } from '../trace-id.js';
+import { maLoiTuTrigger } from './loi-db.js';
 import { LoiNghiepVu } from './loi-nghiep-vu.js';
 
 const MA_THEO_HTTP: Record<number, MaLoi> = {
@@ -11,7 +13,7 @@ const MA_THEO_HTTP: Record<number, MaLoi> = {
   401: 'CHUA_DANG_NHAP',
   403: 'KHONG_CO_QUYEN',
   404: 'KHONG_TIM_THAY',
-  413: 'DU_LIEU_KHONG_HOP_LE',
+  413: 'FILE_QUA_LON',
   429: 'QUA_SO_LAN_SAI',
 };
 
@@ -30,7 +32,10 @@ export class LoiFilter implements ExceptionFilter {
     const traceId = layTraceId(req);
 
     const { status, body } = this.chuyenDoi(loi, traceId);
-    if (status >= 500) this.logger.error({ err: loi, traceId }, 'Lỗi hệ thống');
+    if (status >= 500) {
+      this.logger.error({ err: loi, traceId }, 'Lỗi hệ thống');
+      baoLoi(loi, { traceId, route: req.route ? `${req.method} ${req.baseUrl}${(req.route as { path: string }).path}` : req.method });
+    }
     res.status(status).json(body);
   }
 
@@ -49,12 +54,19 @@ export class LoiFilter implements ExceptionFilter {
         status: 400,
         body: {
           code: 'DU_LIEU_KHONG_HOP_LE',
-          message: LOI.DU_LIEU_KHONG_HOP_LE.message,
+          // Message cụ thể của lỗi đầu tiên (tiếng Việt, từ schema trong @vsn/shared) — hiện thẳng tại ô nhập
+          message: chiTiet[0]?.message ?? LOI.DU_LIEU_KHONG_HOP_LE.message,
           field: chiTiet[0]?.field,
           traceId,
           chiTiet,
         },
       };
+    }
+
+    // Trigger nghiệp vụ của DB (hàng rào cuối) — vd. THANG_DA_KHOA, TRAM_KHONG_DOI_CHUYEN
+    const maDb = maLoiTuTrigger(loi);
+    if (maDb) {
+      return { status: LOI[maDb].http, body: { code: maDb, message: LOI[maDb].message, traceId } };
     }
 
     if (loi instanceof HttpException) {

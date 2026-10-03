@@ -4,6 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // PWA công nhân — phục vụ ở gốc "/" [TDD 2.2, 14.2]
 export default defineConfig({
+  // Đọc .env ở gốc monorepo — Vite chỉ lộ biến VITE_* ra trình duyệt
+  envDir: '../..',
   plugins: [
     react(),
     VitePWA({
@@ -41,7 +43,8 @@ export default defineConfig({
   server: {
     port: 5174,
     strictPort: true,
-    proxy: { '/api': 'http://localhost:4000' },
+    // E2E chạy API ở cổng khác (VSN_API_PROXY) — mặc định API dev
+    proxy: { '/api': process.env['VSN_API_PROXY'] ?? 'http://localhost:4000' },
   },
   build: {
     // iOS Safari 15+ [D14]

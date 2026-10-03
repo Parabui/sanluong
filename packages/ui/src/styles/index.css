@@ -68,8 +68,15 @@ select.native { appearance: none; -webkit-appearance: none; background-image: no
 [aria-checked="true"] > .switch { background: rgb(var(--brand)); }
 [aria-checked="true"] > .switch::after { transform: translateX(14px); }
 
-/* ── Overlay / timeline ── */
+/* ── Overlay / Drawer (Radix Dialog: data-state="open" | "closed") ── */
 .overlay { background: var(--overlay); }
+.overlay[data-state="open"] { animation: fadeIn var(--dur-drawer) ease-out; }
+.drawer { width: var(--drawer-w); }
+.drawer[data-state="open"] { animation: drawerIn var(--dur-drawer) ease-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes drawerIn { from { transform: translateX(100%); } to { transform: none; } }
+
+/* ── Timeline ── */
 .tl-item::before { content: ""; position: absolute; left: 5px; top: 18px; bottom: -2px; width: 1px; background: rgb(var(--border)); }
 .tl-item:last-child::before { display: none; }
 

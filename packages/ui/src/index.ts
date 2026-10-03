@@ -1,6 +1,11 @@
 /**
  * @vsn/ui — token + component dùng chung, chuyển từ ui-demo [TDD 14.1].
- * Hiện mới có token + `cn`. Component (Button, Card, Pill, … và Modal/Menu/Drawer trên Radix)
- * chuyển sang ở tuần 2 theo checklist TDD 14.6.
+ * Component tĩnh giữ code demo; Modal/Drawer/Menu dựng lại trên Radix.
+ * DataTable (TanStack Table) ở subpath '@vsn/ui/data-table' — worker không được nạp.
  */
 export { cn } from './cn.js';
+export * from './primitives.js';
+export * from './overlay.js';
+export * from './menu.js';
+export * from './toast.js';
+export * from './tooltip.js';

@@ -16,7 +16,15 @@ const zMoiTruong = z.object({
   DB_POOL_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   APP_VERSION: z.string().default('0.0.0-dev'),
-});
+  /** Cloudflare Turnstile [D23]. Dev/test để trống → bỏ qua xác minh; production BẮT BUỘC có */
+  TURNSTILE_SECRET: z.string().optional(),
+  /** Token cho Uptime Kuma gọi /api/health/chi-tiet (header X-Uptime-Token) [D24]; trống → chỉ Superadmin xem được */
+  UPTIME_TOKEN: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(16, 'UPTIME_TOKEN tối thiểu 16 ký tự').optional()),
+  /** Sentry DSN của API [TDD 18]; trống → không gửi lỗi */
+  SENTRY_DSN: z.preprocess((v) => (v === '' ? undefined : v), z.string().optional()),
+  /** Chỉ E2E trên http://localhost đặt "false" (xem core/phien/cookie.ts); production bắt buộc Secure */
+  COOKIE_SECURE: z.enum(['true', 'false']).default('true'),
+}).refine((e) => e.NODE_ENV !== 'production' || e.COOKIE_SECURE === 'true', { message: 'Production không được tắt cookie Secure', path: ['COOKIE_SECURE'] });
 
 export type MoiTruong = z.infer<typeof zMoiTruong>;
 

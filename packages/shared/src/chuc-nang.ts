@@ -73,3 +73,41 @@ export const QUYEN_MAC_DINH: Record<ChucNang, readonly VaiTro[]> = {
 export function laQuyenKhongTatDuoc(vaiTro: VaiTro, chucNang: ChucNang): boolean {
   return vaiTro === 'SUPERADMIN' && chucNang === 'TAI_KHOAN_QUAN_LY';
 }
+
+/**
+ * Ô ma trận Superadmin KHÔNG được sửa → lý do; sửa được → null.
+ *  - Quản lý tài khoản của Superadmin luôn bật (PRD F8)
+ *  - Tài khoản TV chỉ có DASHBOARD_XEM [D24] — phiên TV không hết hạn nên không được mở thêm chức năng
+ */
+export function lyDoKhoaQuyen(vaiTro: VaiTro, chucNang: ChucNang): string | null {
+  if (laQuyenKhongTatDuoc(vaiTro, chucNang)) return 'Quyền quản lý tài khoản của Superadmin không tắt được';
+  if (vaiTro === 'TV' && chucNang !== 'DASHBOARD_XEM') return 'Tài khoản TV chỉ xem dashboard';
+  return null;
+}
+
+/** Tên hiển thị của chức năng (màn Phân quyền theo vai trò) — theo các hàng của ma trận PRD F8 */
+export const TEN_CHUC_NANG: Record<ChucNang, string> = {
+  TAI_KHOAN_QUAN_LY: 'Tài khoản & phân quyền (F8)',
+  DANH_MUC_XUONG_CHUYEN: 'Xưởng / chuyền / trạm (F9)',
+  NHAN_VIEN_QUAN_LY: 'Nhân viên (F2)',
+  MA_HANG_QUAN_LY: 'Mã hàng / công đoạn (F3)',
+  SO_DO_GAN: 'Gán công đoạn (F4)',
+  GIO_MAC_DINH_CAI: 'Giờ mặc định (F6)',
+  GIO_LAM_DUYET: 'Duyệt / sửa giờ (F6)',
+  SAN_LUONG_SUA: 'Bảng sản lượng ngày: sửa, nhập hộ',
+  CHOT_NGAY: 'Chốt ngày (F10)',
+  KHOA_THANG: 'Khóa / mở khóa (F10)',
+  BAO_CAO_XEM: 'Báo cáo (F5)',
+  DASHBOARD_XEM: 'Dashboard (F7)',
+  KE_HOACH_QUAN_LY: 'Kế hoạch (F16)',
+  XUAT_LUONG: 'Xuất dữ liệu lương (F15)',
+  CAU_HINH: 'Cài đặt hệ thống',
+  AUDIT_XEM: 'Audit log',
+  SO_DO_TRAM_XEM: 'Sơ đồ trạm trực tiếp, đăng xuất hộ (F17)',
+};
+
+/** Vai trò có phạm vi gắn theo tài khoản (PRD F8 R 1.5); vai trò khác → toàn nhà máy */
+export const PHAM_VI_CUA_VAI_TRO: Partial<Record<VaiTro, 'CHUYEN' | 'XUONG'>> = {
+  TO_TRUONG: 'CHUYEN',
+  QUAN_LY_XUONG: 'XUONG',
+};
