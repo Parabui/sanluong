@@ -33,7 +33,7 @@ const adjTip = (r: DongBang) => {
   return h ? `${h.soCu == null ? '—' : dinhDangSo(h.soCu)} → ${dinhDangSo(h.soMoi)} · ${h.lyDo} · ${h.boi} · ${luc(h.luc)}` : '';
 };
 type Pop = { kind: 'reason'; key: string; n: number; moveNext: boolean; fromEdit: boolean } | { kind: 'proxy'; key: string };
-const loiCua = (e: unknown) => (e instanceof LoiApi ? e.message : thongBaoLoi(e));
+const loiCua = (e: unknown) => thongBaoLoi(e);
 
 export function BangSanLuongPage() {
   const [sp, setSp] = useSearchParams();

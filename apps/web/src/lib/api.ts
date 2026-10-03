@@ -1,5 +1,5 @@
 import { QueryCache, QueryClient } from '@tanstack/react-query';
-import { HEADER_CLIENT, laMaLoi, LoiApi, taoApiClient, type TaiKhoanToi, zTaiKhoanToi } from '@vsn/shared';
+import { HEADER_CLIENT, laMaLoi, LoiApi, noiDungLoi, taoApiClient, type TaiKhoanToi, zTaiKhoanToi } from '@vsn/shared';
 
 export const api = taoApiClient('web');
 
@@ -34,7 +34,7 @@ export const layTaiKhoanToi = ({ signal }: { signal?: AbortSignal }): Promise<Ta
   api.goi('/auth/toi', { schema: zTaiKhoanToi, signal });
 
 /** Thông báo lỗi tiếng Việt từ API (message do server trả, lấy từ @vsn/shared/loi) */
-export const thongBaoLoi = (e: unknown) => (e instanceof Error ? e.message : 'Có lỗi xảy ra, vui lòng thử lại.');
+export const thongBaoLoi = (e: unknown) => noiDungLoi(e);
 
 /**
  * Tải file từ API (vd. Excel báo cáo): gửi kèm header X-VSN-Client [D6] nên không dùng được thẻ <a href> trực tiếp.

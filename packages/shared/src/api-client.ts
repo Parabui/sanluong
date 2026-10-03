@@ -20,6 +20,17 @@ export class LoiApi extends Error {
     super(message);
     this.name = 'LoiApi';
   }
+
+  /** Lỗi hệ thống (5xx): 8 ký tự đầu traceId để người dùng đọc cho IT — tra `docker compose logs api | grep -i <mã>` [TDD 18] */
+  get maTraCuu(): string | undefined {
+    return this.status >= 500 && this.traceId ? this.traceId.slice(0, 8).toUpperCase() : undefined;
+  }
+}
+
+/** Câu báo lỗi cho người dùng: message tiếng Việt từ server (loi.ts), lỗi hệ thống kèm "mã lỗi" để báo IT */
+export function noiDungLoi(e: unknown, macDinh: string = LOI.LOI_HE_THONG.message): string {
+  if (e instanceof LoiApi) return e.maTraCuu ? `${e.message} (mã lỗi ${e.maTraCuu})` : e.message;
+  return e instanceof Error && e.message ? e.message : macDinh;
 }
 
 export interface TuyChonGoi<S extends z.ZodType> {

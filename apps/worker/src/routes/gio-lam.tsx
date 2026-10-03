@@ -3,7 +3,7 @@
  * "Ngày đang mở" (giờ mặc định, giờ tính hiệu suất, yêu cầu đang chờ) + "Yêu cầu đã gửi" + sheet sửa giờ (−/ô/+ 0,5 giờ, chọn nhanh).
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { dinhDangGio, dinhDangNgay, dinhDangSoGio, docSoGio, type GioLamCuaToi, homNay as ngayVN, LOI_SO_GIO, LoiApi, thuIso, zGioLamCuaToi } from '@vsn/shared';
+import { dinhDangGio, dinhDangNgay, dinhDangSoGio, docSoGio, type GioLamCuaToi, homNay as ngayVN, LOI_SO_GIO, noiDungLoi, thuIso, zGioLamCuaToi } from '@vsn/shared';
 import { cn } from '@vsn/ui';
 import { Check, CircleAlert, Clock, Lock, Minus, Plus, ScanLine, Send, X } from 'lucide-react';
 import { useState } from 'react';
@@ -33,7 +33,7 @@ export function GioLamPage() {
   const gui = useMutation({
     mutationFn: (b: { ngay: string; soGio: string }) => api.goi('/cn/gio-lam', { method: 'POST', body: b, schema: zGioLamCuaToi }),
     onSuccess: (d) => { queryClient.setQueryData(KHOA_GIO, d); setOpen(null); toast('Đã gửi duyệt · tổ trưởng sẽ xem'); },
-    onError: (e) => setLoi(e instanceof LoiApi ? e.message : 'Có lỗi xảy ra, vui lòng thử lại.'),
+    onError: (e) => setLoi(noiDungLoi(e)),
   });
 
   const moSheet = (d: GioLamCuaToi['ngayMo'][number]) => {

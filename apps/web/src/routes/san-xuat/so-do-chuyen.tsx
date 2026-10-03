@@ -7,7 +7,7 @@
 import { DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from '@dnd-kit/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  type CongDoanSoDo, dinhDangGio, dinhDangNgay, homNay, LoiApi, SO_MA_HANG_TOI_DA, type SoDo,
+  type CongDoanSoDo, dinhDangGio, dinhDangNgay, homNay, LoiApi, noiDungLoi, SO_MA_HANG_TOI_DA, type SoDo,
   zChuyen, zCongDoan, zDeXuatSaoChep, zKetQuaLuuSoDo, zMaHang, zSoDo,
 } from '@vsn/shared';
 import { Button, cn, EmptyState, Modal, Page, Select, StatusBar, Switch, Toolbar, useToast } from '@vsn/ui';
@@ -112,7 +112,7 @@ function BanSoDo({ sd, dsChuyen, onChonChuyen, onDaLuu, toast }: {
       setThem((t) => [...t, ...ds.filter((c) => c.trangThai === 'HOAT_DONG').map((c) => ({
         congDoanId: c.id, ma: c.ma, ten: c.ten, smv: c.smv, laCongDoanHoanThanh: c.laCongDoanHoanThanh, maHangId: mhId, maMaHang: mh?.ma ?? '', hoatDong: true,
       }))]);
-    } catch (e) { toast(e instanceof Error ? e.message : 'Không tải được công đoạn', 'warn'); }
+    } catch (e) { toast(noiDungLoi(e, 'Không tải được công đoạn'), 'warn'); }
   };
 
   const s = q.trim().toLowerCase();

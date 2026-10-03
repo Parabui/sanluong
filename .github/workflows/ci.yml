@@ -3,7 +3,9 @@ name: ci
 
 on:
   push:
+    branches: ['**'] # tag v*.*.* chạy CI qua release.yml (workflow_call), không chạy 2 lần
   pull_request:
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -36,9 +38,9 @@ jobs:
       - run: pnpm audit --prod
         continue-on-error: true # chỉ cảnh báo [TDD 19]
 
-  # E2E [TDD 16.1]: chỉ chạy trên nhánh main (và chạy tay trước deploy: pnpm e2e)
+  # E2E [TDD 16.1]: nhánh main + mọi bản phát hành (tag v*, gọi từ release.yml) — tức là trước mỗi lần deploy
   e2e:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     needs: ci
     runs-on: ubuntu-latest
     timeout-minutes: 25

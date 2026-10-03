@@ -14,7 +14,7 @@ import { History, MoreHorizontal, Pencil, Plus, Shirt, Star, Upload } from 'luci
 import { useState } from 'react';
 import { type FieldValues, type Path, useForm, type UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
-import { api } from '../../lib/api';
+import { api, thongBaoLoi } from '../../lib/api';
 import { useToi } from '../../lib/xac-thuc';
 import { useShell } from '../../shell/shell-context';
 
@@ -23,7 +23,7 @@ const ngayHienThi = (n: string) => (n === NGAY_SMV_TU_DAU ? 'từ đầu' : dinh
 
 function ganLoi<T extends FieldValues>(form: UseFormReturn<T>, e: unknown, toast: (m: string, k?: 'warn') => void) {
   if (e instanceof LoiApi && e.field) form.setError(e.field as Path<T>, { message: e.message });
-  else toast(e instanceof Error ? e.message : 'Có lỗi xảy ra.', 'warn');
+  else toast(thongBaoLoi(e), 'warn');
 }
 
 export function MaHangPage() {

@@ -63,7 +63,8 @@ Ghi kết quả: ✅ đạt · ❌ lỗi (chụp màn hình + giờ + mã NV) ·
 
 | # | Bước | Kết quả mong đợi | Kết quả |
 |---|---|---|---|
-| E1 | Sơ đồ trạm trực tiếp | Trạm vừa đăng nhập hiện tên NV ≤ 10 giây (cờ "nhiều thiết bị" trên sơ đồ trạm chưa làm — ghi nhận nếu cần) | |
+| E1 | Sơ đồ trạm trực tiếp | Trạm vừa đăng nhập hiện tên NV ≤ 10 giây | |
+| E1b | Bảng sản lượng ngày, sau bước B4 (cùng mã NV dùng Zalo + Safari) | Ô của NV đó tô cam ⚠ "Nhiều thiết bị: mã NV dùng 2 thiết bị trong ngày" [D23] | |
 | E2 | Đăng xuất hộ trạm còn số chưa nhập | Cảnh báo → "Vẫn đăng xuất hộ"; máy công nhân thấy phiên đã kết thúc | |
 | E3 | Bảng sản lượng ngày | Số công nhân vừa Lưu hiện ngay (≤ 10 giây) | |
 

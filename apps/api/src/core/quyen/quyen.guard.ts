@@ -5,6 +5,7 @@ import type { Request } from 'express';
 import { ClsService } from 'nestjs-cls';
 import { AuditService } from '../audit/audit.service.js';
 import { layIp } from '../http/ip.js';
+import { ganNhatKy } from '../trace-id.js';
 import { LoiNghiepVu } from '../loi/loi-nghiep-vu.js';
 import type { VsnClsStore } from '../ngu-canh.js';
 import { PhienWebService } from '../phien/phien-web.service.js';
@@ -46,6 +47,7 @@ export class QuyenGuard implements CanActivate {
       if (!tb) throw new LoiNghiepVu('CHUA_DANG_NHAP_TRAM');
       this.cls.set('thietBi', tb);
       this.cls.set('route', `${req.method} ${(req.route as { path?: string } | undefined)?.path ?? req.path}`);
+      ganNhatKy(req, { route: this.cls.get('route'), thietBiId: tb.id });
       this.cls.set('nguCanhAudit', {
         loaiNguoiThucHien: 'NHAN_VIEN',
         nguoiThucHienId: null,
@@ -65,6 +67,7 @@ export class QuyenGuard implements CanActivate {
     if (!tk) throw new LoiNghiepVu('CHUA_DANG_NHAP');
 
     this.cls.set('route', `${req.method} ${(req.route as { path?: string } | undefined)?.path ?? req.path}`);
+    ganNhatKy(req, { route: this.cls.get('route'), nguoiThucHienId: tk.id });
     this.cls.set('taiKhoan', tk);
     this.cls.set('phamVi', await this.phamVi.cuaTaiKhoan(tk.id, tk.vaiTro));
     this.cls.set('nguCanhAudit', {

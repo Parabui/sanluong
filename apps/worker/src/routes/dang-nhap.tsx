@@ -3,7 +3,7 @@
  * Khác demo theo [D26]: KHÔNG có nút "Đăng xuất người này" — trạm có người khác thì báo tổ trưởng (F17).
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { chuanHoaMaNV, LoiApi, zKhoiDong, zTramQr } from '@vsn/shared';
+import { chuanHoaMaNV, noiDungLoi, zKhoiDong, zTramQr } from '@vsn/shared';
 import { cn } from '@vsn/ui';
 import { CircleAlert, LogIn, UserRound } from 'lucide-react';
 import { useState } from 'react';
@@ -33,7 +33,7 @@ export function DangNhapPage() {
       toast(`Đã đăng nhập Trạm ${tramQ.data?.soTram ?? ''}`);
       void navigate(`/nhap?tram=${tramId}`, { replace: true });
     },
-    onError: (e) => setErr(e instanceof LoiApi ? e.message : 'Có lỗi xảy ra, vui lòng thử lại.'),
+    onError: (e) => setErr(noiDungLoi(e)),
   });
 
   const submit = (e: React.FormEvent) => {

@@ -46,8 +46,10 @@ for _ in $BANG; do
   echo "$dong" >> "$THU_MUC/vsn-$ts.so-dong.txt"
 done
 
-# ② Dump (định dạng custom) → mã hóa bằng public key — dữ liệu rõ không bao giờ chạm đĩa
-pg_dump -Fc --snapshot="$snap" --no-owner --no-privileges \
+# ② Dump (định dạng custom) → mã hóa bằng public key — dữ liệu rõ không bao giờ chạm đĩa.
+#    GIỮ owner + GRANT/REVOKE: khôi phục thật (khoi-phuc.sh) phải trả lại đúng phân quyền 3 tài khoản [D9] — thiếu thì vsn_app
+#    mất quyền, audit_log mất chế độ chỉ-thêm. Diễn tập (restore-test.sh) tự bỏ owner/quyền khi khôi phục vào DB tạm.
+pg_dump -Fc --snapshot="$snap" \
   | gpg --batch --yes --no-tty --trust-model always --recipient-file "$KHOA_CONG_KHAI" --encrypt --output "$tam"
 echo "COMMIT;" >&"${PSQL[1]}"
 exec {PSQL[1]}>&-

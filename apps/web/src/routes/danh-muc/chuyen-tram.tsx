@@ -16,7 +16,7 @@ import { Building2, ChevronRight, Factory, MoreHorizontal, Pencil, Plus, Power, 
 import { useState } from 'react';
 import { type FieldValues, type Path, useForm, type UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
-import { api } from '../../lib/api';
+import { api, thongBaoLoi } from '../../lib/api';
 import { useShell } from '../../shell/shell-context';
 
 const KHOA = {
@@ -61,7 +61,7 @@ export function ChuyenTramPage() {
   const [xacNhan, setXacNhan] = useState<{ tieuDe: string; canhBao: CanhBaoXacNhan; message: string; tiepTuc: () => void } | null>(null);
   const lamMoi = () => queryClient.invalidateQueries({ predicate: (k) => ['xuong', 'chuyen', 'tram'].includes(String(k.queryKey[0])) });
   const baoLoi = (e: unknown) => {
-    toast(e instanceof Error ? e.message : 'Có lỗi xảy ra, vui lòng thử lại.', 'warn');
+    toast(thongBaoLoi(e), 'warn');
     if (e instanceof LoiApi && e.code === 'DU_LIEU_DA_THAY_DOI') void lamMoi();
   };
   /** Gửi thao tác; nếu server yêu cầu xác nhận thì mở hộp xác nhận */

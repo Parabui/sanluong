@@ -5,7 +5,7 @@ import { ClsModule } from 'nestjs-cls';
 import { LoggerModule } from 'nestjs-pino';
 import { CoreModule } from './core/core.module.js';
 import { docMoiTruong } from './core/moi-truong.js';
-import { layTraceId } from './core/trace-id.js';
+import { layTraceId, thuocTinhNhatKy } from './core/trace-id.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { BaoCaoModule } from './modules/bao-cao/bao-cao.module.js';
 import { CongNhanModule } from './modules/cong-nhan/cong-nhan.module.js';
@@ -37,9 +37,10 @@ import { TaiKhoanModule } from './modules/tai-khoan/tai-khoan.module.js';
           pinoHttp: {
             level: env.LOG_LEVEL,
             genReqId: (req: IncomingMessage) => layTraceId(req),
-            customAttributeKeys: { reqId: 'traceId' },
+            // req.traceId + route + nguoiThucHienId trên dòng log của request → tra theo "mã lỗi" người dùng đọc [TDD 18]
+            customProps: (req: IncomingMessage) => thuocTinhNhatKy(req),
             serializers: {
-              req: (r: { id: string; method: string; url: string }) => ({ method: r.method, url: r.url }),
+              req: (r: { id: string; method: string; url: string }) => ({ method: r.method, url: r.url, traceId: r.id }),
               res: (r: { statusCode: number }) => ({ status: r.statusCode }),
             },
             autoLogging: { ignore: (req: IncomingMessage) => req.url === '/api/health' },

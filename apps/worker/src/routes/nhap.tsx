@@ -5,7 +5,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  dinhDangGio, dinhDangNgay, dinhDangSo, type FormNhap, type GhiSanLuong, LoiApi, thuIso, tranLyThuyet, zFormNhap, zKetQuaGhi,
+  dinhDangGio, dinhDangNgay, dinhDangSo, type FormNhap, type GhiSanLuong, LoiApi, noiDungLoi, thuIso, tranLyThuyet, zFormNhap, zKetQuaGhi,
 } from '@vsn/shared';
 import { cn } from '@vsn/ui';
 import {
@@ -113,7 +113,7 @@ export function NhapPage() {
       if (laLoiMang(e)) setLoiLuu({ mang: true, msg: 'Chưa lưu được – kiểm tra mạng' });
       else {
         lanCuoi.current = null;
-        setLoiLuu({ mang: false, msg: e instanceof LoiApi ? e.message : 'Có lỗi xảy ra, vui lòng thử lại.' });
+        setLoiLuu({ mang: false, msg: noiDungLoi(e) });
         if (e instanceof LoiApi && ['PHIEN_KHONG_CON', 'NGAY_DA_CHOT', 'NGAY_KHONG_MO_NHAP'].includes(e.code)) void queryClient.invalidateQueries({ queryKey: KHOA_KHOI_DONG });
       }
       document.getElementById('scroller')?.scrollTo({ top: 0 });

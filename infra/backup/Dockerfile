@@ -6,9 +6,9 @@ FROM postgres:17-alpine
 RUN apk add --no-cache bash gnupg rclone curl tzdata coreutils findutils
 ENV TZ=Asia/Ho_Chi_Minh
 
-COPY backup.sh kiem-tra-dia.sh restore-test.sh /usr/local/bin/
+COPY backup.sh kiem-tra-dia.sh restore-test.sh khoi-phuc.sh /usr/local/bin/
 COPY crontab /etc/crontabs/root
-RUN chmod +x /usr/local/bin/backup.sh /usr/local/bin/kiem-tra-dia.sh /usr/local/bin/restore-test.sh \
+RUN chmod +x /usr/local/bin/backup.sh /usr/local/bin/kiem-tra-dia.sh /usr/local/bin/restore-test.sh /usr/local/bin/khoi-phuc.sh \
  && mkdir -p /backups /keys /config/rclone
 
 ENV RCLONE_CONFIG=/config/rclone/rclone.conf
