@@ -1,4 +1,4 @@
-<#
+﻿<#
   Phương án 1 [TDD 3.2] [D1b]: tạo VM Hyper-V chạy Ubuntu Server 24.04 cho VSN Sản Lượng.
   Chạy trên Windows Server (PowerShell quyền Administrator, đã bật role Hyper-V):
     .\tao-vm-hyperv.ps1 -Iso D:\iso\ubuntu-24.04-live-server-amd64.iso -Switch "Mang LAN"

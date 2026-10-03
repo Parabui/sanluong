@@ -19,6 +19,9 @@ test.describe.serial('Tổ trưởng & IT/HR [F10] [F17] [F19]', () => {
   test('tổ trưởng: "Còn 1 ngày chưa chốt" → sửa ô (lý do) → nhập hộ ô vàng → chốt ngày (xác nhận còn ô chưa có số)', async ({ page }, info) => {
     const k = info.project.metadata['k'] as number;
     await dangNhap(page, `e2e.tt${k}`);
+    // Trang chủ (F13) chưa làm → vào thẳng màn hình đầu tiên được xem, không rơi vào trang tạm
+    await expect(page).toHaveURL(/\/quanly\/san-xuat\/bang-san-luong/);
+    await expect(page.getByText('chưa implement')).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Còn 1 ngày chưa chốt' }).click();
     await page.getByRole('menuitem', { name: new RegExp(`^EC${k}\\b`) }).click();
@@ -74,6 +77,7 @@ test.describe.serial('Tổ trưởng & IT/HR [F10] [F17] [F19]', () => {
   test('IT/HR: khóa sổ mã hàng × tháng đã chốt đủ', async ({ page }, info) => {
     const k = info.project.metadata['k'] as number;
     await dangNhap(page, `e2e.hr${k}`);
+    await expect(page.getByText('chưa implement')).toHaveCount(0);
     await page.goto('/quanly/luong/khoa-so');
     await page.getByLabel('Tháng').selectOption('2025-06');
     const dong = page.getByRole('row').filter({ hasText: `EMH${k}B` });

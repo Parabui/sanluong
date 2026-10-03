@@ -17,7 +17,7 @@ backup (cron 02:00, mã hóa GPG → /srv/vsn/backups + cloud)   dozzle (xem log
 
 | Thứ | Ở đâu |
 |---|---|
-| Server | ⏳ chốt sau khi chạy `_kiem-tra-may/CHAY-KIEM-TRA.cmd` trên server `[D1b]`: **VM Hyper-V Ubuntu 24.04** (ưu tiên) hoặc **WSL2** |
+| Server | **Tạm thời:** laptop IT, distro WSL2 riêng `VSN-SanLuong` (Docker Engine riêng, tách khỏi Docker Desktop dev). **Sau này:** server thật — VM Hyper-V Ubuntu 24.04 (ưu tiên) hoặc WSL2 `[D1b]`, chuyển sang bằng mục 6 |
 | Thư mục cài đặt | `/srv/vsn/app` — `.env` (quyền 600) + `infra/` (giải nén từ gói `vsn-trien-khai-<tag>.tar.gz`) |
 | Dữ liệu ngoài container | `/srv/vsn/backups` (backup mã hóa, `truoc-deploy/`, `truoc-khoi-phuc/`, `bien-ban/`) · `/srv/vsn/rclone` · `/srv/vsn/dozzle` · `/srv/vsn/deploy.log` |
 | Dữ liệu DB | Docker volume `vsn-sanluong_pgdata` |
@@ -49,7 +49,9 @@ alias dc='docker compose -f infra/compose.prod.yml --env-file .env'
 1. **Máy ảo / WSL** `[TDD 3.2]`
    - Hyper-V: `infra/server/tao-vm-hyperv.ps1 -Iso <ubuntu-24.04.iso> -Switch "<virtual switch External>"` (4 vCPU, 8 GB cố định,
      120 GB, tự khởi động cùng server) → cài Ubuntu Server 24.04, bật OpenSSH.
-   - WSL2: cài Ubuntu 24.04 (`wsl --install -d Ubuntu-24.04`), xong bước 2 thì chạy `infra/server/wsl-tu-khoi-dong.ps1` phía Windows.
+   - WSL2 (máy tạm hiện tại, hoặc Windows Server không có Hyper-V): `infra/server/tao-wsl-vsn.ps1 [-GiuMayThuc]` — tạo distro
+     **riêng** `VSN-SanLuong` + làm luôn bước 2 + chép `infra/` vào `/srv/vsn/app` → `infra/server/wsl-tu-khoi-dong.ps1` (tự chạy cùng Windows).
+     Laptop: cắm sạc thường trực (pin = UPS mini), `-GiuMayThuc` tắt ngủ / gập nắp không tắt; máy có Docker Desktop thì tắt WSL integration cho `VSN-SanLuong`.
    - Cả hai: UPS, Windows Update chỉ khởi động lại 23:00–05:00 (*Settings → Windows Update → Active hours* 05:00–23:00).
 2. **Chuẩn bị Ubuntu:** `sudo bash infra/server/cai-dat-ubuntu.sh` (Docker, NTP, múi giờ, tài khoản `vsn`, `/srv/vsn`, tường lửa, cập nhật bảo mật 04:15).
 3. **Đăng nhập GHCR** (bằng tài khoản `vsn`): `docker login ghcr.io -u <github user>` — mật khẩu là Personal access token **chỉ quyền `read:packages`**.
@@ -264,3 +266,51 @@ Lỗi nghiệp vụ (ngày đã chốt, sai mã NV…) không có mã — câu b
 | PAT GHCR `read:packages` | Trình quản lý mật khẩu (tạo lại được) |
 | Bot Telegram, Sentry, Cloudflare, rclone | Trình quản lý mật khẩu |
 | Mật khẩu Superadmin | Mỗi người tự giữ của mình — không ghi chung |
+
+---
+
+## 6. Chuyển sang máy khác (laptop tạm → server thật, server cũ → mới)
+
+Không phải đổi IP / DNS / Uptime Kuma: Cloudflare Tunnel đi **chiều ra**, máy nào chạy `cloudflared` với `TUNNEL_TOKEN` thì máy đó phục vụ.
+⚠ **Không bao giờ để 2 máy cùng chạy** — 2 máy cùng token thì Cloudflare chia request cho cả hai, số Lưu rơi vào 2 DB khác nhau.
+Làm ngoài giờ (23:00–05:00), báo tổ trưởng trước. Thời gian dừng: 10–20 phút (đã diễn tập: xuất 15 s, nhập 40 s với DB nhỏ — chủ yếu là thời gian chép file).
+
+### Cách A — `chuyen-may.sh` (khuyến nghị, đích nào cũng được: WSL2, VM Hyper-V, Ubuntu thật)
+
+1. **Máy mới** chuẩn bị trước (lúc nào cũng được, không ảnh hưởng máy cũ): mục 1 bước 1–3 (WSL2: `tao-wsl-vsn.ps1`; VM: `tao-vm-hyperv.ps1`
+   + `cai-dat-ubuntu.sh`) và `docker login ghcr.io`. Không chạy `khoi-tao.sh`.
+2. **Máy cũ:**
+   ```bash
+   cd /srv/vsn/app && ./infra/chuyen-may.sh xuat
+   ```
+   Dừng ghi → dump toàn bộ DB (giữ phân quyền) + `.env` + `infra/` + rclone/dozzle → 1 file mã hóa AES-256 bằng **mật khẩu gói** bạn đặt
+   (`/srv/vsn/chuyen-may/vsn-chuyen-may-<giờ>.tar.gz.gpg` + `.sha256`) → đánh dấu máy cũ *ĐÃ CHUYỂN* (deploy.sh / khoi-tao.sh từ chối chạy) → dừng hẳn.
+   WSL2 → lấy file ra Windows: `\\wsl$\VSN-SanLuong\srv\vsn\chuyen-may\`.
+3. Chép **file gói + `.sha256` + `infra/chuyen-may.sh`** sang máy mới (USB, mạng nội bộ). File chứa mật khẩu DB và toàn bộ dữ liệu — đã mã
+   hóa, nhưng vẫn xóa khỏi USB sau khi xong.
+4. **Máy mới:**
+   ```bash
+   bash chuyen-may.sh nhap vsn-chuyen-may-<giờ>.tar.gz.gpg
+   ```
+   Kiểm mã sha256 → giải mã vào `/srv/vsn/app` → tải image đúng tag cũ → PostgreSQL trên volume trống → khôi phục (kiểm phân quyền) →
+   khởi động → **so số dòng 9 bảng chính với lúc xuất** → chờ health đúng phiên bản. Báo `KHỚP` + `✅` mới coi là xong.
+5. Điện thoại 4G mở domain, đăng nhập `/quanly`, xem Bảng sản lượng ngày hôm nay. WSL2 → `wsl-tu-khoi-dong.ps1`; Hyper-V → Automatic Start.
+6. Giữ máy cũ **tắt** ít nhất 1 tuần làm đường lui.
+
+**Máy mới lỗi → quay về máy cũ** (dữ liệu trên máy cũ nguyên vẹn vì đã dừng ghi trước khi xuất): máy mới `dc down` (dừng hẳn) → máy cũ
+`rm /srv/vsn/DA-CHUYEN-MAY.txt && dc up -d`. Nhập lỗi giữa chừng → script in sẵn lệnh dọn máy mới để chạy lại.
+**Quên mật khẩu gói** → gói vô dụng, nhưng máy cũ còn nguyên: quay về máy cũ như trên rồi xuất lại.
+
+### Cách B — chép nguyên distro WSL2 (chỉ khi máy mới cũng là Windows + WSL2)
+
+Đơn giản nhất về thao tác nhưng file lớn (cả hệ điều hành + image Docker, vài GB) và không kiểm số dòng:
+```powershell
+# máy cũ (PowerShell Admin)
+wsl --terminate VSN-SanLuong
+wsl --export VSN-SanLuong E:\vsn-sanluong.tar          # hoặc --format vhd → .vhdx, nhanh hơn
+# máy mới
+wsl --import VSN-SanLuong D:\WSL\VSN-SanLuong E:\vsn-sanluong.tar
+.\infra\server\wsl-tu-khoi-dong.ps1
+```
+Sau khi import **xóa hoặc tắt hẳn** distro trên máy cũ (`wsl --unregister VSN-SanLuong` — chỉ khi máy mới đã chạy ổn 1 tuần) và
+gỡ Scheduled Task `VSN-WSL` trên máy cũ để nó không tự bật lại.

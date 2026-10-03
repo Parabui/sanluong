@@ -21,8 +21,8 @@ chuyền mình, xác nhận đủ dùng trước **pilot tuần 14** `[TDD 20]`.
 - [ ] In sẵn bảng mã trạm + link đăng nhập trạm cho 2 chuyền (chức năng In QR F12 để giai đoạn 2 — xem [CHECKLIST-THIET-BI.md](CHECKLIST-THIET-BI.md))
 - [ ] Đã chạy xong [CHECKLIST-THIET-BI.md](CHECKLIST-THIET-BI.md) mục A–D trên ít nhất 1 iPhone + 1 Android
 
-**Ngoài phạm vi UAT (chưa có trong bản pilot, đã thống nhất):** Dashboard F7 / TV · Trang chủ tổng hợp F13 (trang chủ hiện chỉ là trang tạm —
-vào thẳng menu *Bảng sản lượng ngày*) · In QR F12 · Nhập offline F14 · Xuất dữ liệu lương F15 · Kế hoạch F16 · Hướng dẫn trong app F18 ·
+**Ngoài phạm vi UAT (chưa có trong bản pilot, đã thống nhất):** Dashboard F7 / TV · Trang chủ tổng hợp F13 (đăng nhập xong vào thẳng màn hình
+đầu tiên được xem — tổ trưởng: *Bảng sản lượng ngày*) · In QR F12 · Nhập offline F14 · Xuất dữ liệu lương F15 · Kế hoạch F16 · Hướng dẫn trong app F18 ·
 "Của tôi" hiện lịch sử thiết bị. Ghi nhận nhu cầu nếu người dùng hỏi tới, không coi là lỗi.
 
 ---

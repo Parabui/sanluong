@@ -39,6 +39,8 @@ DU_LIEU="$(doc_env VSN_DU_LIEU)"; DU_LIEU="${DU_LIEU:-/srv/vsn}"
 CONG="$(doc_env VSN_CONG_CADDY)"; CONG="${CONG:-8088}"
 NHAT_KY="$DU_LIEU/deploy.log"
 mkdir -p "$DU_LIEU"
+# Máy đã chuyển đi (infra/chuyen-may.sh xuat) — không được chạy lại kẻo 2 máy cùng phục vụ một tunnel
+[[ ! -f "$DU_LIEU/DA-CHUYEN-MAY.txt" ]] || { echo "Máy này ĐÃ CHUYỂN sang máy khác: $(head -1 "$DU_LIEU/DA-CHUYEN-MAY.txt")" >&2; exit 1; }
 ghi() { printf '[%s] %s\n' "$(date '+%F %T')" "$*" | tee -a "$NHAT_KY"; }
 dung() { ghi "❌ $*"; bao "❌ Deploy $TAG thất bại: $*"; exit 1; }
 bao() { # Telegram cho IT (TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID trong .env; trống = bỏ qua)

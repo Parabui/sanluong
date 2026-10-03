@@ -62,6 +62,11 @@ Trên staging, tạo vài dữ liệu (chuyền, trạm, NV, vài lần Lưu t�
 - [ ] Khôi phục nhầm → quay lại bằng bản trong `/srv/vsn/backups/truoc-khoi-phuc/`
 - [ ] "Mất cả server": `dc down -v` (xóa sạch DB staging) → làm theo RUNBOOK 4.4 đoạn *Mất cả server* → đăng nhập lại được, dữ liệu còn
 
+### Bài 5b · Chuyển máy (30 phút) — chuẩn bị cho lúc chuyển từ laptop sang server thật
+- [ ] Dựng VM / distro WSL2 thứ hai (chỉ RUNBOOK mục 1 bước 1–3), staging cũ: `./infra/chuyen-may.sh xuat`
+- [ ] Máy thứ hai: `bash chuyen-may.sh nhap <gói>` → `KHỚP` + `✅`; staging cũ: `deploy.sh` bị từ chối (đã chuyển)
+- [ ] Quay về máy cũ (RUNBOOK mục 6 "Máy mới lỗi") rồi chuyển lại — giải thích vì sao **không được** để 2 máy cùng chạy tunnel
+
 ### Bài 6 · Tài khoản khẩn cấp (15 phút)
 - [ ] Đăng nhập sai 5 lần → bị khóa → mở bằng **Đặt lại mật khẩu** trên Web
 - [ ] Giả lập "Superadmin duy nhất quên mật khẩu": `dat-lai-superadmin.js` (RUNBOOK 4.6) → thấy dòng audit `DAT_LAI_MAT_KHAU` (HE_THONG)

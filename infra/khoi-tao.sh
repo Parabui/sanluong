@@ -68,6 +68,8 @@ fi
 
 # ── Lần 2: kiểm tra DB còn trống ──
 COMPOSE=(docker compose -f infra/compose.prod.yml --env-file "$ENV_FILE")
+du_lieu="$(doc_env VSN_DU_LIEU)"
+[[ ! -f "${du_lieu:-/srv/vsn}/DA-CHUYEN-MAY.txt" ]] || { echo "Máy này đã chuyển sang máy khác (DA-CHUYEN-MAY.txt) — không khởi tạo lại" >&2; exit 1; }
 [[ -z "$(doc_env VSN_TAG)" ]] || { echo "Đã cài (VSN_TAG=$(doc_env VSN_TAG)). Cập nhật bằng: ./infra/deploy.sh <tag>" >&2; exit 1; }
 VSN_TAG="$TAG" "${COMPOSE[@]}" up -d --wait postgres >/dev/null
 co_bang="$(VSN_TAG="$TAG" "${COMPOSE[@]}" exec -T postgres psql -U postgres -d vsn_sanluong -tAc \

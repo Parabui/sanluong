@@ -35,6 +35,11 @@ if (( WSL )); then
 fi
 
 buoc "Docker Engine + compose plugin"
+# WSL: lệnh docker do Docker Desktop "mượn" vào (WSL integration) KHÔNG phải Docker Engine riêng của distro
+if (( WSL )) && command -v docker >/dev/null && readlink -f "$(command -v docker)" | grep -q docker-desktop; then
+  echo "Distro này đang dùng docker của Docker Desktop. Docker Desktop → Settings → Resources → WSL integration → TẮT cho distro này, rồi wsl --shutdown và chạy lại." >&2
+  exit 1
+fi
 if ! command -v docker >/dev/null; then
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
@@ -93,6 +98,11 @@ APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 EOF
 systemctl enable --now unattended-upgrades
+
+if (( WSL )) && ! grep -q "^default=" /etc/wsl.conf; then
+  # Mở distro là vào thẳng tài khoản vận hành (không dùng root hằng ngày)
+  printf '[user]\ndefault=%s\n' "$NGUOI_VH" >> /etc/wsl.conf
+fi
 
 buoc "Xong"
 docker --version

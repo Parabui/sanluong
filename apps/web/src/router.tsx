@@ -14,6 +14,7 @@ import { AuditLogPage } from './routes/he-thong/audit-log';
 import { CaiDatPage } from './routes/he-thong/cai-dat';
 import { NhanVienPage } from './routes/danh-muc/nhan-vien';
 import { TaiKhoanPage } from './routes/he-thong/tai-khoan';
+import { TrangChuTam } from './routes/trang-chu-tam';
 import { TrangTam } from './routes/trang-tam';
 import { DangNhapPage } from './routes/xac-thuc/dang-nhap';
 import { DoiMatKhauPage } from './routes/xac-thuc/doi-mat-khau';
@@ -34,6 +35,8 @@ const DA_LAM: Record<string, ReactElement> = {
   'he-thong/audit-log': <AuditLogPage />,
   'he-thong/tai-khoan': <TaiKhoanPage />,
 };
+// Trang chủ chưa làm (F13) → chuyển tới màn hình đã làm đầu tiên được xem
+DA_LAM['trang-chu'] = <TrangChuTam daLam={Object.keys(DA_LAM)} />;
 
 const route = (m: ManHinh) => ({ path: m.duongDan, element: DA_LAM[m.duongDan] ?? <TrangTam manHinh={m} /> });
 

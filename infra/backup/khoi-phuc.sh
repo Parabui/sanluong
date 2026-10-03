@@ -82,4 +82,5 @@ for b in san_luong san_luong_lich_su chot_ngay khoa_thang nhan_vien tai_khoan au
   printf '  %-22s %s\n' "$b" "$(psql -X -At -c "SELECT count(*) FROM $b")"
 done
 printf '  %-22s %s\n' "migration cuối" "$(psql -X -At -c "SELECT migration_name FROM _prisma_migrations ORDER BY finished_at DESC LIMIT 1")"
-log "Tiếp theo: docker compose … up -d api → đăng nhập kiểm tra → báo tổ trưởng nhập lại số từ thời điểm của bản backup"
+# Chuyển máy (chuyen-may.sh) không mất số nào → không nhắc nhập lại
+[ "${NGU_CANH:-}" = chuyen-may ] || log "Tiếp theo: docker compose … up -d api → đăng nhập kiểm tra → báo tổ trưởng nhập lại số từ thời điểm của bản backup"

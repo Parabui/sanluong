@@ -75,10 +75,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Gói triển khai cho server (compose, init DB, deploy.sh, khoi-tao.sh, RUNBOOK)
+      - name: Gói triển khai cho server (compose, init DB, deploy.sh, khoi-tao.sh, chuyen-may.sh, RUNBOOK)
         run: |
           mkdir -p goi/infra/backup/khoa
-          cp -r infra/compose.prod.yml infra/deploy.sh infra/khoi-tao.sh infra/postgres infra/server infra/dozzle goi/infra/
+          cp -r infra/compose.prod.yml infra/deploy.sh infra/khoi-tao.sh infra/chuyen-may.sh infra/postgres infra/server infra/dozzle goi/infra/
           cp infra/backup/khoa/README.md goi/infra/backup/khoa/
           cp .env.example goi/
           mkdir -p goi/docs && cp docs/RUNBOOK.md goi/docs/
