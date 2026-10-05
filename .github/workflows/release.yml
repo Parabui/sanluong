@@ -39,7 +39,7 @@ jobs:
             file: infra/backup/Dockerfile
             context: infra/backup
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Kiểm tra tag khớp phiên bản package
         if: matrix.ten == 'vsn-api'
         run: |
@@ -90,7 +90,7 @@ jobs:
     needs: image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Gói triển khai cho server (compose, init DB, deploy.sh, khoi-tao.sh, chuyen-may.sh, RUNBOOK)
         run: |
           mkdir -p goi/infra/backup/khoa
