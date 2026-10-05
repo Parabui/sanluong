@@ -1,6 +1,6 @@
 # Image vsn-web: Caddy 2 + file build của worker và web [TDD 2.1]
 # Build từ gốc repo: docker build -f infra/caddy/Dockerfile -t vsn-web:<tag> .
-FROM node:24-slim AS build
+FROM node:26-slim AS build
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH
 RUN corepack enable
 # Biến VITE_* được NHÚNG vào bundle lúc build (release.yml truyền --build-arg từ Actions Variables).
