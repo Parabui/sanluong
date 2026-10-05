@@ -41,7 +41,15 @@ log "bản backup: $(basename "$FILE")"
 
 # ② Giải mã bằng private key (không lưu lại)
 gpg --batch --quiet --import "$KHOA"
-gpg --batch --quiet --pinentry-mode loopback ${GPG_PASSPHRASE:+--passphrase "$GPG_PASSPHRASE"} --decrypt --output "$LAM_VIEC/vsn.dump" "$FILE"
+# GPG_PASSPHRASE (-e) → không có thì thử khóa không passphrase → đang ở terminal thì hỏi (không hiện ký tự)
+if ! gpg --batch --quiet --pinentry-mode loopback --passphrase-fd 3 --decrypt --output "$LAM_VIEC/vsn.dump" "$FILE" 3<<<"${GPG_PASSPHRASE:-}" 2>/dev/null; then
+  if [ -z "${GPG_PASSPHRASE:-}" ] && [ -t 0 ]; then
+    read -rsp "Passphrase của private key backup: " GPG_PASSPHRASE; echo
+    gpg --batch --quiet --pinentry-mode loopback --passphrase-fd 3 --decrypt --output "$LAM_VIEC/vsn.dump" "$FILE" 3<<<"$GPG_PASSPHRASE"
+  else
+    echo "Không giải mã được — sai passphrase hoặc sai private key (chạy trong terminal để được hỏi, hoặc -e GPG_PASSPHRASE)" >&2; exit 2
+  fi
+fi
 log "đã giải mã ($(du -h "$LAM_VIEC/vsn.dump" | cut -f1))"
 
 # ③ PostgreSQL tạm trong container + khôi phục

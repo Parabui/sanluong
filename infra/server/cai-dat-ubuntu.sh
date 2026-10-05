@@ -26,21 +26,27 @@ apt-get update -q
 apt-get install -yq ca-certificates curl gnupg openssl jq chrony unattended-upgrades ufw
 
 if (( WSL )); then
-  buoc "WSL2: bật systemd (Docker, chrony, cron chạy như máy thật)"
-  if ! grep -q '^systemd=true' /etc/wsl.conf 2>/dev/null; then
-    printf '[boot]\nsystemd=true\n' >> /etc/wsl.conf
-    echo "Đã bật systemd trong /etc/wsl.conf → phía Windows chạy: wsl --shutdown, mở lại Ubuntu rồi chạy lại script này."
+  buoc "WSL2: bật systemd + KHÔNG ghép PATH của Windows (docker.exe / node.exe của máy dev không được lọt vào production)"
+  doi=0
+  if ! grep -q '^systemd=true' /etc/wsl.conf 2>/dev/null; then printf '\n[boot]\nsystemd=true\n' >> /etc/wsl.conf; doi=1; fi
+  if ! grep -q '^appendWindowsPath=false' /etc/wsl.conf 2>/dev/null; then printf '\n[interop]\nappendWindowsPath=false\n' >> /etc/wsl.conf; doi=1; fi
+  if (( doi )); then
+    echo "Đã sửa /etc/wsl.conf → phía Windows chạy: wsl --terminate <distro>, rồi chạy lại script này (tao-wsl-vsn.ps1 tự làm)."
     exit 0
   fi
 fi
 
 buoc "Docker Engine + compose plugin"
-# WSL: lệnh docker do Docker Desktop "mượn" vào (WSL integration) KHÔNG phải Docker Engine riêng của distro
-if (( WSL )) && command -v docker >/dev/null && readlink -f "$(command -v docker)" | grep -q docker-desktop; then
-  echo "Distro này đang dùng docker của Docker Desktop. Docker Desktop → Settings → Resources → WSL integration → TẮT cho distro này, rồi wsl --shutdown và chạy lại." >&2
-  exit 1
+# WSL: lệnh docker do Docker Desktop "mượn" vào (WSL integration, hoặc docker của Windows qua /mnt/c) KHÔNG phải Docker Engine riêng
+if (( WSL )) && command -v docker >/dev/null && ! dpkg -s docker-ce >/dev/null 2>&1; then
+  case "$(readlink -f "$(command -v docker)")" in
+    *docker-desktop* | /mnt/*)
+      echo "Distro này đang thấy docker của Docker Desktop ($(command -v docker)). Docker Desktop → Settings → Resources → WSL integration → TẮT cho distro này, rồi wsl --terminate và chạy lại." >&2
+      exit 1 ;;
+  esac
 fi
-if ! command -v docker >/dev/null; then
+# Nhận diện bằng gói docker-ce (không dựa vào "có lệnh docker trong PATH")
+if ! dpkg -s docker-ce >/dev/null 2>&1; then
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
   chmod a+r /etc/apt/keyrings/docker.asc

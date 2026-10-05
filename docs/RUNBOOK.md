@@ -115,7 +115,11 @@ Gói triển khai mới có thay đổi `infra/` (compose, script) → giải n�
 
 Kiểm tra **theo thứ tự**, dừng ở bước đầu tiên hỏng:
 
-1. Windows lên chưa → Hyper-V Manager: VM `vsn-sanluong` *Running* (WSL: `wsl -l -v` → Ubuntu *Running*; không chạy → `Start-ScheduledTask VSN-WSL`).
+1. Windows lên chưa → Hyper-V Manager: VM `vsn-sanluong` *Running* (WSL: `wsl -l -v` → `VSN-SanLuong` *Running*; không chạy →
+   `Start-ScheduledTask VSN-WSL`). Task chạy vòng lặp `giu-wsl.ps1`: WSL bị tắt (Docker Desktop khởi động lại, `wsl --shutdown`,
+   cập nhật) thì ~20 giây sau tự bật lại; mỗi lần ghi 1 dòng vào `%LOCALAPPDATA%\VSN\giu-wsl.log` — nhiều dòng/ngày = có thứ
+   liên tục tắt WSL (thường là Docker Desktop trên máy dev) → nên chuyển sang server riêng (mục 6).
+   Task kiểu "khi đăng nhập" (`-KhiDangNhap`): sau khi khởi động lại phải có người đăng nhập Windows thì hệ thống mới chạy.
 2. SSH vào được → `timedatectl` (giờ đúng, *NTP synchronized: yes* — sai giờ làm sai "ngày làm việc").
 3. `systemctl is-active docker` → `active`.
 4. `dc ps` — 6 dịch vụ `Up`, postgres `(healthy)`. Thiếu → `dc up -d`.
@@ -159,21 +163,22 @@ Chọn nguồn **gần nhất với thời điểm sự cố** còn dùng đư�
 | ② Backup đêm trên server `vsn-*.dump.gpg` | DB hỏng / xóa nhầm, server còn | Có |
 | ③ Backup trên cloud | Mất cả server | Có |
 
-Private key: USB trong két + bản của IT trưởng (mục 5). Chép vào thư mục tạm trên server, **xóa ngay sau khi xong**.
+Private key `backup.priv.asc` + passphrase: USB trong két + bản của IT trưởng (mục 5, cách tạo: `infra/backup/khoa/README.md`). Chép vào thư mục tạm trên server, **xóa ngay sau khi xong**.
 
 ```bash
 dc stop api                                                   # dừng ghi; Web/app báo lỗi tạm thời
 export POSTGRES_PASSWORD="$(grep ^POSTGRES_PASSWORD= .env | cut -d= -f2-)"
+read -rsp "Passphrase private key backup: " GPG_PASSPHRASE; echo; export GPG_PASSPHRASE   # bỏ qua với ①
 
 # ① dump trước deploy (không cần key)
 dc run --rm --no-deps -e POSTGRES_PASSWORD backup khoi-phuc.sh /backups/truoc-deploy/truoc-deploy-vX.Y.Z-YYYYMMDD-HHMMSS.dump
 # ② bản đêm mới nhất trên server        (hoặc thay moi-nhat bằng /backups/vsn-YYYYMMDD-HHMMSS.dump.gpg)
-dc run --rm --no-deps -e POSTGRES_PASSWORD -v /tmp/khoa:/khoa:ro backup khoi-phuc.sh moi-nhat /khoa/backup.key.asc
+dc run --rm --no-deps -e POSTGRES_PASSWORD -e GPG_PASSPHRASE -v /tmp/khoa:/khoa:ro backup khoi-phuc.sh moi-nhat /khoa/backup.priv.asc
 # ③ bản mới nhất trên cloud
-dc run --rm --no-deps -e POSTGRES_PASSWORD -v /tmp/khoa:/khoa:ro backup khoi-phuc.sh cloud /khoa/backup.key.asc
+dc run --rm --no-deps -e POSTGRES_PASSWORD -e GPG_PASSPHRASE -v /tmp/khoa:/khoa:ro backup khoi-phuc.sh cloud /khoa/backup.priv.asc
 
 dc up -d api
-shred -u /tmp/khoa/*; unset POSTGRES_PASSWORD
+shred -u /tmp/khoa/*; unset POSTGRES_PASSWORD GPG_PASSPHRASE
 ```
 `khoi-phuc.sh` từ chối chạy khi api còn kết nối, **tự dump bản hiện tại** vào `/backups/truoc-khoi-phuc/` (khôi phục nhầm vẫn quay lại được),
 hỏi gõ `KHOI PHUC`, rồi khôi phục trong 1 transaction (lỗi giữa chừng = không đổi gì), giữ nguyên phân quyền 3 tài khoản DB.
@@ -188,7 +193,9 @@ công nhân mở app Lưu lại (số là tổng tích lũy nên Lưu lại là 
 
 **Diễn tập (không đụng DB thật)** — hằng tháng:
 ```bash
-dc run --rm --no-deps -v /tmp/khoa:/khoa:ro backup restore-test.sh moi-nhat /khoa/backup.key.asc   # → KẾT QUẢ: ĐẠT
+read -rsp "Passphrase private key backup: " GPG_PASSPHRASE; echo; export GPG_PASSPHRASE
+dc run --rm --no-deps -e GPG_PASSPHRASE -v /tmp/khoa:/khoa:ro backup restore-test.sh moi-nhat /khoa/backup.priv.asc   # → KẾT QUẢ: ĐẠT
+unset GPG_PASSPHRASE; shred -u /tmp/khoa/*
 ```
 
 ### 4.5 Rollback bản deploy
@@ -262,7 +269,7 @@ Lỗi nghiệp vụ (ngày đã chốt, sai mã NV…) không có mã — câu b
 | Bí mật | Cất ở đâu (≥ 2 nơi, không cùng chỗ với server) |
 |---|---|
 | Bản sao `.env` (mật khẩu `postgres`, 3 tài khoản DB, `UPTIME_TOKEN`, `TUNNEL_TOKEN`, `TURNSTILE_SECRET`) | Trình quản lý mật khẩu của IT + phong bì niêm phong trong két |
-| **Private key backup** `backup.key.asc` + passphrase | USB mã hóa trong két + bản của IT trưởng. Mất key = **mọi backup mã hóa không mở được** |
+| **Private key backup** `backup.priv.asc` + passphrase | USB mã hóa trong két + bản của IT trưởng. Mất key = **mọi backup mã hóa không mở được** |
 | PAT GHCR `read:packages` | Trình quản lý mật khẩu (tạo lại được) |
 | Bot Telegram, Sentry, Cloudflare, rclone | Trình quản lý mật khẩu |
 | Mật khẩu Superadmin | Mỗi người tự giữ của mình — không ghi chung |

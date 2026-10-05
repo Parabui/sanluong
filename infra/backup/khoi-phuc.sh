@@ -4,7 +4,7 @@
 # vào DB tạm để diễn tập): script này GHI ĐÈ toàn bộ dữ liệu hiện tại. Phải dừng api trước. Chạy qua compose:
 #   docker compose -f infra/compose.prod.yml --env-file .env stop api
 #   docker compose -f infra/compose.prod.yml --env-file .env run --rm --no-deps -e POSTGRES_PASSWORD \
-#     [-v <thư mục private key>:/khoa:ro] backup khoi-phuc.sh <nguồn> [/khoa/backup.key.asc]
+#     [-v <thư mục private key>:/khoa:ro] backup khoi-phuc.sh <nguồn> [/khoa/backup.priv.asc]
 # <nguồn>: moi-nhat (bản mã hóa mới nhất trên server) · cloud (bản mới nhất trên cloud) · đường dẫn 1 file trong /backups:
 #   …/vsn-*.dump.gpg (cần private key) hoặc …/truoc-deploy/truoc-deploy-*.dump (không mã hóa, không cần key).
 # Các bước: lấy + giải mã → dump AN TOÀN DB hiện tại (/backups/truoc-khoi-phuc/) → hỏi xác nhận (gõ KHOI PHUC, hoặc
@@ -13,8 +13,8 @@
 # ════════════════════════════════════════════════════════════════
 set -euo pipefail
 
-NGUON=${1:?Dùng: khoi-phuc.sh <moi-nhat|cloud|/backups/…> [/khoa/backup.key.asc]}
-KHOA=${2:-/khoa/backup.key.asc}
+NGUON=${1:?Dùng: khoi-phuc.sh <moi-nhat|cloud|/backups/…> [/khoa/backup.priv.asc]}
+KHOA=${2:-/khoa/backup.priv.asc}
 THU_MUC=${THU_MUC:-/backups}
 : "${POSTGRES_PASSWORD:?Thiếu POSTGRES_PASSWORD (chạy kèm -e POSTGRES_PASSWORD)}"
 export PGHOST=${PGHOST:-postgres} PGUSER=postgres PGPASSWORD=$POSTGRES_PASSWORD PGDATABASE=${PGDATABASE:-vsn_sanluong}
@@ -23,6 +23,16 @@ export GNUPGHOME="$LAM_VIEC/gnupg"
 mkdir -m 700 "$GNUPGHOME"
 trap 'rm -rf "$LAM_VIEC"' EXIT
 log() { echo "[khoi-phuc $(date '+%F %T')] $*"; }
+# Giải mã: GPG_PASSPHRASE (-e) → không có thì thử khóa không passphrase → đang ở terminal thì hỏi (không hiện ký tự)
+giai_ma() {
+  gpg --batch --quiet --pinentry-mode loopback --passphrase-fd 3 --decrypt --output "$2" "$1" 3<<<"${GPG_PASSPHRASE:-}" 2>/dev/null && return 0
+  if [ -z "${GPG_PASSPHRASE:-}" ] && [ -t 0 ]; then
+    read -rsp "Passphrase của private key backup: " GPG_PASSPHRASE; echo
+    gpg --batch --quiet --pinentry-mode loopback --passphrase-fd 3 --decrypt --output "$2" "$1" 3<<<"$GPG_PASSPHRASE" && return 0
+  fi
+  echo "Không giải mã được — sai passphrase hoặc sai private key (chạy trong terminal để được hỏi passphrase, hoặc truyền -e GPG_PASSPHRASE)" >&2
+  return 1
+}
 
 # ① Bản cần khôi phục
 case "$NGUON" in
@@ -39,7 +49,7 @@ log "bản khôi phục: $FILE"
 if [[ "$FILE" == *.gpg ]]; then
   [ -r "$KHOA" ] || { echo "Bản mã hóa cần private key: mount thư mục chứa key vào /khoa (xem RUNBOOK)"; exit 2; }
   gpg --batch --quiet --import "$KHOA"
-  gpg --batch --quiet --pinentry-mode loopback ${GPG_PASSPHRASE:+--passphrase "$GPG_PASSPHRASE"} --decrypt --output "$LAM_VIEC/vsn.dump" "$FILE"
+  giai_ma "$FILE" "$LAM_VIEC/vsn.dump" || exit 2
   DUMP="$LAM_VIEC/vsn.dump"
 else
   DUMP="$FILE"

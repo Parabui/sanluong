@@ -36,9 +36,13 @@ if ($ds -contains $Ten) {
 # Đường dẫn Windows → /mnt/<ổ>/… trong WSL
 function ToWsl([string] $p) { $f = (Resolve-Path $p).Path; '/mnt/' + $f.Substring(0, 1).ToLower() + ($f.Substring(2) -replace '\\', '/') }
 $shWsl = ToWsl $caiDat
+# Từ đây gọi lệnh ngoài (wsl/apt in cảnh báo ra stderr): PowerShell 5.1 + 'Stop' coi mỗi dòng stderr là lỗi và dừng
+# script giữa chừng → chuyển sang tự kiểm tra $LASTEXITCODE
+$ErrorActionPreference = 'Continue'
 
-Write-Host '2/3 Chuẩn bị Ubuntu (lượt 1: bật systemd)…'
+Write-Host '2/3 Chuẩn bị Ubuntu (lượt 1: systemd, không ghép PATH Windows)…'
 wsl.exe -d $Ten -u root -- bash $shWsl
+if ($LASTEXITCODE -ne 0) { throw 'cai-dat-ubuntu.sh (lượt 1) lỗi — xem output phía trên' }
 wsl.exe --terminate $Ten
 Write-Host '    lượt 2: Docker Engine, NTP, tài khoản vsn, /srv/vsn…'
 wsl.exe -d $Ten -u root -- bash $shWsl
