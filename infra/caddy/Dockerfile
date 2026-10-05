@@ -3,6 +3,12 @@
 FROM node:24-slim AS build
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH
 RUN corepack enable
+# Biến VITE_* được NHÚNG vào bundle lúc build (release.yml truyền --build-arg từ Actions Variables).
+# Không phải bí mật: site key Turnstile, DSN Sentry ai mở trang cũng thấy. Thiếu site key → app công nhân gửi token
+# Turnstile rỗng → server production từ chối mọi lần đăng nhập trạm ("Không xác minh được thiết bị").
+ARG VITE_TURNSTILE_SITE_KEY=""
+ARG VITE_SENTRY_DSN=""
+ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 WORKDIR /repo
 COPY . .
 RUN pnpm install --frozen-lockfile \
