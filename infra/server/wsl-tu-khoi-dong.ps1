@@ -39,19 +39,23 @@ vmIdleTimeout=-1
 Write-Host "Đã ghi $cfg (bản cũ: .wslconfig.bak)"
 
 # 2. Scheduled Task giữ distro chạy (WSL tắt distro khi không còn tiến trình wsl.exe nào bám vào)
+# Vòng lặp giu-wsl.ps1 (chép vào ProgramData — không phụ thuộc chỗ để repo): WSL bị tắt vì bất cứ lý do gì
+# (Docker Desktop khởi động lại, wsl --shutdown, cập nhật WSL) → 10 giây sau tự bật lại distro
+$giu = Join-Path $env:ProgramData 'VSN\giu-wsl.ps1'
+New-Item -ItemType Directory -Force (Split-Path $giu) | Out-Null
+Copy-Item (Join-Path $PSScriptRoot 'giu-wsl.ps1') $giu -Force
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' `
+  -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$giu`" -Distro $Distro"
 $set = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) `
   -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable
 if ($KhiDangNhap) {
-  # Chạy trong phiên đăng nhập của bạn → ẩn cửa sổ (powershell -WindowStyle Hidden giữ wsl.exe chạy nền)
-  $action = New-ScheduledTaskAction -Execute 'powershell.exe' `
-    -Argument "-NoProfile -WindowStyle Hidden -Command `"wsl.exe -d $Distro --exec /bin/sh -c 'exec sleep infinity'`""
+  # Chạy trong phiên đăng nhập của bạn, cửa sổ ẩn
   $trigger = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
   $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Limited
   Register-ScheduledTask -TaskName 'VSN-WSL' -Action $action -Trigger $trigger -Settings $set -Principal $principal -Force | Out-Null
   Write-Host "Đã tạo task 'VSN-WSL' (chạy khi đăng nhập). Sau khi khởi động lại máy: đăng nhập Windows → 1–2 phút sau hệ thống chạy." -ForegroundColor Green
 } else {
   $cred = Get-Credential -UserName $TenDangNhap -Message 'Tài khoản Windows (tài khoản Microsoft: email + mật khẩu Microsoft, KHÔNG phải PIN) — để task chạy khi chưa đăng nhập'
-  $action = New-ScheduledTaskAction -Execute 'wsl.exe' -Argument "-d $Distro --exec /bin/sh -c `"exec sleep infinity`""
   $trigger = New-ScheduledTaskTrigger -AtStartup
   try {
     Register-ScheduledTask -TaskName 'VSN-WSL' -Action $action -Trigger $trigger -Settings $set -RunLevel Highest `

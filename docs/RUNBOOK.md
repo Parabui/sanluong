@@ -115,7 +115,11 @@ Gói triển khai mới có thay đổi `infra/` (compose, script) → giải n�
 
 Kiểm tra **theo thứ tự**, dừng ở bước đầu tiên hỏng:
 
-1. Windows lên chưa → Hyper-V Manager: VM `vsn-sanluong` *Running* (WSL: `wsl -l -v` → Ubuntu *Running*; không chạy → `Start-ScheduledTask VSN-WSL`).
+1. Windows lên chưa → Hyper-V Manager: VM `vsn-sanluong` *Running* (WSL: `wsl -l -v` → `VSN-SanLuong` *Running*; không chạy →
+   `Start-ScheduledTask VSN-WSL`). Task chạy vòng lặp `giu-wsl.ps1`: WSL bị tắt (Docker Desktop khởi động lại, `wsl --shutdown`,
+   cập nhật) thì ~20 giây sau tự bật lại; mỗi lần ghi 1 dòng vào `%LOCALAPPDATA%\VSN\giu-wsl.log` — nhiều dòng/ngày = có thứ
+   liên tục tắt WSL (thường là Docker Desktop trên máy dev) → nên chuyển sang server riêng (mục 6).
+   Task kiểu "khi đăng nhập" (`-KhiDangNhap`): sau khi khởi động lại phải có người đăng nhập Windows thì hệ thống mới chạy.
 2. SSH vào được → `timedatectl` (giờ đúng, *NTP synchronized: yes* — sai giờ làm sai "ngày làm việc").
 3. `systemctl is-active docker` → `active`.
 4. `dc ps` — 6 dịch vụ `Up`, postgres `(healthy)`. Thiếu → `dc up -d`.
