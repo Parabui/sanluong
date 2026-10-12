@@ -44,8 +44,10 @@ Write-Host "Đã ghi $cfg (bản cũ: .wslconfig.bak)"
 $giu = Join-Path $env:ProgramData 'VSN\giu-wsl.ps1'
 New-Item -ItemType Directory -Force (Split-Path $giu) | Out-Null
 Copy-Item (Join-Path $PSScriptRoot 'giu-wsl.ps1') $giu -Force
-$action = New-ScheduledTaskAction -Execute 'powershell.exe' `
-  -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$giu`" -Distro $Distro"
+# conhost --headless: chạy KHÔNG có cửa sổ. Windows 11 mặc định mở console bằng Windows Terminal, mà -WindowStyle Hidden
+# không ẩn được → lúc đăng nhập hiện 1 cửa sổ terminal đen, người dùng tưởng thừa đóng đi = distro tắt theo (tunnel 1033)
+$action = New-ScheduledTaskAction -Execute 'conhost.exe' `
+  -Argument "--headless powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$giu`" -Distro $Distro"
 $set = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) `
   -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable
 if ($KhiDangNhap) {
